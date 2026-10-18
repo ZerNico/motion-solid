@@ -66,10 +66,15 @@ The design relies on these, pinned by contract tests (re-run them on every Solid
     back by `<Reveal>` starts animating when it's revealed, `lazy` children join their parent's
     variants once loaded, and a refreshed `createProjection` keeps its elements (reordered with
     layout animations, removed ones exit).
--   Known Solid RC.13 issue (pinned as an `it.fails` contract test): a computation that also reads
-    `isPending` of held async work applies the held values only after the DOM writes. A `layout`
-    component reading `isPending` in its props jumps instead of animating when that update lands;
-    read `isPending` outside its props (e.g. in a child) instead.
+-   Since RC.14, inside a computation (a component created in a `children` memo, for example)
+    `untrack(memo)` reads `undefined` for a memo derived from `isPending` that a held update
+    created, and a component whose pending prop is only read through `untrack` of a memo it
+    created stays suspended. The component reads its props directly when it's created, and memos
+    through `peek` (`utils/access.ts`, `untrack(() => latest(memo))`).
+-   Known Solid 2 issue since RC.13 (pinned as an `it.fails` contract test): a computation that
+    also reads `isPending` of held async work applies the held values only after the DOM writes.
+    A `layout` component reading `isPending` in its props jumps instead of animating when that
+    update lands; read `isPending` outside its props (e.g. in a child) instead.
 
 ## Layout animations (`projection/layout-commit.ts`, `projection/layout-scope.ts`)
 

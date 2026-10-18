@@ -1,4 +1,4 @@
-import { $PROXY, untrack, type Accessor } from "solid-js"
+import { $PROXY, latest, untrack, type Accessor } from "solid-js"
 
 /**
  * Port note: Solid-only. Upstream hooks get new arguments on every render. Here, arguments that
@@ -9,6 +9,16 @@ export type MaybeAccessor<T> = T | Accessor<T>
 
 export function access<T>(value: MaybeAccessor<T>): T {
     return typeof value === "function" ? (value as Accessor<T>)() : value
+}
+
+/**
+ * Port note: Solid-only. An untracked read of a memo, for code that runs while a component is
+ * created. Since Solid 2 RC.14, inside a computation `untrack(memo)` reads `undefined` for a memo
+ * derived from `isPending` that was created by a held update (e.g. presence of a child mounted by
+ * `<Show when={isPending(...)}>`), where `latest` reads its value.
+ */
+export function peek<T>(read: Accessor<T>): T {
+    return untrack(() => latest(read))
 }
 
 /**

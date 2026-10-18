@@ -334,7 +334,7 @@ describe("Solid 2 scheduler contract", () => {
     })
 
     /**
-     * Known Solid 2 RC.13 issue, not a contract we rely on: a computation that also reads
+     * Known Solid 2 issue (RC.13 to RC.15), not a contract we rely on: a computation that also reads
      * `isPending` of the held async value is applied with the held values only after the
      * transition's DOM writes (it first applies `pending=false` with the old value), so a layout
      * trigger in it can't snapshot before the change: a `layout` component reading `isPending`

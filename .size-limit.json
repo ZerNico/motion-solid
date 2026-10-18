@@ -1,0 +1,58 @@
+[
+    {
+        "name": "motion",
+        "path": "packages/motion-solid/dist/dom/index.js",
+        "import": "{ motion }",
+        "limit": "43.5 kB",
+        "ignore": ["solid-js", "@solidjs/web"],
+        "gzip": true
+    },
+    {
+        "name": "m",
+        "path": "packages/motion-solid/dist/dom/index.js",
+        "import": "{ m }",
+        "limit": "10 kB",
+        "ignore": ["solid-js", "@solidjs/web"],
+        "gzip": true
+    },
+    {
+        "name": "m + domAnimation",
+        "path": "packages/motion-solid/dist/dom/index.js",
+        "import": "{ m, LazyMotion, domAnimation }",
+        "limit": "30 kB",
+        "ignore": ["solid-js", "@solidjs/web"],
+        "gzip": true
+    },
+    {
+        "name": "m + domMax",
+        "path": "packages/motion-solid/dist/dom/index.js",
+        "import": "{ m, LazyMotion, domMax }",
+        "limit": "43.5 kB",
+        "ignore": ["solid-js", "@solidjs/web"],
+        "gzip": true
+    },
+    {
+        "name": "animate",
+        "path": "packages/motion-solid/dist/dom/dom.js",
+        "import": "{ animate }",
+        "limit": "19.5 kB",
+        "ignore": ["solid-js", "@solidjs/web"],
+        "gzip": true
+    },
+    {
+        "name": "scroll",
+        "path": "packages/motion-solid/dist/dom/dom.js",
+        "import": "{ scroll }",
+        "limit": "3.7 kB",
+        "ignore": ["solid-js", "@solidjs/web"],
+        "gzip": true
+    },
+    {
+        "name": "animate (mini)",
+        "path": "packages/motion-solid/dist/dom/dom-mini.js",
+        "import": "{ animate }",
+        "limit": "3.3 kB",
+        "ignore": ["solid-js", "@solidjs/web"],
+        "gzip": true
+    }
+]

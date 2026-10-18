@@ -50,6 +50,7 @@ import { createHTMLProps } from "../render/html/use-props"
 import { makeSVGVisualState } from "../render/svg/use-svg-visual-state"
 import { createSVGProps } from "../render/svg/use-props"
 import type { CreateVisualElement, ResolvedValues } from "../render/types"
+import { peek } from "../utils/access"
 import { reactiveProps } from "../utils/reactive-props"
 import { getInitializedFeatureDefinitions } from "./features/definitions"
 import {
@@ -181,13 +182,14 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
          * The component's props, read into a plain object (everything but `children` and
          * `ref`, which the component renders itself).
          */
-        const rawProps = whilePresent(() => {
+        const readRawProps = () => {
             const values: Record<string, any> = {}
             for (const key of Object.keys(props)) {
                 if (!notMotionProps.has(key)) values[key] = props[key]
             }
             return values
-        })
+        }
+        const rawProps = whilePresent(readRawProps)
 
         /**
          * The current motion props, like upstream's `configAndProps`: the `MotionConfig` values,
@@ -195,10 +197,12 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
          * Only read from this component's own computations: another component reading them
          * could run into getters of a branch that's being disposed.
          */
-        const getConfigAndProps = (): ConfigAndProps => {
+        const getConfigAndProps = (
+            componentProps = rawProps()
+        ): ConfigAndProps => {
             const configAndProps: Record<string, any> = {
                 ...motionConfig,
-                ...rawProps(),
+                ...componentProps,
             }
             if (configAndProps.style) {
                 configAndProps.style = normalizeStyleKeys(configAndProps.style)
@@ -215,9 +219,15 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
             return configAndProps
         }
 
-        const motionProps = whilePresent(getConfigAndProps)
+        const motionProps = whilePresent(() => getConfigAndProps())
 
-        const initialProps = untrack(motionProps)
+        /**
+         * Port note: read from the props themselves, not through `motionProps`. Since Solid 2
+         * RC.14, an untracked read of a memo created here doesn't wake the component when a
+         * pending prop resolves (the surrounding `Loading` keeps its fallback), and reads
+         * `undefined` while a held update is in flight.
+         */
+        const initialProps = untrack(() => getConfigAndProps(readRawProps()))
         const { isStatic, isValidProp } = initialProps as MotionProps & {
             isStatic?: boolean
             isValidProp?: (key: string) => boolean
@@ -460,7 +470,7 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
             const presenceId = nextClientId()
             const fallback = presence?.fallback
 
-            let committed = untrack(state)
+            let committed = peek(state)
             let isMounted = false
             let isDisposed = false
 

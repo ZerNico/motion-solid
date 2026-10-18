@@ -3,38 +3,68 @@ name: Release
 # Publishing a GitHub release (tag `v<version>`, matching the package's version) publishes the
 # package to npm with trusted publishing (OIDC, with provenance): no npm token is stored. On
 # npmjs.com, the package's trusted publisher must be set to this repository, this workflow
-# (`release.yml`) and the `npm` environment.
+# (`release.yml`) and the `npm` environment. Versions with a prerelease part (`0.2.0-beta.1`) are
+# published under the `next` dist-tag. Running the workflow by hand is a dry run.
 
 on:
     release:
         types: [published]
+    workflow_dispatch:
 
 permissions:
     contents: read
-    id-token: write
+
+concurrency:
+    group: release
+    cancel-in-progress: false
 
 jobs:
     publish:
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         environment: npm
+        permissions:
+            contents: read
+            id-token: write
         steps:
-            - uses: actions/checkout@v7
-            - uses: pnpm/action-setup@v6
-            - uses: actions/setup-node@v7
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+            - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+            # No dependency cache in release builds, as npm recommends for trusted publishing.
+            - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
               with:
                   node-version-file: .node-version
-                  cache: pnpm
                   registry-url: https://registry.npmjs.org
+                  package-manager-cache: false
             - run: pnpm install --frozen-lockfile
 
-            - name: Check that the tag matches the package version
+            - name: Check the version
+              id: version
+              env:
+                  EVENT_NAME: ${{ github.event_name }}
+                  TAG_NAME: ${{ github.event.release.tag_name }}
               run: |
                   version=$(node -p "require('./packages/motion-solid/package.json').version")
-                  if [ "${{ github.event.release.tag_name }}" != "v$version" ]; then
-                    echo "Tag ${{ github.event.release.tag_name }} doesn't match version v$version"
+                  if [ "$EVENT_NAME" = "release" ] && [ "$TAG_NAME" != "v$version" ]; then
+                    echo "::error::Tag $TAG_NAME doesn't match version v$version"
                     exit 1
                   fi
+                  if [[ "$version" == *-* ]]; then dist_tag=next; else dist_tag=latest; fi
+                  echo "dist-tag=$dist_tag" >> "$GITHUB_OUTPUT"
+                  echo "Publishing $version under the '$dist_tag' dist-tag"
+
+            - run: pnpm lint
+            - run: pnpm typecheck
+            - run: pnpm exec vitest run --project motion-solid
 
             # `pnpm pack` builds the package (`prepack`) and applies `publishConfig`.
             - run: pnpm check:package
-            - run: npm publish packages/motion-solid/.pack/package.tgz --access public
+            - name: Publish
+              env:
+                  DIST_TAG: ${{ steps.version.outputs.dist-tag }}
+                  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' }}
+              run: |
+                  flags=(--access public --tag "$DIST_TAG")
+                  if [ "$DRY_RUN" = "true" ]; then flags+=(--dry-run); fi
+                  npm publish packages/motion-solid/.pack/package.tgz "${flags[@]}"

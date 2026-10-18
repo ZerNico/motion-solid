@@ -1,0 +1,35 @@
+name: Preview
+
+# Publishes a preview build of every push to `main` and every pull request to pkg.pr.new
+# (`pnpm add https://pkg.pr.new/@motion-s/solid@<pr or sha>`), and comments the install command
+# on the pull request. Needs the pkg.pr.new GitHub app installed on the repository.
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+jobs:
+    preview:
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+            - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+            - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version-file: .node-version
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            # `--pnpm` packs with `pnpm pack`, which builds the package (`prepack`) and applies
+            # `publishConfig`. pkg.pr.new isn't npm: it authenticates the workflow run itself.
+            - run: pnpm exec pkg-pr-new publish --pnpm ./packages/motion-solid # zizmor: ignore[use-trusted-publishing]
