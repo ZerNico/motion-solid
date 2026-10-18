@@ -1,0 +1,126 @@
+body {
+    font-family: system-ui, sans-serif;
+    background: #0f1115;
+    color: #e6e6e6;
+    margin: 0;
+}
+
+main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 32px 16px 96px;
+}
+
+section {
+    margin-bottom: 48px;
+}
+
+button {
+    font: inherit;
+    margin-right: 8px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #1c1f26;
+    color: inherit;
+    cursor: pointer;
+}
+
+.stage {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    background: #ff0088;
+}
+
+.list {
+    position: relative;
+    list-style: none;
+    padding: 0;
+}
+
+.list li {
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    background: #1c1f26;
+    cursor: pointer;
+}
+
+.switch {
+    width: 100px;
+    height: 50px;
+    padding: 6px;
+    display: flex;
+    border-radius: 50px;
+    background: #2a2e38;
+    cursor: pointer;
+}
+
+.handle {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    background: #22cc88;
+}
+
+.tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.tab {
+    position: relative;
+    border: none;
+    background: none;
+    padding: 8px 12px;
+}
+
+.underline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 3px;
+    border-radius: 2px;
+    background: #0d63f8;
+}
+
+.expand {
+    width: 240px;
+    background: #1c1f26;
+    padding: 16px;
+    box-sizing: border-box;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.expand p {
+    margin: 0;
+}
+
+.drag-area {
+    width: 300px;
+    height: 150px;
+    border-radius: 16px;
+    background: #1c1f26;
+}
+
+.drag-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    background: #ff0088;
+    cursor: grab;
+}
+
+.list li {
+    user-select: none;
+}

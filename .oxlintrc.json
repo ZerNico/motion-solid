@@ -1,0 +1,38 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "plugins": ["typescript", "unicorn", "oxc", "import"],
+    "categories": {
+        "correctness": "error"
+    },
+    "ignorePatterns": [
+        "**/dist/**",
+        "**/node_modules/**",
+        "**/*.min.js",
+        "**/__tests__/polyfill.js"
+    ],
+    "rules": {
+        "no-unused-vars": [
+            "error",
+            {
+                "ignoreRestSiblings": true,
+                "caughtErrors": "none",
+                "argsIgnorePattern": "^_",
+                "varsIgnorePattern": "^_"
+            }
+        ],
+        // Upstream's style (`callback && callback()`, `Object` types), in files copied verbatim
+        "no-unused-expressions": "off",
+        "typescript/no-wrapper-object-types": "off",
+        // Solid refs: `let element!: HTMLElement` is assigned by JSX
+        "no-unassigned-vars": "off"
+    },
+    "overrides": [
+        {
+            "files": ["**/__tests__/**", "**/test/**", "**/*.test.*"],
+            "rules": {
+                "no-async-promise-executor": "off",
+                "unicorn/no-thenable": "off"
+            }
+        }
+    ]
+}

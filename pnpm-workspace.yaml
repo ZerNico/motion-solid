@@ -1,0 +1,11 @@
+packages:
+    - packages/*
+    - playground
+    - playground-react
+
+allowBuilds:
+    esbuild: true
+
+engineStrict: true
+updateNotifier: false
+autoDedupe: true

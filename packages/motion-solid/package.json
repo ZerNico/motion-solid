@@ -1,0 +1,123 @@
+{
+    "name": "@motion-s/solid",
+    "version": "0.1.0",
+    "description": "An unofficial Solid 2.0 port of Motion (motion/react), built on motion-dom.",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zernico/motion-solid.git",
+        "directory": "packages/motion-solid"
+    },
+    "homepage": "https://github.com/zernico/motion-solid#readme",
+    "bugs": "https://github.com/zernico/motion-solid/issues",
+    "keywords": [
+        "solid",
+        "solidjs",
+        "animation",
+        "motion",
+        "framer-motion",
+        "layout"
+    ],
+    "type": "module",
+    "sideEffects": false,
+    "files": [
+        "dist",
+        "LICENSE",
+        "README.md"
+    ],
+    "imports": {
+        "#test-utils": "./test/index.ts"
+    },
+    "exports": {
+        ".": "./src/index.ts",
+        "./dom": "./src/dom.ts",
+        "./dom/mini": "./src/dom-mini.ts",
+        "./mini": "./src/mini.ts",
+        "./projection": "./src/projection.ts",
+        "./debug": "./src/debug.ts",
+        "./package.json": "./package.json"
+    },
+    "publishConfig": {
+        "access": "public",
+        "exports": {
+            ".": {
+                "types": "./dist/dom/index.d.ts",
+                "solid": "./dist/source/index.jsx",
+                "browser": "./dist/dom/index.js",
+                "node": "./dist/server/index.js",
+                "worker": "./dist/server/index.js",
+                "deno": "./dist/server/index.js",
+                "default": "./dist/dom/index.js"
+            },
+            "./dom": {
+                "types": "./dist/dom/dom.d.ts",
+                "solid": "./dist/source/dom.jsx",
+                "browser": "./dist/dom/dom.js",
+                "node": "./dist/server/dom.js",
+                "worker": "./dist/server/dom.js",
+                "deno": "./dist/server/dom.js",
+                "default": "./dist/dom/dom.js"
+            },
+            "./dom/mini": {
+                "types": "./dist/dom/dom-mini.d.ts",
+                "solid": "./dist/source/dom-mini.jsx",
+                "browser": "./dist/dom/dom-mini.js",
+                "node": "./dist/server/dom-mini.js",
+                "worker": "./dist/server/dom-mini.js",
+                "deno": "./dist/server/dom-mini.js",
+                "default": "./dist/dom/dom-mini.js"
+            },
+            "./mini": {
+                "types": "./dist/dom/mini.d.ts",
+                "solid": "./dist/source/mini.jsx",
+                "browser": "./dist/dom/mini.js",
+                "node": "./dist/server/mini.js",
+                "worker": "./dist/server/mini.js",
+                "deno": "./dist/server/mini.js",
+                "default": "./dist/dom/mini.js"
+            },
+            "./projection": {
+                "types": "./dist/dom/projection.d.ts",
+                "solid": "./dist/source/projection.jsx",
+                "browser": "./dist/dom/projection.js",
+                "node": "./dist/server/projection.js",
+                "worker": "./dist/server/projection.js",
+                "deno": "./dist/server/projection.js",
+                "default": "./dist/dom/projection.js"
+            },
+            "./debug": {
+                "types": "./dist/dom/debug.d.ts",
+                "solid": "./dist/source/debug.jsx",
+                "browser": "./dist/dom/debug.js",
+                "node": "./dist/server/debug.js",
+                "worker": "./dist/server/debug.js",
+                "deno": "./dist/server/debug.js",
+                "default": "./dist/dom/debug.js"
+            },
+            "./package.json": "./package.json"
+        },
+        "types": "./dist/dom/index.d.ts"
+    },
+    "scripts": {
+        "build": "tsdown",
+        "prepack": "tsdown",
+        "check:package": "rm -rf .pack && pnpm pack --out .pack/package.tgz && publint .pack/package.tgz && attw .pack/package.tgz --profile esm-only"
+    },
+    "dependencies": {
+        "csstype": "^3.2.3",
+        "motion-dom": "14.0.0",
+        "motion-utils": "14.0.0"
+    },
+    "peerDependencies": {
+        "@solidjs/web": "^2.0.0-rc.13",
+        "solid-js": "^2.0.0-rc.13"
+    },
+    "devDependencies": {
+        "@arethetypeswrong/cli": "^0.18.5",
+        "@solidjs/babel-plugin": "2.0.0-rc.13",
+        "@solidjs/compiler": "2.0.0-rc.13",
+        "publint": "^0.3.25",
+        "tsdown": "0.23.0",
+        "unplugin-solid": "3.0.0"
+    }
+}

@@ -1,0 +1,40 @@
+name: Release
+
+# Publishing a GitHub release (tag `v<version>`, matching the package's version) publishes the
+# package to npm with trusted publishing (OIDC, with provenance): no npm token is stored. On
+# npmjs.com, the package's trusted publisher must be set to this repository, this workflow
+# (`release.yml`) and the `npm` environment.
+
+on:
+    release:
+        types: [published]
+
+permissions:
+    contents: read
+    id-token: write
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+        environment: npm
+        steps:
+            - uses: actions/checkout@v7
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v7
+              with:
+                  node-version-file: .node-version
+                  cache: pnpm
+                  registry-url: https://registry.npmjs.org
+            - run: pnpm install --frozen-lockfile
+
+            - name: Check that the tag matches the package version
+              run: |
+                  version=$(node -p "require('./packages/motion-solid/package.json').version")
+                  if [ "${{ github.event.release.tag_name }}" != "v$version" ]; then
+                    echo "Tag ${{ github.event.release.tag_name }} doesn't match version v$version"
+                    exit 1
+                  fi
+
+            # `pnpm pack` builds the package (`prepack`) and applies `publishConfig`.
+            - run: pnpm check:package
+            - run: npm publish packages/motion-solid/.pack/package.tgz --access public

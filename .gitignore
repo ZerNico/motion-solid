@@ -1,0 +1,8 @@
+node_modules
+build
+.vitest-attachments
+test-results
+*.tsbuildinfo
+.DS_Store
+dist
+.pack

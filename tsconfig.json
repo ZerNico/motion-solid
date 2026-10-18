@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        "jsx": "preserve",
+        "jsxImportSource": "@solidjs/web",
+        "noEmit": true,
+        "skipLibCheck": true,
+        "allowImportingTsExtensions": true,
+        "types": ["node", "vitest/globals", "@testing-library/jest-dom"],
+
+        "isolatedModules": true,
+        "strict": true,
+        // Off for files copied verbatim from upstream (packages/config/tsconfig.json has no
+        // `strict`): Motion's feature classes and gesture handlers don't pass these checks, and
+        // changing them would break the copies that upstream updates are applied to.
+        "strictFunctionTypes": false,
+        "strictPropertyInitialization": false,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true
+    },
+    "include": [
+        "packages/*/src",
+        "packages/*/test",
+        "playground/src",
+        "test",
+        "vitest.shared.mts"
+    ],
+    "exclude": ["node_modules", "**/build"]
+}

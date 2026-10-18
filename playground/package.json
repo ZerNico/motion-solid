@@ -1,0 +1,18 @@
+{
+    "name": "playground",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "dependencies": {
+        "@solidjs/web": "2.0.0-rc.13",
+        "@motion-s/solid": "workspace:*",
+        "solid-js": "2.0.0-rc.13"
+    },
+    "devDependencies": {
+        "@solidjs/vite-plugin": "3.0.0-next.47",
+        "vite": "^8.3.2"
+    }
+}
