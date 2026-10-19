@@ -12,7 +12,7 @@ Node 24 (`.node-version`) and pnpm (the version in `packageManager`).
 ## Checks
 
 ```sh
-pnpm format:check   # Prettier
+pnpm format:check   # oxfmt
 pnpm lint           # oxlint
 pnpm typecheck      # TypeScript 7
 pnpm test           # upstream's tests (jsdom) and ours (Chromium)
@@ -26,15 +26,15 @@ request also gets a preview build on pkg.pr.new, with the install command in a c
 
 ## Code
 
--   This is a port of `motion/react` (`packages/framer-motion` in the Motion repository, the
-    version in `UPSTREAM.md`). Files mirror upstream's layout, and framework-agnostic files are
-    copied verbatim. Changes are marked with `Port note:` comments, and `PORTING.md` explains how
-    the port differs and why.
--   Prettier stays on 2.x and TypeScript's `strictFunctionTypes`/`strictPropertyInitialization`
-    stay off, so the copied files stay identical to upstream's (which makes upstream updates a
-    diff to apply).
--   Behaviour that depends on layout, WAAPI or the browser is tested in a real browser
-    (`*.browser.test.tsx`); upstream's ported tests run in jsdom (`*.test.tsx`).
+- This is a port of `motion/react` (`packages/framer-motion` in the Motion repository, the
+  version in `UPSTREAM.md`). Files mirror upstream's layout, and framework-agnostic files are
+  copied verbatim. Changes are marked with `Port note:` comments, and `PORTING.md` explains how
+  the port differs and why.
+- oxfmt uses upstream's formatting options, and TypeScript's
+  `strictFunctionTypes`/`strictPropertyInitialization` stay off, so the copied files stay close
+  to upstream's (which makes upstream updates a diff to apply).
+- Behaviour that depends on layout, WAAPI or the browser is tested in a real browser
+  (`*.browser.test.tsx`); upstream's ported tests run in jsdom (`*.test.tsx`).
 
 ## Releasing
 
@@ -43,3 +43,6 @@ request also gets a preview build on pkg.pr.new, with the install command in a c
    publishes it to npm (trusted publishing, with provenance). A version with a prerelease part
    (`0.2.0-beta.1`) is published under the `next` dist-tag. Running the workflow by hand is a dry
    run.
+3. The release also deploys the docs to Cloudflare Pages (`Deploy docs` workflow,
+   motion-solid.pages.dev). Run that workflow by hand on `main` to publish a docs fix between
+   releases.

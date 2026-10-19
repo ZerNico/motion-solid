@@ -62,11 +62,11 @@ return <motion.div animate={controls} />
 
 Then call:
 
--   `controls.start(definition, transition?)`: animates every component to a target, a variant
-    label, or a function called with each component's `custom` prop. Returns a promise that
-    resolves when all the animations finish.
--   `controls.set(definition)`: sets the values without animating.
--   `controls.stop()`: stops the running animations.
+- `controls.start(definition, transition?)`: animates every component to a target, a variant
+  label, or a function called with each component's `custom` prop. Returns a promise that
+  resolves when all the animations finish.
+- `controls.set(definition)`: sets the values without animating.
+- `controls.stop()`: stops the running animations.
 
 `start` and `set` can be called from an effect or from `onSettled`, as the component mounts:
 `motion` components that are still waiting to mount are mounted first.

@@ -13,7 +13,7 @@ import type { MaybeAccessor } from "./access"
  */
 export function useMotionValueEvent<
     V,
-    EventName extends keyof MotionValueEventCallbacks<V>
+    EventName extends keyof MotionValueEventCallbacks<V>,
 >(
     value: MaybeAccessor<MotionValue<V>>,
     event: EventName,

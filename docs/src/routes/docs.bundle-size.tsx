@@ -6,10 +6,10 @@ import Content, { toc } from "../content/bundle-size.mdx"
 import { pageHead } from "../pages"
 
 export const Route = createFileRoute("/docs/bundle-size")({
-    head: pageHead("bundle-size"),
-    component: () => (
-        <DocPage toc={toc}>
-            <Content components={mdxComponents} />
-        </DocPage>
-    ),
+  head: pageHead("bundle-size"),
+  component: () => (
+    <DocPage toc={toc}>
+      <Content components={mdxComponents} />
+    </DocPage>
+  ),
 })

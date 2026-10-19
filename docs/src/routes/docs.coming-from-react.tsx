@@ -6,10 +6,10 @@ import Content, { toc } from "../content/coming-from-react.mdx"
 import { pageHead } from "../pages"
 
 export const Route = createFileRoute("/docs/coming-from-react")({
-    head: pageHead("coming-from-react"),
-    component: () => (
-        <DocPage toc={toc}>
-            <Content components={mdxComponents} />
-        </DocPage>
-    ),
+  head: pageHead("coming-from-react"),
+  component: () => (
+    <DocPage toc={toc}>
+      <Content components={mdxComponents} />
+    </DocPage>
+  ),
 })

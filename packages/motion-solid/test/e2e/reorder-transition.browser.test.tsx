@@ -105,10 +105,13 @@ function drag() {
         )
     }
     timers.push(
-        setTimeout(() => {
-            dispatch("pointerup", window, x, startY + distance)
-            timers.push(setTimeout(() => (dragDone = true), 500))
-        }, moves * 16 + 300)
+        setTimeout(
+            () => {
+                dispatch("pointerup", window, x, startY + distance)
+                timers.push(setTimeout(() => (dragDone = true), 500))
+            },
+            moves * 16 + 300
+        )
     )
 }
 

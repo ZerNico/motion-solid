@@ -40,10 +40,10 @@ The same goes for variants: a variant's `transition` is used when animating to i
 
 Without a transition, Motion picks one per value:
 
--   `x`, `y`, `rotate` and the other transforms use a spring. `scale` uses a spring without
-    bounce.
--   Other values, like `opacity` and colors, use a 0.3 second tween.
--   Animations with more than two keyframes use a 0.8 second tween.
+- `x`, `y`, `rotate` and the other transforms use a spring. `scale` uses a spring without
+  bounce.
+- Other values, like `opacity` and colors, use a 0.3 second tween.
+- Animations with more than two keyframes use a 0.8 second tween.
 
 A transition with only orchestration options (`delay`, `repeat`, `when`, ...) keeps these
 defaults.
@@ -63,11 +63,11 @@ used when you set `duration` or `ease` without a `type`. You can also set `type:
 
 `ease` accepts:
 
--   A name: `"linear"`, `"easeIn"`, `"easeOut"`, `"easeInOut"`, `"circIn"`, `"circOut"`,
-    `"circInOut"`, `"backIn"`, `"backOut"`, `"backInOut"` or `"anticipate"`.
--   A cubic bezier curve as an array of four numbers, like in CSS: `[0.7, 0, 0.3, 1]`.
--   A function that takes a progress from `0` to `1` and returns the eased progress. The easing
-    functions are exported too (`easeOut`, `backOut`, `steps(4)`, `cubicBezier(…)`, ...).
+- A name: `"linear"`, `"easeIn"`, `"easeOut"`, `"easeInOut"`, `"circIn"`, `"circOut"`,
+  `"circInOut"`, `"backIn"`, `"backOut"`, `"backInOut"` or `"anticipate"`.
+- A cubic bezier curve as an array of four numbers, like in CSS: `[0.7, 0, 0.3, 1]`.
+- A function that takes a progress from `0` to `1` and returns the eased progress. The easing
+  functions are exported too (`easeOut`, `backOut`, `steps(4)`, `cubicBezier(…)`, ...).
 
 <Demo component={Easings} source={easingsSource} />
 
@@ -148,9 +148,9 @@ tween.
 | `repeatType`  | `"loop" \| "reverse" \| "mirror"` | `"loop"` | How each repetition plays.                            |
 | `repeatDelay` | `number`                          | `0`      | Seconds to wait between repetitions.                  |
 
--   `"loop"` starts again from the first keyframe.
--   `"reverse"` plays backwards, then forwards again. The easing is reversed too.
--   `"mirror"` swaps the start and the end, and plays forwards with the same easing.
+- `"loop"` starts again from the first keyframe.
+- `"reverse"` plays backwards, then forwards again. The easing is reversed too.
+- `"mirror"` swaps the start and the end, and plays forwards with the same easing.
 
 The difference between `"reverse"` and `"mirror"` shows with an asymmetric easing like `easeIn`:
 

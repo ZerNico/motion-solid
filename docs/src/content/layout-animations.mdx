@@ -48,15 +48,15 @@ the next layout change, including one in the same update.
 
 An update measures the elements with `layout` when one of these happens:
 
--   a prop of a `motion` component changes, other than animation-only props (`animate`, `initial`,
-    `exit`, `variants`, `transition`, `custom`, `while*`, event handlers). For example `class`,
-    `style` or `layout`,
--   children of a `motion` component are added, removed or reordered,
--   a `motion` component is created or removed,
--   `AnimatePresence`, motion-solid's `Show`/`For`, or a `LayoutGroup` add or remove children, or
-    a child starts or stops exiting,
--   motion-solid's `For` reorders its items, also outside an `AnimatePresence`,
--   an element with the same `layoutId` is created, removed, or starts or stops exiting.
+- a prop of a `motion` component changes, other than animation-only props (`animate`, `initial`,
+  `exit`, `variants`, `transition`, `custom`, `while*`, event handlers). For example `class`,
+  `style` or `layout`,
+- children of a `motion` component are added, removed or reordered,
+- a `motion` component is created or removed,
+- `AnimatePresence`, motion-solid's `Show`/`For`, or a `LayoutGroup` add or remove children, or
+  a child starts or stops exiting,
+- motion-solid's `For` reorders its items, also outside an `AnimatePresence`,
+- an element with the same `layoutId` is created, removed, or starts or stops exiting.
 
 When it happens, motion-solid measures the closest `motion` component, `LayoutGroup` or
 `AnimatePresence` around the change, and everything inside it: the changed element, its siblings,
@@ -68,9 +68,9 @@ cards below it move.
 
 Changes that don't go through a `motion` component can't be seen:
 
--   the `class` or `style` of a plain element (`<div>`, not `<motion.div>`),
--   text that changes in a plain element inside a `motion` component,
--   CSS changes from outside, like a media query or a stylesheet.
+- the `class` or `style` of a plain element (`<div>`, not `<motion.div>`),
+- text that changes in a plain element inside a `motion` component,
+- CSS changes from outside, like a media query or a stylesheet.
 
 For those, pass `layoutDependency`. The element measures when its value changes:
 
@@ -89,9 +89,9 @@ container a `motion` element works too.
 Solid's `For` moves the DOM nodes of reordered items without running any code, so nothing can
 notice the new order. Under a plain parent, the items jump. Use one of these:
 
--   motion-solid's `For`, which measures when the order changes,
--   a `motion` parent, which measures when its children are reordered,
--   `layoutDependency` with the list.
+- motion-solid's `For`, which measures when the order changes,
+- a `motion` parent, which measures when its children are reordered,
+- `layoutDependency` with the list.
 
 <Demo component={ListReorder} source={listReorderSource} />
 
@@ -145,10 +145,10 @@ instance in a [`LayoutGroup`](/docs/layout-group) with an `id`.
 A layout animation changes the size of an element with `scale`. Without help, that would also
 stretch its `border-radius`, its `box-shadow` and its children. Motion corrects:
 
--   `borderRadius` and `boxShadow`, when they're set through `style`, `initial` or `animate`.
-    Values from a CSS class aren't corrected.
--   children that have `layout` themselves. Give a child `layout="position"` to move it with its
-    parent without stretching it. A child without `layout` is stretched.
+- `borderRadius` and `boxShadow`, when they're set through `style`, `initial` or `animate`.
+  Values from a CSS class aren't corrected.
+- children that have `layout` themselves. Give a child `layout="position"` to move it with its
+  parent without stretching it. A child without `layout` is stretched.
 
 ```tsx
 <motion.div layout style={{ borderRadius: 16 }}>
@@ -176,10 +176,10 @@ Layout animations use the component's `transition`. To give them a different one
 
 Two props help Motion measure elements inside scrolling containers and fixed elements:
 
--   `layoutScroll` on a scrolling ancestor of elements with `layout`. Without it, scrolling the
-    container between two measurements looks like a layout change.
--   `layoutRoot` on a `position: fixed` or `sticky` element. Its children are measured relative to
-    it, and its own layout changes apply at once.
+- `layoutScroll` on a scrolling ancestor of elements with `layout`. Without it, scrolling the
+  container between two measurements looks like a layout change.
+- `layoutRoot` on a `position: fixed` or `sticky` element. Its children are measured relative to
+  it, and its own layout changes apply at once.
 
 ```tsx
 <motion.ul layoutScroll class="overflow-y-auto">
@@ -203,7 +203,7 @@ Two props help Motion measure elements inside scrolling containers and fixed ele
 
 ## Things to know
 
--   Transforms don't apply to `display: inline` elements. Use `inline-block` or a block element.
--   With [reduced motion](/docs/accessibility) on, layout changes happen at once.
--   To coordinate layout animations across components in different `motion` parents, see
-    [LayoutGroup](/docs/layout-group).
+- Transforms don't apply to `display: inline` elements. Use `inline-block` or a block element.
+- With [reduced motion](/docs/accessibility) on, layout changes happen at once.
+- To coordinate layout animations across components in different `motion` parents, see
+  [LayoutGroup](/docs/layout-group).

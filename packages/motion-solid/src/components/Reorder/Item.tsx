@@ -12,7 +12,7 @@ import { autoScrollIfNeeded, resetAutoScrollState } from "./utils/auto-scroll"
 
 export interface Props<
     V,
-    TagName extends ReorderElementTag = DefaultItemElement
+    TagName extends ReorderElementTag = DefaultItemElement,
 > {
     /**
      * A HTML element to render this component as. Defaults to `"li"`.
@@ -50,7 +50,7 @@ function useDefaultMotionValue(value: any, defaultValue: number = 0) {
 
 type ReorderItemProps<
     V,
-    TagName extends ReorderElementTag = DefaultItemElement
+    TagName extends ReorderElementTag = DefaultItemElement,
 > = Props<V, TagName> &
     Omit<HTMLMotionProps<TagName>, "value" | "layout"> & {
         children?: JSX.Element
@@ -62,7 +62,7 @@ type ReorderItemProps<
  */
 export function ReorderItem<
     V,
-    TagName extends ReorderElementTag = DefaultItemElement
+    TagName extends ReorderElementTag = DefaultItemElement,
 >(props: ReorderItemProps<V, TagName>): JSX.Element {
     const Component = (motion as any)[untrack(() => props.as) ?? "li"]
 

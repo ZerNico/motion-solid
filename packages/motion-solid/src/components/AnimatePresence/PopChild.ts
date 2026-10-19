@@ -74,8 +74,8 @@ export function popChild(element: HTMLElement): PoppedChild {
                         ? `right: ${right}`
                         : `left: ${left}`
                     : isRTL
-                    ? `left: ${left}`
-                    : `right: ${right}`
+                      ? `left: ${left}`
+                      : `right: ${right}`
             const y = anchorY === "bottom" ? `bottom: ${bottom}` : `top: ${top}`
 
             element.dataset.motionPopId = popId

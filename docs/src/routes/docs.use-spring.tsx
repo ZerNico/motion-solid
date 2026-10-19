@@ -6,10 +6,10 @@ import Content, { toc } from "../content/use-spring.mdx"
 import { pageHead } from "../pages"
 
 export const Route = createFileRoute("/docs/use-spring")({
-    head: pageHead("use-spring"),
-    component: () => (
-        <DocPage toc={toc}>
-            <Content components={mdxComponents} />
-        </DocPage>
-    ),
+  head: pageHead("use-spring"),
+  component: () => (
+    <DocPage toc={toc}>
+      <Content components={mdxComponents} />
+    </DocPage>
+  ),
 })

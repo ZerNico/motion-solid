@@ -6,10 +6,10 @@ import Content, { toc } from "../content/lazy-motion.mdx"
 import { pageHead } from "../pages"
 
 export const Route = createFileRoute("/docs/lazy-motion")({
-    head: pageHead("lazy-motion"),
-    component: () => (
-        <DocPage toc={toc}>
-            <Content components={mdxComponents} />
-        </DocPage>
-    ),
+  head: pageHead("lazy-motion"),
+  component: () => (
+    <DocPage toc={toc}>
+      <Content components={mdxComponents} />
+    </DocPage>
+  ),
 })

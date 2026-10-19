@@ -6,10 +6,10 @@ import Content, { toc } from "../content/use-animate.mdx"
 import { pageHead } from "../pages"
 
 export const Route = createFileRoute("/docs/use-animate")({
-    head: pageHead("use-animate"),
-    component: () => (
-        <DocPage toc={toc}>
-            <Content components={mdxComponents} />
-        </DocPage>
-    ),
+  head: pageHead("use-animate"),
+  component: () => (
+    <DocPage toc={toc}>
+      <Content components={mdxComponents} />
+    </DocPage>
+  ),
 })

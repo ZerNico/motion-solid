@@ -1,0 +1,32 @@
+{
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    "printWidth": 80,
+    "tabWidth": 4,
+    "semi": false,
+    "trailingComma": "es5",
+    "sortPackageJson": false,
+    "overrides": [
+        {
+            "files": ["*.mdx"],
+            "options": {
+                "embeddedLanguageFormatting": "off"
+            }
+        },
+        {
+            "files": ["docs/**"],
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ],
+    "ignorePatterns": [
+        "dist",
+        ".pack",
+        "pnpm-lock.yaml",
+        "**/*.min.js",
+        "**/__tests__/polyfill.js",
+        "test-results",
+        ".vitest-attachments",
+        "**/routeTree.gen.ts"
+    ]
+}

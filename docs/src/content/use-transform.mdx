@@ -23,10 +23,10 @@ const opacity = useTransform(x, [-100, 0, 100], [0, 1, 0])
 
 When `x` is `-100`, `opacity` is `0`. It rises to `1` at `0`, then falls back to `0` at `100`.
 
--   The input range is a list of numbers, all increasing or all decreasing.
--   The output range has as many entries as the input range. They can be numbers, colors, or
-    strings with numbers in them (`"0px 4px 8px #0003"`), as long as they all have the same format.
--   Outside the input range, the output stays at the first or last value (see `clamp` below).
+- The input range is a list of numbers, all increasing or all decreasing.
+- The output range has as many entries as the input range. They can be numbers, colors, or
+  strings with numbers in them (`"0px 4px 8px #0003"`), as long as they all have the same format.
+- Outside the input range, the output stays at the first or last value (see `clamp` below).
 
 Here, dragging the box maps `x` to a background color with three stops, and to a rotation:
 
@@ -172,12 +172,12 @@ function useTransform<O>(compute: () => O): MotionValue<O>
 
 `MaybeAccessor<T>` is `T | Accessor<T>`.
 
--   `input`: the motion value to map, a list of motion values, or an accessor of either.
--   `inputRange`: increasing or decreasing numbers.
--   `outputRange`: one output per input range entry: numbers, colors or strings of the same format.
--   `outputMap`: an object of output ranges. Its keys are read once.
--   `options`: `clamp`, `ease` and `mixer`, described in [Options](#options).
--   `transformer`: a function from the latest input value(s) to the output.
--   `compute`: a function of motion values and signals.
+- `input`: the motion value to map, a list of motion values, or an accessor of either.
+- `inputRange`: increasing or decreasing numbers.
+- `outputRange`: one output per input range entry: numbers, colors or strings of the same format.
+- `outputMap`: an object of output ranges. Its keys are read once.
+- `options`: `clamp`, `ease` and `mixer`, described in [Options](#options).
+- `transformer`: a function from the latest input value(s) to the output.
+- `compute`: a function of motion values and signals.
 
 Returns a `MotionValue`, or an object of motion values for an output map.

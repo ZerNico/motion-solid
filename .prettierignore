@@ -1,8 +1,0 @@
-dist
-.pack
-pnpm-lock.yaml
-**/*.min.js
-**/__tests__/polyfill.js
-test-results
-.vitest-attachments
-**/routeTree.gen.ts

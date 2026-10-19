@@ -352,9 +352,8 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
         const visualProps = reactiveProps(
             createMemo(
                 () => {
-                    const built: Record<string, any> = buildVisualProps(
-                        motionProps()
-                    )
+                    const built: Record<string, any> =
+                        buildVisualProps(motionProps())
                     const { style, ...rest } = built
                     if (style && Object.keys(style).length)
                         hasRenderedStyle = true
@@ -706,8 +705,8 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
             const isMeasureEnabled = (value: MotionState) =>
                 Boolean(
                     node.projection &&
-                        (layoutFeature?.isEnabled(value.props) ||
-                            dragFeature?.isEnabled(value.props))
+                    (layoutFeature?.isEnabled(value.props) ||
+                        dragFeature?.isEnabled(value.props))
                 )
 
             /**
@@ -745,8 +744,8 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
                 const options = node.projection?.options
                 hasLayoutHandler = Boolean(
                     options &&
-                        options.animate !== false &&
-                        (options.layout || options.layoutId)
+                    options.animate !== false &&
+                    (options.layout || options.layoutId)
                 )
             }
 

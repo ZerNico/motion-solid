@@ -7,7 +7,7 @@ import { isValidMotionProp } from "../../../motion/utils/valid-prop"
 function shouldForward(key: string, isValidProp?: IsValidProp) {
     return key.startsWith("on")
         ? !isValidMotionProp(key)
-        : isValidProp?.(key) ?? !isValidMotionProp(key)
+        : (isValidProp?.(key) ?? !isValidMotionProp(key))
 }
 
 /**

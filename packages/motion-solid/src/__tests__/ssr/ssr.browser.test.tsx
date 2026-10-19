@@ -40,9 +40,8 @@ describe("SSR", () => {
     })
 
     test("useMotionValueState renders the current value and updates once hydrated", async () => {
-        const { html, hydrate, container } = await renderToString(
-            MotionValueState
-        )
+        const { html, hydrate, container } =
+            await renderToString(MotionValueState)
         expect(html).toMatch(/id="value"[^>]*>1</)
         expect(html).toMatch(/id="plain"[^>]*>2</)
         hydrate()

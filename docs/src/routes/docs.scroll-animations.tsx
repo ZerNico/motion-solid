@@ -6,10 +6,10 @@ import Content, { toc } from "../content/scroll-animations.mdx"
 import { pageHead } from "../pages"
 
 export const Route = createFileRoute("/docs/scroll-animations")({
-    head: pageHead("scroll-animations"),
-    component: () => (
-        <DocPage toc={toc}>
-            <Content components={mdxComponents} />
-        </DocPage>
-    ),
+  head: pageHead("scroll-animations"),
+  component: () => (
+    <DocPage toc={toc}>
+      <Content components={mdxComponents} />
+    </DocPage>
+  ),
 })

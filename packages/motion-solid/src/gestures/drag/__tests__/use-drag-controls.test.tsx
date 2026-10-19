@@ -156,7 +156,7 @@ describe("useDragControls", () => {
                 bottom: top + size,
                 width: size,
                 height: size,
-            } as DOMRect)
+            }) as DOMRect
         jest.spyOn(
             HTMLElement.prototype,
             "getBoundingClientRect"

@@ -39,8 +39,8 @@ element, a selector, a motion value, a number or an object, then keyframes and o
 
 `scope` is a ref callback with two properties:
 
--   `scope.current`: the element it was passed to (`null` until then).
--   `scope.animations`: the animations started with `animate` that are still running.
+- `scope.current`: the element it was passed to (`null` until then).
+- `scope.animations`: the animations started with `animate` that are still running.
 
 A selector matches descendants of `scope.current`, not the element itself. To animate the scope
 element, pass it directly:

@@ -16,7 +16,7 @@ import { detectAxis } from "./utils/detect-axis"
 
 export interface Props<
     V,
-    TagName extends ReorderElementTag = DefaultGroupElement
+    TagName extends ReorderElementTag = DefaultGroupElement,
 > {
     /**
      * A HTML element to render this component as. Defaults to `"ul"`.
@@ -61,7 +61,7 @@ export interface Props<
 
 type ReorderGroupProps<
     V,
-    TagName extends ReorderElementTag = DefaultGroupElement
+    TagName extends ReorderElementTag = DefaultGroupElement,
 > = Props<V, TagName> &
     Omit<HTMLMotionProps<TagName>, "values"> & {
         children?: JSX.Element
@@ -73,7 +73,7 @@ type ReorderGroupProps<
  */
 export function ReorderGroup<
     Values extends any[],
-    TagName extends ReorderElementTag = DefaultGroupElement
+    TagName extends ReorderElementTag = DefaultGroupElement,
 >(
     props: Omit<
         ReorderGroupProps<Values[number], TagName>,

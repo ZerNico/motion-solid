@@ -1,7 +1,7 @@
 import { provideRequestEvent } from "@solidjs/web/storage"
 import {
-    createStartHandler,
-    defaultStreamHandler,
+  createStartHandler,
+  defaultStreamHandler,
 } from "@tanstack/solid-start-server"
 
 /**
@@ -12,6 +12,6 @@ import {
 const handle = createStartHandler(defaultStreamHandler)
 
 export default {
-    fetch: (request: Request) =>
-        provideRequestEvent({ request, locals: {} }, () => handle(request)),
+  fetch: (request: Request) =>
+    provideRequestEvent({ request, locals: {} }, () => handle(request)),
 }

@@ -28,7 +28,10 @@ export class LayoutScope {
      * upstream, its members aren't measured with what's outside it (they follow their parent's
      * layout through their relative target), so snapshots from outside don't descend into it.
      */
-    constructor(readonly parent?: LayoutScope, readonly isolated = false) {
+    constructor(
+        readonly parent?: LayoutScope,
+        readonly isolated = false
+    ) {
         parent?.children.add(this)
     }
 

@@ -19,8 +19,8 @@ useAnimationFrame((time, delta) => {
 
 The callback receives two numbers, in milliseconds:
 
--   `time`: the time since the first frame the callback ran in.
--   `delta`: the time since the previous frame.
+- `time`: the time since the first frame the callback ran in.
+- `delta`: the time since the previous frame.
 
 Use `delta` to move things at the same speed whatever the frame rate. The cube below turns 60
 degrees per second. Its element is updated through a ref, so Solid isn't involved on each frame.
@@ -47,7 +47,7 @@ function useAnimationFrame(
 ): void
 ```
 
--   `callback`: called on every frame with the time since its first frame and the time since the
-    previous frame, both in milliseconds.
+- `callback`: called on every frame with the time since its first frame and the time since the
+  previous frame, both in milliseconds.
 
 Returns nothing.

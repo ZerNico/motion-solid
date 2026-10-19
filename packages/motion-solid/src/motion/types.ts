@@ -73,10 +73,7 @@ type MotionSVGProps = MakeMotion<SVGPathProperties>
  * @public
  */
 export interface MotionStyle
-    extends MotionCSS,
-        MotionTransform,
-        MotionSVGProps,
-        MotionCSSVariables {}
+    extends MotionCSS, MotionTransform, MotionSVGProps, MotionCSSVariables {}
 
 /**
  * Props for `motion` components.

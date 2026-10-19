@@ -224,9 +224,9 @@ Outside an `AnimatePresence`, motion-solid's `Show` and `For` are Solid's own. T
 Solid's `Show` and `For` dispose a removed child right away. Directly inside an `AnimatePresence`,
 their `motion` children still play their `exit`, but with limits:
 
--   a child that comes back is a new instance, while the old one finishes exiting,
--   reactive content, cleanups and portals inside an exiting child don't keep running,
--   in `mode="wait"`, entering children only wait for the exits of the same `Show` or `For`.
+- a child that comes back is a new instance, while the old one finishes exiting,
+- reactive content, cleanups and portals inside an exiting child don't keep running,
+- in `mode="wait"`, entering children only wait for the exits of the same `Show` or `For`.
 
 Use motion-solid's `Show` and `For` inside `AnimatePresence`. They don't have these limits.
 

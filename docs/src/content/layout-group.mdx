@@ -69,10 +69,10 @@ itself inside `<LayoutGroup id="a">`, becomes `"a-b-highlight"`.
 
 `inherit` decides how a group nested in another one relates to it:
 
--   `true`: it's part of the parent group (its members measure with the parent's), and its `id`
-    is prefixed with the parent's.
--   `"id"`: its `id` is prefixed with the parent's, but it's a separate group: its members aren't
-    measured together with the elements outside it.
--   `false`: a separate group, with its own `id` only.
+- `true`: it's part of the parent group (its members measure with the parent's), and its `id`
+  is prefixed with the parent's.
+- `"id"`: its `id` is prefixed with the parent's, but it's a separate group: its members aren't
+  measured together with the elements outside it.
+- `false`: a separate group, with its own `id` only.
 
 `id` and `inherit` are read once, when the group is created.

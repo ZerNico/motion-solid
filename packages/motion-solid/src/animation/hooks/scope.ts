@@ -8,7 +8,7 @@ export type SolidAnimationScope<T extends Element = any> = AnimationScope<T> &
     ((element: T) => void)
 
 export function createAnimationScope<
-    T extends Element = any
+    T extends Element = any,
 >(): SolidAnimationScope<T> {
     const scope = ((element: T) => {
         ;(scope as { current: T }).current = element

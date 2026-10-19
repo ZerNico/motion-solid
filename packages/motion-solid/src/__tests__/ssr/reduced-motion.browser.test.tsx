@@ -13,7 +13,7 @@ beforeEach(() => {
                 media: query,
                 addEventListener: () => {},
                 removeEventListener: () => {},
-            } as unknown as MediaQueryList)
+            }) as unknown as MediaQueryList
     )
 })
 

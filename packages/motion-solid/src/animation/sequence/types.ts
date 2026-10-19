@@ -69,13 +69,13 @@ export interface At {
 
 export type MotionValueSegment = [
     MotionValue,
-    UnresolvedValueKeyframe | UnresolvedValueKeyframe[]
+    UnresolvedValueKeyframe | UnresolvedValueKeyframe[],
 ]
 
 export type MotionValueSegmentWithTransition = [
     MotionValue,
     UnresolvedValueKeyframe | UnresolvedValueKeyframe[],
-    SegmentValueTransitionOptions
+    SegmentValueTransitionOptions,
 ]
 
 export type DOMSegment = [ElementOrSelector, DOMKeyframesDefinition]
@@ -83,7 +83,7 @@ export type DOMSegment = [ElementOrSelector, DOMKeyframesDefinition]
 export type DOMSegmentWithTransition = [
     ElementOrSelector,
     DOMKeyframesDefinition,
-    SegmentTransitionOptions
+    SegmentTransitionOptions,
 ]
 
 export type ObjectSegment<O extends {} = {}> = [O, ObjectTarget<O>]
@@ -91,7 +91,7 @@ export type ObjectSegment<O extends {} = {}> = [O, ObjectTarget<O>]
 export type ObjectSegmentWithTransition<O extends {} = {}> = [
     O,
     ObjectTarget<O>,
-    SegmentTransitionOptions
+    SegmentTransitionOptions,
 ]
 
 export type SequenceProgressCallback = (value: any) => void
@@ -102,7 +102,7 @@ export type FunctionSegment =
     | [
           SequenceProgressCallback,
           UnresolvedValueKeyframe | UnresolvedValueKeyframe[],
-          SegmentTransitionOptions
+          SegmentTransitionOptions,
       ]
 
 export type Segment =

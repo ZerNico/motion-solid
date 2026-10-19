@@ -159,10 +159,10 @@ also follows `MotionConfig`'s `reducedMotion`.
 Hooks that take a React ref object (`useScroll`, `useInView`, `useDomEvent`) and the
 `dragConstraints` prop take one of these in Solid:
 
--   an accessor of an element, like `() => el` for a `let el` set by `ref`, or a signal set by
-    `ref={setEl}`,
--   an element,
--   a `{ current }` object.
+- an accessor of an element, like `() => el` for a `let el` set by `ref`, or a signal set by
+  `ref={setEl}`,
+- an element,
+- a `{ current }` object.
 
 The element is read once the component's elements exist, so `() => el` works even though `el` is
 still unset when the hook is called.
@@ -319,16 +319,16 @@ import { AnimatePresence, For, motion } from "@motion-s/solid"
 
 A few things to know:
 
--   A child that comes back while it's exiting is the same instance, and its exit reverses.
--   Reactive content inside an exiting child keeps running. Its cleanups run after the exit.
--   An exiting `motion` component's own props are frozen, so it keeps its last `animate` target.
-    Its children aren't frozen. If a child reads data that was removed, read it through `Show`'s
-    callback form (`{(record) => record().label}`), whose accessor keeps the last value.
--   `Show` and `For` only join the `AnimatePresence` they're directly under (through components,
-    fragments and Solid's control flow, but not through an element or a context provider).
--   Solid's own `Show`/`For` directly inside `AnimatePresence` also exit, with limits: a child
-    that comes back is a new instance, and reactive content, cleanups and Portals inside it don't
-    behave like in React. Prefer motion-solid's.
+- A child that comes back while it's exiting is the same instance, and its exit reverses.
+- Reactive content inside an exiting child keeps running. Its cleanups run after the exit.
+- An exiting `motion` component's own props are frozen, so it keeps its last `animate` target.
+  Its children aren't frozen. If a child reads data that was removed, read it through `Show`'s
+  callback form (`{(record) => record().label}`), whose accessor keeps the last value.
+- `Show` and `For` only join the `AnimatePresence` they're directly under (through components,
+  fragments and Solid's control flow, but not through an element or a context provider).
+- Solid's own `Show`/`For` directly inside `AnimatePresence` also exit, with limits: a child
+  that comes back is a new instance, and reactive content, cleanups and Portals inside it don't
+  behave like in React. Prefer motion-solid's.
 
 See [AnimatePresence](/docs/animate-presence).
 
@@ -337,11 +337,11 @@ See [AnimatePresence](/docs/animate-presence).
 In React, a `layout` component measures itself whenever it re-renders. Solid doesn't re-render, so
 motion-solid measures layout when something that can move elements changes:
 
--   a motion component's props that affect layout change (`style`, `class`, attributes, `layout`,
-    ...), but not animation-only props like `animate`, `transition` or `while*`,
--   its children are added, removed or reordered,
--   a component is created or removed, or its presence changes,
--   motion-solid's `For` reorders its items.
+- a motion component's props that affect layout change (`style`, `class`, attributes, `layout`,
+  ...), but not animation-only props like `animate`, `transition` or `while*`,
+- its children are added, removed or reordered,
+- a component is created or removed, or its presence changes,
+- motion-solid's `For` reorders its items.
 
 When one of these happens, the elements around it (its siblings and their descendants) are measured
 too, like React re-rendering the parent.
@@ -385,10 +385,10 @@ released, without calling `onDragEnd`.
 
 ## Not ported
 
--   `AnimateView` (`motion/react/animate-view`). It's built on React's `<ViewTransition>`, which
-    Solid doesn't have. `animateView()` from `motion-dom` is exported and works with Solid.
--   Deprecated APIs: `motion(Component)`, `AnimateSharedLayout`, `useDeprecatedAnimatedState`,
-    `useDeprecatedInvertedScale`, `DeprecatedLayoutGroupContext`.
--   React internals that were exported: `PopChild`, `PresenceChild`, `useComposedRefs`,
-    `useForceUpdate`, `useIsomorphicLayoutEffect`, `ForwardRefComponent`.
--   The `motion/react-client`, `motion/react-m` and `motion/react/animate-view` entry points.
+- `AnimateView` (`motion/react/animate-view`). It's built on React's `<ViewTransition>`, which
+  Solid doesn't have. `animateView()` from `motion-dom` is exported and works with Solid.
+- Deprecated APIs: `motion(Component)`, `AnimateSharedLayout`, `useDeprecatedAnimatedState`,
+  `useDeprecatedInvertedScale`, `DeprecatedLayoutGroupContext`.
+- React internals that were exported: `PopChild`, `PresenceChild`, `useComposedRefs`,
+  `useForceUpdate`, `useIsomorphicLayoutEffect`, `ForwardRefComponent`.
+- The `motion/react-client`, `motion/react-m` and `motion/react/animate-view` entry points.

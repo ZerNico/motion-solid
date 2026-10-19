@@ -25,8 +25,10 @@ import { useConstant } from "../utils/use-constant"
  * Port note: `container` and `target` take an element, an accessor of one (e.g. a signal set by
  * `ref`) or a `{ current }` object, instead of a React ref.
  */
-export interface UseScrollOptions
-    extends Omit<ScrollInfoOptions, "container" | "target"> {
+export interface UseScrollOptions extends Omit<
+    ScrollInfoOptions,
+    "container" | "target"
+> {
     container?: ElementRef<HTMLElement>
     target?: ElementRef<HTMLElement>
 }

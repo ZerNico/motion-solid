@@ -6,10 +6,10 @@ import Content, { toc } from "../content/installation.mdx"
 import { pageHead } from "../pages"
 
 export const Route = createFileRoute("/docs/installation")({
-    head: pageHead("installation"),
-    component: () => (
-        <DocPage toc={toc}>
-            <Content components={mdxComponents} />
-        </DocPage>
-    ),
+  head: pageHead("installation"),
+  component: () => (
+    <DocPage toc={toc}>
+      <Content components={mdxComponents} />
+    </DocPage>
+  ),
 })

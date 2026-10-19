@@ -6,10 +6,10 @@ import Content, { toc } from "../content/drag.mdx"
 import { pageHead } from "../pages"
 
 export const Route = createFileRoute("/docs/drag")({
-    head: pageHead("drag"),
-    component: () => (
-        <DocPage toc={toc}>
-            <Content components={mdxComponents} />
-        </DocPage>
-    ),
+  head: pageHead("drag"),
+  component: () => (
+    <DocPage toc={toc}>
+      <Content components={mdxComponents} />
+    </DocPage>
+  ),
 })

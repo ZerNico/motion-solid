@@ -98,11 +98,11 @@ the gesture is active, and back when it ends. Each gesture also has event callba
 
 `style` works like Solid's `style`, with a few additions:
 
--   Transforms can be set one by one: `x`, `y`, `scale`, `rotate`, `skewX`, `originX`, ...
--   Numbers get `px` where the property needs a unit, so `{ width: 100 }` renders `100px`.
--   Keys can be camelCase (`backgroundColor`) or kebab-case (`"background-color"`).
--   Values can be [motion values](/docs/motion-values). The element updates when they change,
-    without running any Solid code.
+- Transforms can be set one by one: `x`, `y`, `scale`, `rotate`, `skewX`, `originX`, ...
+- Numbers get `px` where the property needs a unit, so `{ width: 100 }` renders `100px`.
+- Keys can be camelCase (`backgroundColor`) or kebab-case (`"background-color"`).
+- Values can be [motion values](/docs/motion-values). The element updates when they change,
+  without running any Solid code.
 
 ```tsx
 const x = useMotionValue(0)

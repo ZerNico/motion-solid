@@ -9,13 +9,13 @@ the React glue is ported.
 
 ## Rules
 
--   Mirror upstream's file layout (`packages/framer-motion/src/...` → `packages/motion-solid/src/...`).
--   Copy framework-agnostic upstream files verbatim (features, gestures, `valid-prop`, ...), so
-    upstream diffs apply. Formatting is upstream's (Prettier 2, `.prettierrc.json`) and so are the
-    TypeScript checks (`tsconfig.json`). Upstream doesn't format every file, so a copy can differ
-    from its source in formatting only: compare with `diff -w` or after running Prettier on both.
--   Deviate only where React and Solid fundamentally differ, and leave a `Port note:` comment.
--   Solid 2.0 is not Solid 1.x. Read `node_modules/solid-js/CHEATSHEET.md` first.
+- Mirror upstream's file layout (`packages/framer-motion/src/...` → `packages/motion-solid/src/...`).
+- Copy framework-agnostic upstream files verbatim (features, gestures, `valid-prop`, ...), so
+  upstream diffs apply. Formatting is upstream's (Prettier 2, `.prettierrc.json`) and so are the
+  TypeScript checks (`tsconfig.json`). Upstream doesn't format every file, so a copy can differ
+  from its source in formatting only: compare with `diff -w` or after running Prettier on both.
+- Deviate only where React and Solid fundamentally differ, and leave a `Port note:` comment.
+- Solid 2.0 is not Solid 1.x. Read `node_modules/solid-js/CHEATSHEET.md` first.
 
 Structural fidelity to React's internals isn't a goal where Solid has a better fit: what has to
 match is the behaviour users see. The coordination layer (lifecycle, layout snapshots, presence) is
@@ -52,29 +52,29 @@ being disposed in the same update can have props that throw.
 
 The design relies on these, pinned by contract tests (re-run them on every Solid upgrade):
 
--   In a flush, every compute runs first. Then the cleanups of retired runs and the disposal of
-    removed branches run, with the old DOM still in the document. Then render effects write the DOM,
-    then effects run, then `onSettled`.
--   When async work holds an update (`<Loading>`), computes run right away, but the cleanups, the
-    disposals and the DOM writes all wait for the landing, in the same order.
--   A superseded speculative run's cleanup runs right away, without a newer run (so it can be told
-    apart from a retirement).
--   `mapArray` keeps an item's owner while the item is in its list, and reuses it.
--   Async (`src/__tests__/async*.test.tsx`): pending reads in motion props and in `Show`/`For` hold
-    updates like any other read, optimistic updates (`createOptimisticStore` + `action`) enter right
-    away and exit when they're reverted, `isPending` can drive animations and presence, content held
-    back by `<Reveal>` starts animating when it's revealed, `lazy` children join their parent's
-    variants once loaded, and a refreshed `createProjection` keeps its elements (reordered with
-    layout animations, removed ones exit).
--   Since RC.14, inside a computation (a component created in a `children` memo, for example)
-    `untrack(memo)` reads `undefined` for a memo derived from `isPending` that a held update
-    created, and a component whose pending prop is only read through `untrack` of a memo it
-    created stays suspended. The component reads its props directly when it's created, and memos
-    through `peek` (`utils/access.ts`, `untrack(() => latest(memo))`).
--   Known Solid 2 issue since RC.13 (pinned as an `it.fails` contract test): a computation that
-    also reads `isPending` of held async work applies the held values only after the DOM writes.
-    A `layout` component reading `isPending` in its props jumps instead of animating when that
-    update lands; read `isPending` outside its props (e.g. in a child) instead.
+- In a flush, every compute runs first. Then the cleanups of retired runs and the disposal of
+  removed branches run, with the old DOM still in the document. Then render effects write the DOM,
+  then effects run, then `onSettled`.
+- When async work holds an update (`<Loading>`), computes run right away, but the cleanups, the
+  disposals and the DOM writes all wait for the landing, in the same order.
+- A superseded speculative run's cleanup runs right away, without a newer run (so it can be told
+  apart from a retirement).
+- `mapArray` keeps an item's owner while the item is in its list, and reuses it.
+- Async (`src/__tests__/async*.test.tsx`): pending reads in motion props and in `Show`/`For` hold
+  updates like any other read, optimistic updates (`createOptimisticStore` + `action`) enter right
+  away and exit when they're reverted, `isPending` can drive animations and presence, content held
+  back by `<Reveal>` starts animating when it's revealed, `lazy` children join their parent's
+  variants once loaded, and a refreshed `createProjection` keeps its elements (reordered with
+  layout animations, removed ones exit).
+- Since RC.14, inside a computation (a component created in a `children` memo, for example)
+  `untrack(memo)` reads `undefined` for a memo derived from `isPending` that a held update
+  created, and a component whose pending prop is only read through `untrack` of a memo it
+  created stays suspended. The component reads its props directly when it's created, and memos
+  through `peek` (`utils/access.ts`, `untrack(() => latest(memo))`).
+- Known Solid 2 issue since RC.13 (pinned as an `it.fails` contract test): a computation that
+  also reads `isPending` of held async work applies the held values only after the DOM writes.
+  A `layout` component reading `isPending` in its props jumps instead of animating when that
+  update lands; read `isPending` outside its props (e.g. in a child) instead.
 
 ## Layout animations (`projection/layout-commit.ts`, `projection/layout-scope.ts`)
 
@@ -94,17 +94,17 @@ component is created.
 participant of its closest scope. When something can move elements, the closest scope's subtree is
 snapshot (the changed element, its siblings, their descendants), at most once per commit:
 
--   a `motion` component's layout-affecting props change (anything but animation-only props like
-    `animate`, `variants`, `transition`, `while*`, handlers), or its presence,
--   its children are added, removed or reordered (e.g. a `<For>` inside it): its siblings and its
-    whole subtree, including isolated `LayoutGroup`s, like upstream re-rendering it,
--   it's created or disposed,
--   presence-aware `Show`/`For` or `AnimatePresence` add or remove children, a `LayoutGroup`'s
-    children change,
--   motion-solid's `For` reorders its items, also outside an `AnimatePresence`
-    (`createListLayoutTrigger`). Solid's `For` moves the nodes without re-running anything, so
-    Solid's own `For` under a plain parent can't animate a reorder: use motion-solid's `For`, a
-    `motion` parent, or `layoutDependency`.
+- a `motion` component's layout-affecting props change (anything but animation-only props like
+  `animate`, `variants`, `transition`, `while*`, handlers), or its presence,
+- its children are added, removed or reordered (e.g. a `<For>` inside it): its siblings and its
+  whole subtree, including isolated `LayoutGroup`s, like upstream re-rendering it,
+- it's created or disposed,
+- presence-aware `Show`/`For` or `AnimatePresence` add or remove children, a `LayoutGroup`'s
+  children change,
+- motion-solid's `For` reorders its items, also outside an `AnimatePresence`
+  (`createListLayoutTrigger`). Solid's `For` moves the nodes without re-running anything, so
+  Solid's own `For` under a plain parent can't animate a reorder: use motion-solid's `For`, a
+  `motion` parent, or `layoutDependency`.
 
 Elements sharing a `layoutId` snapshot together, wherever they are: when one is created, removed
 or changes presence, the other members of its stack are snapshot too (a gallery item and its
@@ -154,24 +154,24 @@ done, with upstream's diff (`presence-list.tsx`: where exiting children are rein
 a reactive `isPresent` and upstream's registry of what has to finish first (exit animations,
 layout animations, `usePresence`). So like upstream:
 
--   a child that comes back while exiting is the same instance, and reverses,
--   everything inside keeps running while it exits (reactive content, Portals), cleanups run after,
--   `usePresence`/`useIsPresent` are reactive, `propagate` and nested `AnimatePresence` work,
--   in `mode="wait"`, the next child isn't created until every exit of the `AnimatePresence` is
-    done, across sibling lists,
--   exiting children of all its lists (and of the fallback below) are removed together once every
-    exit is done, and `onExitComplete` fires once then (asynchronously, after the flush that
-    completes the last exit). A child that comes back, or a disposed `AnimatePresence`, cancels
-    its exit without firing it,
--   an exiting `motion` component's prop reads are all frozen (motion props, rendered style,
-    forwarded DOM props, variant context; upstream keeps rendering it with its last props), so a
-    prop change can't restart its `animate` target mid-exit and props reading removed data don't
-    throw. Its `children` aren't frozen: the reactive content inside keeps running. So children
-    of a `Show` that read removed data directly (`{record()!.label}`) throw while it exits, unlike
-    with Solid's own `Show`: read it through the callback form (`{(record) => record().label}`),
-    whose accessor keeps the last value,
--   `For` renders duplicate items (keyed by item and occurrence; a duplicate that comes back while
-    exiting keeps its child), and `fallback` is only created when shown.
+- a child that comes back while exiting is the same instance, and reverses,
+- everything inside keeps running while it exits (reactive content, Portals), cleanups run after,
+- `usePresence`/`useIsPresent` are reactive, `propagate` and nested `AnimatePresence` work,
+- in `mode="wait"`, the next child isn't created until every exit of the `AnimatePresence` is
+  done, across sibling lists,
+- exiting children of all its lists (and of the fallback below) are removed together once every
+  exit is done, and `onExitComplete` fires once then (asynchronously, after the flush that
+  completes the last exit). A child that comes back, or a disposed `AnimatePresence`, cancels
+  its exit without firing it,
+- an exiting `motion` component's prop reads are all frozen (motion props, rendered style,
+  forwarded DOM props, variant context; upstream keeps rendering it with its last props), so a
+  prop change can't restart its `animate` target mid-exit and props reading removed data don't
+  throw. Its `children` aren't frozen: the reactive content inside keeps running. So children
+  of a `Show` that read removed data directly (`{record()!.label}`) throw while it exits, unlike
+  with Solid's own `Show`: read it through the callback form (`{(record) => record().label}`),
+  whose accessor keeps the last value,
+- `For` renders duplicate items (keyed by item and occurrence; a duplicate that comes back while
+  exiting keeps its child), and `fallback` is only created when shown.
 
 **Which `Show`/`For` join.** Upstream's `AnimatePresence` only governs its direct children. A
 presence-aware `Show`/`For` joins when the `AnimatePresence` reads it directly while resolving its
@@ -254,16 +254,16 @@ initial animation runs right away, upstream: a layout effect), then marks the ha
 Motion values stay motion-dom's own values (velocity, animations, springs, acceleration), not
 Solid signals, and `get()` isn't tracked. The two meet through explicit, owner-scoped bridges:
 
--   Solid → motion value: `useTransform(() => …)` (tracks Solid signals and the motion values it
-    reads, re-collected every run), `useSpring`/`useFollowValue` with an accessor source, and
-    accessor arguments everywhere (`utils/access.ts`).
--   Motion value → DOM: `motion` components render motion values every frame without Solid.
--   Motion value → Solid: `useMotionValueState(value)` (a motion value or an accessor of one)
-    returns a read-only `Accessor`, updated through Solid's scheduler (after its flush, held with a
-    held transition like any signal). Its signal is `ownedWrite`, since motion values can be set
-    while a component is created. It subscribes until its owner is disposed and never destroys the
-    value. Server: the current value, no subscription (its client-only effect is `transparent`).
--   Side effects: `useMotionValueEvent` (also with an accessor of a motion value).
+- Solid → motion value: `useTransform(() => …)` (tracks Solid signals and the motion values it
+  reads, re-collected every run), `useSpring`/`useFollowValue` with an accessor source, and
+  accessor arguments everywhere (`utils/access.ts`).
+- Motion value → DOM: `motion` components render motion values every frame without Solid.
+- Motion value → Solid: `useMotionValueState(value)` (a motion value or an accessor of one)
+  returns a read-only `Accessor`, updated through Solid's scheduler (after its flush, held with a
+  held transition like any signal). Its signal is `ownedWrite`, since motion values can be set
+  while a component is created. It subscribes until its owner is disposed and never destroys the
+  value. Server: the current value, no subscription (its client-only effect is `transparent`).
+- Side effects: `useMotionValueEvent` (also with an accessor of a motion value).
 
 Rejected (reviewed independently by three models): tracking `get()` with Solid's global
 `enableExternalSource` (global, can't be unregistered, every motion component would recompute
@@ -274,14 +274,14 @@ bridges (a motion value is always readable synchronously).
 
 Each has a `Port note:` and a regression test:
 
--   `useScroll`'s acceleration retried in motion-dom's `microtask` batcher while it was
-    processing, which stalls that batcher for the whole page,
--   `PanSession` lost window-scroll compensation with `transformPagePoint`, and compensated
-    element scroll in page space instead of `transformPagePoint`'s (wrong when it scales),
--   `animate={controls}` stayed subscribed to the previous controls,
--   `useMotionTemplate` dropped a static `0`, `useVelocity` didn't cancel its frame update,
--   the scroll timeline cache held elements strongly (now `WeakMap`s),
--   `Reorder.Group` tracks in-place changes of a store array.
+- `useScroll`'s acceleration retried in motion-dom's `microtask` batcher while it was
+  processing, which stalls that batcher for the whole page,
+- `PanSession` lost window-scroll compensation with `transformPagePoint`, and compensated
+  element scroll in page space instead of `transformPagePoint`'s (wrong when it scales),
+- `animate={controls}` stayed subscribed to the previous controls,
+- `useMotionTemplate` dropped a static `0`, `useVelocity` didn't cancel its frame update,
+- the scroll timeline cache held elements strongly (now `WeakMap`s),
+- `Reorder.Group` tracks in-place changes of a store array.
 
 ## Not ported
 
@@ -305,33 +305,33 @@ drives the components through real scenarios (presence, layout, gestures, drag, 
 `LazyMotion`, motion values, async props) and guards the number of findings per code, against a
 baseline per scenario.
 
--   The library's computations and signals are named `Motion.<part>.<role>` (e.g.
-    `Motion.PresenceList.rendered`), in development only (`process.env.NODE_ENV`), so findings in
-    an app say which part of motion they're about. The test fails on a library node without a name.
--   Motion values don't take part: motion-dom writes the DOM outside Solid's graph.
--   Exit completions are kept per exit, not per key (`presence-list.tsx`), so nothing has to remove
-    them from the commit when a child comes back or a key is rendered again.
--   Deviation: a child with nothing to finish before it's removed (no exit animation, layout
-    animation or `usePresence`) is removed in the update that removes it. Upstream renders it once
-    more and completes its exit from a layout effect, which here would be a write from the commit
-    and a second run of the list's diff. The list counts its exit as complete when it diffs
-    (registrants register when they mount, before the child can exit), and reports it for
-    `onExitComplete`, which fires after the flush like for other exits. It still waits for the
-    other exits of the `AnimatePresence` (and in `mode="wait"`, the next child enters in the same
-    flush). It's reported once that update commits: if the list itself is disposed first, the exit
-    is cancelled like one in progress. Limitation: something that registers in the update that
-    removes the child (e.g. `layout` turned on at the same time) doesn't hold it, the diff has
-    already counted it.
+- The library's computations and signals are named `Motion.<part>.<role>` (e.g.
+  `Motion.PresenceList.rendered`), in development only (`process.env.NODE_ENV`), so findings in
+  an app say which part of motion they're about. The test fails on a library node without a name.
+- Motion values don't take part: motion-dom writes the DOM outside Solid's graph.
+- Exit completions are kept per exit, not per key (`presence-list.tsx`), so nothing has to remove
+  them from the commit when a child comes back or a key is rendered again.
+- Deviation: a child with nothing to finish before it's removed (no exit animation, layout
+  animation or `usePresence`) is removed in the update that removes it. Upstream renders it once
+  more and completes its exit from a layout effect, which here would be a write from the commit
+  and a second run of the list's diff. The list counts its exit as complete when it diffs
+  (registrants register when they mount, before the child can exit), and reports it for
+  `onExitComplete`, which fires after the flush like for other exits. It still waits for the
+  other exits of the `AnimatePresence` (and in `mode="wait"`, the next child enters in the same
+  flush). It's reported once that update commits: if the list itself is disposed first, the exit
+  is cancelled like one in progress. Limitation: something that registers in the update that
+  removes the child (e.g. `layout` turned on at the same time) doesn't hold it, the diff has
+  already counted it.
 
 ## Tests
 
--   `pnpm test:upstream`: tests ported from upstream, at upstream's paths, in jsdom like upstream
-    (`jest` is Vitest's `vi`, `src/jest.setup.tsx` has upstream's helpers).
--   `pnpm test:browser`: browser tests (`*.browser.test.tsx`) in Chromium, `pnpm test:browsers` in
-    Chromium, Firefox and WebKit: our own (layout, presence, drag, async, SSR, the Solid scheduler
-    contract in `test/solid-contract.browser.test.tsx`), and `test/e2e/`, the ports of upstream's
-    Cypress specs and React Playwright specs with their test pages (one file per spec, helpers in
-    `test/e2e/utils.tsx`, translation notes as `Port note:` comments). Where an upstream page relies
-    on a re-render to take part in a layout update, the port uses `layoutDependency` and says so.
--   `playground/` and `playground-react/` render the same demos with motion-solid and motion/react
-    (`pnpm dev`, `pnpm dev:react`), `scripts/compare-*.mjs` compare them in a headless browser.
+- `pnpm test:upstream`: tests ported from upstream, at upstream's paths, in jsdom like upstream
+  (`jest` is Vitest's `vi`, `src/jest.setup.tsx` has upstream's helpers).
+- `pnpm test:browser`: browser tests (`*.browser.test.tsx`) in Chromium, `pnpm test:browsers` in
+  Chromium, Firefox and WebKit: our own (layout, presence, drag, async, SSR, the Solid scheduler
+  contract in `test/solid-contract.browser.test.tsx`), and `test/e2e/`, the ports of upstream's
+  Cypress specs and React Playwright specs with their test pages (one file per spec, helpers in
+  `test/e2e/utils.tsx`, translation notes as `Port note:` comments). Where an upstream page relies
+  on a re-render to take part in a layout update, the port uses `layoutDependency` and says so.
+- `playground/` and `playground-react/` render the same demos with motion-solid and motion/react
+  (`pnpm dev`, `pnpm dev:react`), `scripts/compare-*.mjs` compare them in a headless browser.

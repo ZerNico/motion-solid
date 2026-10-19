@@ -1,9 +1,9 @@
 # Upstream
 
--   Repository: https://github.com/motiondivision/motion
--   Tracked version: `v14.0.0` (`65bb8c73cc5f7f6281e80a2e07f8b23b5040fff4`), the version of
-    `motion-dom` and `motion-utils` this package depends on.
--   Ported package: `packages/framer-motion` (what `motion/react` re-exports).
+- Repository: https://github.com/motiondivision/motion
+- Tracked version: `v14.0.0` (`65bb8c73cc5f7f6281e80a2e07f8b23b5040fff4`), the version of
+  `motion-dom` and `motion-utils` this package depends on.
+- Ported package: `packages/framer-motion` (what `motion/react` re-exports).
 
 A local clone lives next to this repository at `../motion`, checked out at the tracked tag.
 

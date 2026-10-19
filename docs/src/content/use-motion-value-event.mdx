@@ -60,12 +60,12 @@ const progress = useMotionValueState(scrollYProgress)
 <Show when={progress() > 0.99}>You reached the end</Show>
 ```
 
--   It's updated through Solid's scheduler: after a change, it's read with the new value once
-    Solid has applied its updates, and a held transition holds it like any other signal.
--   It's read-only. Change the value with the motion value's `set` or `jump`, or animate it.
--   It accepts an accessor of a motion value, to switch which one it reads.
--   It unsubscribes when its owner is disposed. It never destroys the motion value.
--   On the server, it returns the motion value's current value and doesn't subscribe.
+- It's updated through Solid's scheduler: after a change, it's read with the new value once
+  Solid has applied its updates, and a held transition holds it like any other signal.
+- It's read-only. Change the value with the motion value's `set` or `jump`, or animate it.
+- It accepts an accessor of a motion value, to switch which one it reads.
+- It unsubscribes when its owner is disposed. It never destroys the motion value.
+- On the server, it returns the motion value's current value and doesn't subscribe.
 
 The demo below logs the animation events of `x` and shows its value through an accessor. Press
 "Move" twice quickly to cancel an animation:
@@ -95,10 +95,10 @@ function useMotionValueState<T>(
 ): Accessor<T>
 ```
 
--   `value`: a motion value, or an accessor of one.
--   `event`: `"change"`, `"animationStart"`, `"animationComplete"`, `"animationCancel"` or
-    `"destroy"`.
--   `callback`: called with the latest value for `"change"`, without arguments for the others.
+- `value`: a motion value, or an accessor of one.
+- `event`: `"change"`, `"animationStart"`, `"animationComplete"`, `"animationCancel"` or
+  `"destroy"`.
+- `callback`: called with the latest value for `"change"`, without arguments for the others.
 
 `useMotionValueEvent` returns nothing. `useMotionValueState` returns an `Accessor<T>` of the
 motion value's latest value.

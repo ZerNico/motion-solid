@@ -405,8 +405,9 @@ describe("motion component (review fixes)", () => {
         await nextFrame()
         await nextFrame()
 
-        const projection = visualElementStore.get(container.firstElementChild!)!
-            .projection!
+        const projection = visualElementStore.get(
+            container.firstElementChild!
+        )!.projection!
         expect(projection.instance).toBe(container.firstElementChild)
         expect(projection.root!.isUpdating).toBe(false)
     })

@@ -6,10 +6,10 @@ import Content, { toc } from "../content/use-in-view.mdx"
 import { pageHead } from "../pages"
 
 export const Route = createFileRoute("/docs/use-in-view")({
-    head: pageHead("use-in-view"),
-    component: () => (
-        <DocPage toc={toc}>
-            <Content components={mdxComponents} />
-        </DocPage>
-    ),
+  head: pageHead("use-in-view"),
+  component: () => (
+    <DocPage toc={toc}>
+      <Content components={mdxComponents} />
+    </DocPage>
+  ),
 })

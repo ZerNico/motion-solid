@@ -340,50 +340,47 @@ describe("Solid 2 scheduler contract", () => {
      * trigger in it can't snapshot before the change: a `layout` component reading `isPending`
      * in its props jumps instead of animating. Expected to start passing once Solid fixes it.
      */
-    it.fails(
-        "a computation reading isPending applies held values before the DOM writes",
-        async () => {
-            const [n, setN] = createSignal(1)
-            const data = createMemo(() => {
-                const v = n()
-                if (v === 1) return v
-                return new Promise<number>((resolve) =>
-                    setTimeout(() => resolve(v), 30)
+    it.fails("a computation reading isPending applies held values before the DOM writes", async () => {
+        const [n, setN] = createSignal(1)
+        const data = createMemo(() => {
+            const v = n()
+            if (v === 1) return v
+            return new Promise<number>((resolve) =>
+                setTimeout(() => resolve(v), 30)
+            )
+        })
+        const log: string[] = []
+
+        function Probe() {
+            const state = createMemo(() => ({
+                n: n(),
+                pending: isPending(() => data()),
+            }))
+            createRenderEffect(state, (value) => {
+                log.push(
+                    `n=${value.n} dom=${
+                        document.querySelector<HTMLElement>("#held")
+                            ?.textContent
+                    }`
                 )
             })
-            const log: string[] = []
-
-            function Probe() {
-                const state = createMemo(() => ({
-                    n: n(),
-                    pending: isPending(() => data()),
-                }))
-                createRenderEffect(state, (value) => {
-                    log.push(
-                        `n=${value.n} dom=${
-                            document.querySelector<HTMLElement>("#held")
-                                ?.textContent
-                        }`
-                    )
-                })
-                return null
-            }
-
-            const { dispose } = mount(() => (
-                <Loading>
-                    <Probe />
-                    <Loading fallback="fallback">
-                        <div id="held">{data()}</div>
-                    </Loading>
-                </Loading>
-            ))
-            flush()
-            setN(3)
-            flush()
-            await new Promise((resolve) => setTimeout(resolve, 100))
-
-            expect(log).toContain("n=3 dom=1")
-            dispose()
+            return null
         }
-    )
+
+        const { dispose } = mount(() => (
+            <Loading>
+                <Probe />
+                <Loading fallback="fallback">
+                    <div id="held">{data()}</div>
+                </Loading>
+            </Loading>
+        ))
+        flush()
+        setN(3)
+        flush()
+        await new Promise((resolve) => setTimeout(resolve, 100))
+
+        expect(log).toContain("n=3 dom=1")
+        dispose()
+    })
 })

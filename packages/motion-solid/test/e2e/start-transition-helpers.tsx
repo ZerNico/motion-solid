@@ -334,10 +334,10 @@ export function analyze({
         axis === "opacity"
             ? 0
             : start !== undefined
-            ? start - from
-            : raw.length
-            ? raw[0].v - from
-            : 0
+              ? start - from
+              : raw.length
+                ? raw[0].v - from
+                : 0
     const series = raw.map((s) => ({ t: s.t, tl: s.tl, v: s.v - base }))
 
     const progressOf = (v: number) => (v - from) / (to - from)

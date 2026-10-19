@@ -123,8 +123,8 @@ function getForKey(keyed: unknown): (item: unknown, index: number) => unknown {
     return keyed === false
         ? (_item, index) => index
         : typeof keyed === "function"
-        ? (item) => keyed(item)
-        : (item) => item
+          ? (item) => keyed(item)
+          : (item) => item
 }
 
 /**

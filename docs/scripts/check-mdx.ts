@@ -9,16 +9,13 @@ import { mdxOptions } from "../src/mdx/options.ts"
 const content = new URL("../src/content/", import.meta.url)
 let failed = 0
 for (const file of await readdir(content)) {
-    if (!file.endsWith(".mdx")) continue
-    try {
-        await compile(
-            await readFile(new URL(file, content), "utf8"),
-            mdxOptions
-        )
-    } catch (error) {
-        failed++
-        console.error(`${file}: ${error}`)
-    }
+  if (!file.endsWith(".mdx")) continue
+  try {
+    await compile(await readFile(new URL(file, content), "utf8"), mdxOptions)
+  } catch (error) {
+    failed++
+    console.error(`${file}: ${error}`)
+  }
 }
 if (failed) process.exit(1)
 console.log("All pages compile.")

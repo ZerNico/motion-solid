@@ -62,8 +62,8 @@ describe("resolveOffsets progress", () => {
                     mode < 0.2
                         ? 100
                         : mode < 0.5
-                        ? Math.round(random() * 10) * 50
-                        : Math.round(random() * 1000)
+                          ? Math.round(random() * 10) * 50
+                          : Math.round(random() * 1000)
                 )
             }
 

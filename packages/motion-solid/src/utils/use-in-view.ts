@@ -3,8 +3,10 @@ import { inView, type InViewOptions } from "../render/dom/viewport"
 import { access, readOptions, type MaybeAccessor } from "./access"
 import { resolveRef, type ElementRef } from "./refs"
 
-export interface UseInViewOptions
-    extends Omit<InViewOptions, "root" | "amount"> {
+export interface UseInViewOptions extends Omit<
+    InViewOptions,
+    "root" | "amount"
+> {
     root?: ElementRef<Element>
     once?: boolean
     amount?: "some" | "all" | number

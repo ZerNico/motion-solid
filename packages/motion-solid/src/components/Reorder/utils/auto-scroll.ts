@@ -161,8 +161,8 @@ export function autoScrollIfNeeded(
                     ? window.scrollX
                     : scrollableAncestor.scrollLeft
                 : isDocumentScroll
-                ? window.scrollY
-                : scrollableAncestor.scrollTop
+                  ? window.scrollY
+                  : scrollableAncestor.scrollTop
         if (currentScroll >= initialLimit) return
     }
 

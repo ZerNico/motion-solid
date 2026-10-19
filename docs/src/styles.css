@@ -1,78 +1,78 @@
 @import "tailwindcss";
 
 @theme {
-    --color-bg: light-dark(#ffffff, #0b0b0f);
-    --color-surface: light-dark(#f5f5f7, #16161c);
-    --color-fg: light-dark(#18181b, #ededf0);
-    --color-fg-muted: light-dark(#63636e, #9a9aa6);
-    --color-border: light-dark(#e4e4e9, #26262e);
-    --color-accent: #4f6bff;
-    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-bg: light-dark(#ffffff, #0b0b0f);
+  --color-surface: light-dark(#f5f5f7, #16161c);
+  --color-fg: light-dark(#18181b, #ededf0);
+  --color-fg-muted: light-dark(#63636e, #9a9aa6);
+  --color-border: light-dark(#e4e4e9, #26262e);
+  --color-accent: #4f6bff;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 :root {
-    color-scheme: light dark;
+  color-scheme: light dark;
 }
 
 body {
-    @apply bg-bg font-sans text-fg antialiased;
+  @apply bg-bg font-sans text-fg antialiased;
 }
 
 /* Code blocks and demo sources, highlighted by Shiki with both themes. */
 .code pre {
-    @apply overflow-x-auto bg-surface p-4 text-sm leading-relaxed;
+  @apply overflow-x-auto bg-surface p-4 text-sm leading-relaxed;
 }
 .code pre,
 .code span {
-    color: light-dark(var(--shiki-light), var(--shiki-dark));
+  color: light-dark(var(--shiki-light), var(--shiki-dark));
 }
 
 /* The content of the MDX pages. */
 .prose {
-    @apply leading-7;
+  @apply leading-7;
 }
 .prose :where(h1) {
-    @apply mb-4 text-4xl font-semibold tracking-tight;
+  @apply mb-4 text-4xl font-semibold tracking-tight;
 }
 .prose :where(h2) {
-    @apply mt-12 mb-4 text-2xl font-semibold tracking-tight;
+  @apply mt-12 mb-4 text-2xl font-semibold tracking-tight;
 }
 .prose :where(h3) {
-    @apply mt-8 mb-3 text-lg font-semibold;
+  @apply mt-8 mb-3 text-lg font-semibold;
 }
 .prose :where(p, ul, ol):not(:where(.not-prose *)) {
-    @apply my-4;
+  @apply my-4;
 }
 .prose :where(ul):not(:where(.not-prose *)) {
-    @apply list-disc pl-6;
+  @apply list-disc pl-6;
 }
 .prose :where(ol):not(:where(.not-prose *)) {
-    @apply list-decimal pl-6;
+  @apply list-decimal pl-6;
 }
 .prose :where(a):not(:where(.not-prose *)) {
-    @apply font-medium text-accent underline-offset-4 hover:underline;
+  @apply font-medium text-accent underline-offset-4 hover:underline;
 }
 .prose :where(:not(pre) > code):not(:where(.not-prose *)) {
-    @apply rounded-md bg-surface px-1.5 py-0.5 font-mono text-[0.875em];
+  @apply rounded-md bg-surface px-1.5 py-0.5 font-mono text-[0.875em];
 }
 .prose :where(table):not(:where(.not-prose *)) {
-    @apply my-6 w-full text-sm;
+  @apply my-6 w-full text-sm;
 }
 .prose :where(th, td):not(:where(.not-prose *)) {
-    @apply border-b border-border px-3 py-2 text-left;
+  @apply border-b border-border px-3 py-2 text-left;
 }
 .prose :where(blockquote):not(:where(.not-prose *)) {
-    @apply border-l-2 border-accent pl-4 text-fg-muted;
+  @apply border-l-2 border-accent pl-4 text-fg-muted;
 }
 .prose .note :where(p) {
-    @apply my-1;
+  @apply my-1;
 }
 
 /* Heading anchors. */
 .prose :where(h2, h3) a.anchor {
-    @apply text-inherit no-underline hover:underline;
+  @apply text-inherit no-underline hover:underline;
 }
 .prose :where(h2, h3) {
-    @apply scroll-mt-20;
+  @apply scroll-mt-20;
 }

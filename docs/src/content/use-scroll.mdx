@@ -58,10 +58,10 @@ return (
 
 `container` and `target` take any of these:
 
--   a `{ current }` object, set by a `ref` callback as above,
--   an accessor of an element: `() => element` for a `let element!: HTMLDivElement` set by
-    `ref={element}`, or a signal set by `ref`,
--   an element.
+- a `{ current }` object, set by a `ref` callback as above,
+- an accessor of an element: `() => element` for a `let element!: HTMLDivElement` set by
+  `ref={element}`, or a signal set by `ref`,
+- an element.
 
 They're read once the component's elements exist, so it's fine that they're unset when
 `useScroll` is called. When a signal changes to another element, tracking moves to it.

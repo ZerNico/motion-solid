@@ -139,8 +139,8 @@ function KeyframeArc(props: PageProps & { oriented: boolean }) {
         props.freezeAt !== undefined
             ? Number(props.freezeAt)
             : props.freeze !== undefined
-            ? 0.5
-            : undefined
+              ? 0.5
+              : undefined
     const path = arc({ strength: 1, rotate: props.oriented })
 
     return (
