@@ -1,6 +1,6 @@
 import { untrack, useContext } from "solid-js"
 import { MotionConfigContext } from "../../context/MotionConfigContext"
-import { useReducedMotionConfig } from "../../utils/reduced-motion/use-reduced-motion-config"
+import { useAnimationReducedMotionConfig } from "../../utils/reduced-motion/use-reduced-motion-config"
 import { useUnmountEffect } from "../../utils/use-unmount-effect"
 import { createScopedAnimate } from "../animate"
 import { createAnimationScope, type SolidAnimationScope } from "./scope"
@@ -26,7 +26,11 @@ import { createAnimationScope, type SolidAnimationScope } from "./scope"
 export function useAnimate<T extends Element = any>() {
     const scope = createAnimationScope<T>()
 
-    const reduceMotion = useReducedMotionConfig()
+    /**
+     * Port note: the device setting, also while hydrating (`useReducedMotion` returns the
+     * server's `null` then, for rendering).
+     */
+    const reduceMotion = useAnimationReducedMotionConfig()
     const config = useContext(MotionConfigContext)
 
     /**

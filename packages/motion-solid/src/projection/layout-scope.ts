@@ -123,6 +123,16 @@ export function createListLayoutTrigger(
     const order = createMemo(() => [...keys()], {
         equals: isSameList,
         ...options,
+        name:
+            process.env.NODE_ENV !== "production"
+                ? "Motion.For.order"
+                : undefined,
     })
-    createLayoutTrigger(order, () => scope.snapshot(), undefined, options)
+    createLayoutTrigger(order, () => scope.snapshot(), undefined, {
+        ...options,
+        name:
+            process.env.NODE_ENV !== "production"
+                ? "Motion.For.layout"
+                : undefined,
+    })
 }

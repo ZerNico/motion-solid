@@ -79,7 +79,12 @@ export function AnimatePresence(props: AnimatePresenceProps) {
      */
     const propagate = untrack(() => props.propagate) === true
     const parent = propagate ? parentPresence : null
-    const isPresent = createMemo(() => (parent ? parent.isPresent() : true))
+    const isPresent = createMemo(() => (parent ? parent.isPresent() : true), {
+        name:
+            process.env.NODE_ENV !== "production"
+                ? "Motion.AnimatePresence.isPresent"
+                : undefined,
+    })
 
     const boundary = createPresenceBoundary({
         props,
@@ -111,7 +116,12 @@ export function AnimatePresence(props: AnimatePresenceProps) {
      * Port note: upstream re-renders the children when the parent presence changes, which
      * snapshots their layout.
      */
-    createLayoutTrigger(isPresent, () => scope.snapshot())
+    createLayoutTrigger(isPresent, () => scope.snapshot(), undefined, {
+        name:
+            process.env.NODE_ENV !== "production"
+                ? "Motion.AnimatePresence.layout"
+                : undefined,
+    })
 
     return (
         <PresenceBoundaryContext value={boundary}>

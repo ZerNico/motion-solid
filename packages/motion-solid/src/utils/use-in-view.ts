@@ -32,12 +32,18 @@ export function useInView(
     options: MaybeAccessor<UseInViewOptions> = {}
 ): Accessor<boolean> {
     const [isInView, setInView] = createSignal(
-        untrack(() => access(options)?.initial) ?? false
+        untrack(() => access(options)?.initial) ?? false,
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.useInView.isInView"
+                    : undefined,
+        }
     )
 
     /**
      * Port note: the refs are read in the compute (so accessors of signals are tracked) and read
-     * again in the apply, once the component's elements exist: a plain `let` ref or a
+     * again (untracked) in the apply, once the component's elements exist: a plain `let` ref or a
      * `{ current }` object isn't set yet when the compute first runs.
      */
     let previousElement: Element | undefined
@@ -54,7 +60,7 @@ export function useInView(
             return { root, margin, amount, once }
         },
         ({ root, margin, amount, once }) => {
-            const element = resolveRef(ref)
+            const element = untrack(() => resolveRef(ref))
 
             /**
              * Port note: a ref switching to another element (or none) is out of view until it
@@ -76,10 +82,16 @@ export function useInView(
             }
 
             return inView(element, onEnter, {
-                root: resolveRef(root),
+                root: untrack(() => resolveRef(root)),
                 margin,
                 amount,
             })
+        },
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.useInView.observe"
+                    : undefined,
         }
     )
 

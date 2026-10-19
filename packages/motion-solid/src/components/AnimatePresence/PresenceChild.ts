@@ -116,6 +116,10 @@ export function createPresenceBoundary(
      */
     const [participantsVersion, setParticipantsVersion] = createSignal(0, {
         ownedWrite: true,
+        name:
+            process.env.NODE_ENV !== "production"
+                ? "Motion.AnimatePresence.participantsVersion"
+                : undefined,
     })
     let directReader: unknown
     let isWarningScheduled = false
@@ -208,6 +212,25 @@ export const PresenceBoundaryContext =
 export const usePresenceBoundary = () => useContext(PresenceBoundaryContext)
 
 /**
+ * Port note: Solid-only. What a presence-aware list needs from its children's presence, besides
+ * the context value.
+ */
+export interface PresenceChild extends PresenceContextProps {
+    /**
+     * Whether something has registered to finish before the child is removed. Without it, an exit
+     * completes as soon as it starts, so the list counts it as complete when it diffs. Not
+     * reactive: registrants register when they mount, before the child can exit.
+     */
+    hasRegistrants: () => boolean
+    /**
+     * Reports an exit that's complete without having started, for `onExitComplete`: the list
+     * removed the child (nothing to wait for) in the update that removed it from its children,
+     * so it's disposed before its exit would start.
+     */
+    exitedImmediately: VoidFunction
+}
+
+/**
  * The presence of one child of an `AnimatePresence`, upstream's `PresenceChild`.
  *
  * Everything that has to finish before the child is removed (exit animations, layout animations,
@@ -227,7 +250,7 @@ export function createPresenceChild(
     onComplete: VoidFunction,
     onEnter?: VoidFunction,
     parent?: PresenceContextProps | null
-): PresenceContextProps {
+): PresenceChild {
     const id = createUniqueId()
     const owner = getOwner()
     const registry = new Map<string | number, boolean>()
@@ -286,6 +309,12 @@ export function createPresenceChild(
                  */
                 complete()
             }
+        },
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.PresenceChild.presence"
+                    : undefined,
         }
     )
 
@@ -318,6 +347,12 @@ export function createPresenceChild(
         onExitComplete: (id) => {
             if (registry.has(id)) registry.set(id, true)
             complete()
+        },
+        hasRegistrants: () => registry.size > 0,
+        exitedImmediately: () => {
+            if (isExiting) return
+            boundary.exitStarted(id)
+            queueMicrotask(() => boundary.exitCompleted(id))
         },
     }
 }

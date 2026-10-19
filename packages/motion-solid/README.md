@@ -62,7 +62,7 @@ const opacity = useTransform(x, () => [0, max()], [0, 1]) // reactive ranges
 <motion.div style={{ x, scale, opacity }} />
 
 // Motion value → Solid: an accessor, for logic and text
-const progress = useMotionValueAccessor(scrollYProgress)
+const progress = useMotionValueState(scrollYProgress)
 <Show when={progress() > 0.99}><Toast /></Show>
 
 // Motion value → side effects

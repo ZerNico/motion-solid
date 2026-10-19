@@ -121,19 +121,42 @@ export function createPresenceFallback(boundary: PresenceBoundary) {
          * Solid's `children()`, except that it tells the boundary which computation reads the
          * children directly (the presence-aware `Show`/`For` it reads join it).
          */
-        const unresolved = createMemo(() => props.children, { lazy: true })
+        const unresolved = createMemo(() => props.children, {
+            lazy: true,
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.PresenceFallback.children"
+                    : undefined,
+        })
         const resolved = createMemo(
             () => {
                 boundary.setDirectReader()
                 return flatten(unresolved()) as unknown
             },
-            { lazy: true, sync: true }
+            {
+                lazy: true,
+                sync: true,
+                name:
+                    process.env.NODE_ENV !== "production"
+                        ? "Motion.PresenceFallback.resolved"
+                        : undefined,
+            }
         )
-        const [version, setVersion] = createSignal(0)
+        const [version, setVersion] = createSignal(0, {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.PresenceFallback.version"
+                    : undefined,
+        })
         /**
          * Bumped when an exit starts, for the other participants.
          */
-        const [exitsVersion, setExitsVersion] = createSignal(0)
+        const [exitsVersion, setExitsVersion] = createSignal(0, {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.PresenceFallback.exitsVersion"
+                    : undefined,
+        })
 
         const participant: PresenceParticipant = {
             hasPendingExits: () => {
@@ -157,66 +180,85 @@ export function createPresenceFallback(boundary: PresenceBoundary) {
          */
         let committed: Child[] = []
 
-        const present = createMemo(() => {
-            const value = resolved()
-            return (Array.isArray(value) ? value : [value]).filter(
-                (child): child is Child =>
-                    child !== null &&
-                    child !== undefined &&
-                    typeof child !== "boolean"
-            ) as Child[]
-        })
+        const present = createMemo(
+            () => {
+                const value = resolved()
+                return (Array.isArray(value) ? value : [value]).filter(
+                    (child): child is Child =>
+                        child !== null &&
+                        child !== undefined &&
+                        typeof child !== "boolean"
+                ) as Child[]
+            },
+            {
+                name:
+                    process.env.NODE_ENV !== "production"
+                        ? "Motion.PresenceFallback.present"
+                        : undefined,
+            }
+        )
 
         /**
          * Pure: from the committed children and the present ones. Exit state only changes once
          * a diff commits (below), an exit completes (`version`), or the exits of the boundary's
          * other participants do.
          */
-        const rendered = createMemo(() => {
-            version()
-            const presentChildren = present()
+        const rendered = createMemo(
+            () => {
+                version()
+                const presentChildren = present()
 
-            let nextChildren = [...presentChildren]
-            const exitingChildren: Child[] = []
-            let insertionIndex = 0
+                let nextChildren = [...presentChildren]
+                const exitingChildren: Child[] = []
+                let insertionIndex = 0
 
-            for (const child of committed) {
-                const presentIndex = presentChildren.indexOf(child)
+                for (const child of committed) {
+                    const presentIndex = presentChildren.indexOf(child)
 
-                if (presentIndex === -1) {
-                    const isLeaving = exits.has(child) || hasMembers(child)
-                    if (!isLeaving) continue
-                    nextChildren.splice(insertionIndex++, 0, child)
-                    exitingChildren.push(child)
-                } else {
-                    insertionIndex = presentIndex + exitingChildren.length + 1
+                    if (presentIndex === -1) {
+                        const isLeaving = exits.has(child) || hasMembers(child)
+                        if (!isLeaving) continue
+                        nextChildren.splice(insertionIndex++, 0, child)
+                        exitingChildren.push(child)
+                    } else {
+                        insertionIndex =
+                            presentIndex + exitingChildren.length + 1
+                    }
                 }
+
+                /**
+                 * Like upstream, exiting children are removed all at once, when every exit of the
+                 * boundary is done.
+                 *
+                 * Port note: in `"wait"` mode, only this fallback's own exits hold its entering
+                 * children back (its children include the nodes of presence-aware `Show`/`For`, which
+                 * it can't tell apart).
+                 */
+                const isEveryExitComplete =
+                    exitingChildren.every(
+                        (child) => exits.get(child)?.isComplete
+                    ) && !boundary.hasPendingExits(participant)
+
+                if (isEveryExitComplete) {
+                    nextChildren = presentChildren
+                } else if (
+                    boundary.props.mode === "wait" &&
+                    exitingChildren.some(
+                        (child) => !exits.get(child)?.isComplete
+                    )
+                ) {
+                    nextChildren = exitingChildren
+                }
+
+                return nextChildren
+            },
+            {
+                name:
+                    process.env.NODE_ENV !== "production"
+                        ? "Motion.PresenceFallback.rendered"
+                        : undefined,
             }
-
-            /**
-             * Like upstream, exiting children are removed all at once, when every exit of the
-             * boundary is done.
-             *
-             * Port note: in `"wait"` mode, only this fallback's own exits hold its entering
-             * children back (its children include the nodes of presence-aware `Show`/`For`, which
-             * it can't tell apart).
-             */
-            const isEveryExitComplete =
-                exitingChildren.every(
-                    (child) => exits.get(child)?.isComplete
-                ) && !boundary.hasPendingExits(participant)
-
-            if (isEveryExitComplete) {
-                nextChildren = presentChildren
-            } else if (
-                boundary.props.mode === "wait" &&
-                exitingChildren.some((child) => !exits.get(child)?.isComplete)
-            ) {
-                nextChildren = exitingChildren
-            }
-
-            return nextChildren
-        })
+        )
 
         createLayoutTrigger(
             rendered,
@@ -269,6 +311,12 @@ export function createPresenceFallback(boundary: PresenceBoundary) {
 
                 committed = next
                 boundary.participantCommitted()
+            },
+            {
+                name:
+                    process.env.NODE_ENV !== "production"
+                        ? "Motion.PresenceFallback.layout"
+                        : undefined,
             }
         )
 
@@ -311,13 +359,22 @@ export function createPresenceFallback(boundary: PresenceBoundary) {
         /**
          * Mount the components that waited for the document (`mode="wait"`).
          */
-        createEffect(rendered, () => {
-            connectWaiters.forEach((callback, element) => {
-                if (!element.isConnected) return
-                connectWaiters.delete(element)
-                callback()
-            })
-        })
+        createEffect(
+            rendered,
+            () => {
+                connectWaiters.forEach((callback, element) => {
+                    if (!element.isConnected) return
+                    connectWaiters.delete(element)
+                    callback()
+                })
+            },
+            {
+                name:
+                    process.env.NODE_ENV !== "production"
+                        ? "Motion.PresenceFallback.connect"
+                        : undefined,
+            }
+        )
 
         return rendered as unknown as JSX.Element
     }

@@ -1,13 +1,29 @@
 import { useContext, type Accessor } from "solid-js"
 import { MotionConfigContext } from "../../context/MotionConfigContext"
-import { useReducedMotion } from "./use-reduced-motion"
+import {
+    getReducedMotionPreference,
+    useReducedMotion,
+} from "./use-reduced-motion"
 
 /**
  * Port note: returns an accessor, which follows `MotionConfig`'s `reducedMotion` and the device
  * setting.
  */
 export function useReducedMotionConfig(): Accessor<boolean | null> {
-    const reducedMotionPreference = useReducedMotion()
+    return reducedMotionConfig(useReducedMotion())
+}
+
+/**
+ * Port note: Solid-only. `useReducedMotionConfig` with the device setting read directly (see
+ * `getReducedMotionPreference`), for `useAnimate`.
+ */
+export function useAnimationReducedMotionConfig(): Accessor<boolean | null> {
+    return reducedMotionConfig(getReducedMotionPreference())
+}
+
+function reducedMotionConfig(
+    reducedMotionPreference: Accessor<boolean | null>
+): Accessor<boolean | null> {
     const config = useContext(MotionConfigContext)
 
     return () => {

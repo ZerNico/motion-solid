@@ -18,6 +18,7 @@ import {
     createPresenceChild,
     PresenceBoundaryContext,
     type PresenceBoundary,
+    type PresenceChild,
     type PresenceParticipant,
 } from "./PresenceChild"
 
@@ -43,7 +44,7 @@ export interface PresenceEntry<T> {
 export function diffPresence(
     prevRendered: readonly unknown[],
     presentKeys: readonly unknown[],
-    completed: ReadonlySet<unknown>,
+    completed: { has: (key: unknown) => boolean },
     mode: "sync" | "wait" | "popLayout",
     othersPending = false
 ): unknown[] {
@@ -86,6 +87,14 @@ export function diffPresence(
     return nextChildren
 }
 
+interface Row {
+    presence: PresenceChild
+    /**
+     * The current exit, the key of its completion in `completed`.
+     */
+    exit: object
+}
+
 const isSameList = (a: readonly unknown[], b: readonly unknown[]) =>
     a.length === b.length && a.every((key, index) => key === b[index])
 
@@ -110,16 +119,61 @@ export function createPresenceList<T>(
 ): Accessor<JSX.Element[]> {
     const scope = useLayoutScope()
     const parentPresence = useContext(PresenceContext)
-    const [completed, setCompleted] = createSignal<ReadonlySet<unknown>>(
-        new Set()
+    /**
+     * The exits that completed, by exit (see `rows`). Port note: upstream keeps completions by
+     * key and resets them when it renders. Here a completion belongs to one exit of one child, so
+     * a child that comes back, or a key that's rendered again later, starts from scratch without
+     * anything having to remove it (a write from the commit would make `rendered` run twice).
+     */
+    const [completed, setCompleted] = createSignal<ReadonlySet<object>>(
+        new Set(),
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.PresenceList.completed"
+                    : undefined,
+        }
     )
-
-    const presentEntries = createMemo(() => {
-        const entries = new Map<unknown, PresenceEntry<T>>()
-        if (!boundary.isPresent()) return entries
-        for (const entry of present()) entries.set(entry.key, entry)
-        return entries
+    /**
+     * Each child that exists, by key. Not reactive: `exit` changes when an exit is cancelled, and
+     * a cancelled exit's child is present (its completion isn't read).
+     */
+    const rows = new Map<unknown, Row>()
+    /**
+     * Whether an exiting child is done: its exit completed, or nothing has to finish before it's
+     * removed. Port note: upstream renders such a child once more and completes its exit from a
+     * layout effect. Here the diff counts it as complete, so it's removed in the update that
+     * removes it from the children, without a write from the commit.
+     */
+    const isCompleted = (done: ReadonlySet<object>) => ({
+        has: (key: unknown) => {
+            const row = rows.get(key)
+            return (
+                !!row && (done.has(row.exit) || !row.presence.hasRegistrants())
+            )
+        },
     })
+    /**
+     * Children removed before their exit started (nothing to wait for), reported to the boundary
+     * once the update that removed them commits. Not when the list itself is disposed: like an
+     * exit in progress, theirs is cancelled then.
+     */
+    const removedBeforeExit = new Map<unknown, PresenceChild>()
+
+    const presentEntries = createMemo(
+        () => {
+            const entries = new Map<unknown, PresenceEntry<T>>()
+            if (!boundary.isPresent()) return entries
+            for (const entry of present()) entries.set(entry.key, entry)
+            return entries
+        },
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.PresenceList.presentEntries"
+                    : undefined,
+        }
+    )
 
     /**
      * The keys rendered by the latest run of `rendered`, for `hasPendingExits` (read by the other
@@ -137,7 +191,7 @@ export function createPresenceList<T>(
     const participant: PresenceParticipant = {
         hasPendingExits: () => {
             const entries = presentEntries()
-            const done = completed()
+            const done = isCompleted(completed())
             return lastRendered.some(
                 (key) => !entries.has(key) && !done.has(key)
             )
@@ -152,27 +206,38 @@ export function createPresenceList<T>(
     }
     boundary.addParticipant(participant)
 
+    /**
+     * Whether an exit other than `key`'s, of this list or another participant, is pending.
+     */
+    const hasOtherPendingExits = (key: unknown) => {
+        const entries = presentEntries()
+        const done = isCompleted(completed())
+        return (
+            boundary.hasPendingExits(participant) ||
+            lastRendered.some(
+                (other) =>
+                    other !== key && !entries.has(other) && !done.has(other)
+            )
+        )
+    }
+
     const rendered = createMemo<unknown[]>(
         (prev) =>
             (lastRendered = diffPresence(
                 prev ?? [],
                 Array.from(presentEntries().keys()),
-                completed(),
+                isCompleted(completed()),
                 boundary.props.mode ?? "sync",
                 boundary.hasPendingExits(participant)
             )),
-        { equals: isSameList }
-    )
-
-    const removeCompleted = (keys: Iterable<unknown>) => {
-        let next: Set<unknown> | undefined
-        for (const key of keys) {
-            if (!untrack(completed).has(key)) continue
-            next ??= new Set(untrack(completed))
-            next.delete(key)
+        {
+            equals: isSameList,
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.PresenceList.rendered"
+                    : undefined,
         }
-        if (next) setCompleted(next)
-    }
+    )
 
     /**
      * Port note: upstream re-renders the siblings of children that enter or exit
@@ -186,92 +251,155 @@ export function createPresenceList<T>(
             boundary.layoutGroup.group?.dirty()
         },
         (keys) => {
-            // Keys that left for good can exit again later.
-            const left = Array.from(untrack(completed)).filter(
-                (key) => !keys.includes(key)
-            )
-            removeCompleted(left)
+            for (const [key, presence] of removedBeforeExit) {
+                if (!keys.includes(key)) presence.exitedImmediately()
+            }
+            removedBeforeExit.clear()
             committedCount = keys.length
             boundary.participantCommitted()
+        },
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.PresenceList.layout"
+                    : undefined,
         }
     )
 
-    return mapArray(rendered, (key) => {
-        const entry = createMemo<PresenceEntry<T> | undefined>(
-            (prev) => presentEntries().get(key) ?? prev
-        )
-        const isPresent = createMemo(
-            () =>
-                presentEntries().has(key) &&
-                (parentPresence ? parentPresence.isPresent() : true)
-        )
-
-        const presence = createPresenceChild(
-            boundary,
-            isPresent,
-            () => setCompleted((keys) => new Set(keys).add(key)),
-            () => removeCompleted([key]),
-            parentPresence
-        )
-
-        /**
-         * Port note: upstream's `AnimatePresence` only governs its direct children. `Show`/`For`
-         * inside this child don't join the boundary (they're Solid's own, or join an
-         * `AnimatePresence` of their own).
-         */
-        const nodes = resolveChildren(() => (
-            <PresenceBoundaryContext value={null}>
-                <PresenceContext value={presence}>
-                    {untrack(() =>
-                        render(
-                            () => entry()!.value,
-                            () => entry()!.index,
-                            key
-                        )
-                    )}
-                </PresenceContext>
-            </PresenceBoundaryContext>
-        ))
-
-        /**
-         * `mode="popLayout"`: take the exiting child out of the layout, measured before the
-         * DOM updates (upstream: `PopChild`).
-         */
-        let popped: PoppedChild[] | undefined
-        const restore = () => {
-            popped?.forEach((child) => child.restore())
-            popped = undefined
-        }
-
-        createLayoutTrigger(
-            isPresent,
-            (next) => {
-                if (next || boundary.props.mode !== "popLayout") return
-                popped = nodes
-                    .toArray()
-                    .filter(isHTMLElement)
-                    .map((element) => popChild(element as HTMLElement))
-            },
-            (present) => {
-                if (present) {
-                    restore()
-                } else {
-                    const { anchorX, anchorY, root } = boundary.props
-                    popped?.forEach((child) =>
-                        child.pop({ anchorX, anchorY, root }, boundary.nonce)
-                    )
+    return mapArray(
+        rendered,
+        (key) => {
+            const entry = createMemo<PresenceEntry<T> | undefined>(
+                (prev) => presentEntries().get(key) ?? prev,
+                {
+                    name:
+                        process.env.NODE_ENV !== "production"
+                            ? "Motion.PresenceList.entry"
+                            : undefined,
                 }
+            )
+            const isPresent = createMemo(
+                () =>
+                    presentEntries().has(key) &&
+                    (parentPresence ? parentPresence.isPresent() : true),
+                {
+                    name:
+                        process.env.NODE_ENV !== "production"
+                            ? "Motion.PresenceList.isPresent"
+                            : undefined,
+                }
+            )
+
+            const row = { exit: {} } as Row
+            const presence = (row.presence = createPresenceChild(
+                boundary,
+                isPresent,
+                () => {
+                    /**
+                     * The diff counts a child with nothing to wait for as complete, and only keeps
+                     * rendering one while another exit is pending: that exit's completion runs the
+                     * diff again.
+                     */
+                    if (
+                        !presence.hasRegistrants() &&
+                        untrack(() => hasOtherPendingExits(key))
+                    ) {
+                        return
+                    }
+                    setCompleted((done) => {
+                        // Only the current exits of the children that exist can still be read.
+                        const next = new Set<object>()
+                        for (const { exit } of rows.values()) {
+                            if (done.has(exit)) next.add(exit)
+                        }
+                        return next.add(row.exit)
+                    })
+                },
+                () => {
+                    row.exit = {}
+                },
+                parentPresence
+            ))
+            rows.set(key, row)
+
+            /**
+             * Port note: upstream's `AnimatePresence` only governs its direct children. `Show`/`For`
+             * inside this child don't join the boundary (they're Solid's own, or join an
+             * `AnimatePresence` of their own).
+             */
+            const nodes = resolveChildren(() => (
+                <PresenceBoundaryContext value={null}>
+                    <PresenceContext value={presence}>
+                        {untrack(() =>
+                            render(
+                                () => entry()!.value,
+                                () => entry()!.index,
+                                key
+                            )
+                        )}
+                    </PresenceContext>
+                </PresenceBoundaryContext>
+            ))
+
+            /**
+             * `mode="popLayout"`: take the exiting child out of the layout, measured before the
+             * DOM updates (upstream: `PopChild`).
+             */
+            let popped: PoppedChild[] | undefined
+            const restore = () => {
+                popped?.forEach((child) => child.restore())
+                popped = undefined
             }
-        )
 
-        childNodes.add(nodes)
-        childKeys?.add(key)
-        onCleanup(() => {
-            childNodes.delete(nodes)
-            childKeys?.delete(key)
-            restore()
-        })
+            createLayoutTrigger(
+                isPresent,
+                (next) => {
+                    if (next || boundary.props.mode !== "popLayout") return
+                    popped = nodes
+                        .toArray()
+                        .filter(isHTMLElement)
+                        .map((element) => popChild(element as HTMLElement))
+                },
+                (present) => {
+                    if (present) {
+                        restore()
+                    } else {
+                        const { anchorX, anchorY, root } = boundary.props
+                        popped?.forEach((child) =>
+                            child.pop(
+                                { anchorX, anchorY, root },
+                                boundary.nonce
+                            )
+                        )
+                    }
+                },
+                {
+                    name:
+                        process.env.NODE_ENV !== "production"
+                            ? "Motion.PresenceList.popLayout"
+                            : undefined,
+                }
+            )
 
-        return nodes as unknown as JSX.Element
-    })
+            childNodes.add(nodes)
+            childKeys?.add(key)
+            onCleanup(() => {
+                childNodes.delete(nodes)
+                childKeys?.delete(key)
+                if (rows.get(key) === row) rows.delete(key)
+                if (!untrack(() => presentEntries().has(key))) {
+                    removedBeforeExit.set(key, presence)
+                }
+                restore()
+            })
+
+            return nodes as unknown as JSX.Element
+        },
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.PresenceList.rows"
+                    : undefined,
+        }
+    )
 }

@@ -2,9 +2,10 @@ import { renderToString } from "../../../test/renderToString"
 import {
     InitialStyles,
     Layout,
-    MotionValueAccessor,
+    MotionValueState,
     MotionValues,
     Presence,
+    ScrollContainerSignal,
     Tappable,
 } from "./ssr.fixtures"
 
@@ -38,9 +39,9 @@ describe("SSR", () => {
         hydrate()
     })
 
-    test("useMotionValueAccessor renders the current value and updates once hydrated", async () => {
+    test("useMotionValueState renders the current value and updates once hydrated", async () => {
         const { html, hydrate, container } = await renderToString(
-            MotionValueAccessor
+            MotionValueState
         )
         expect(html).toMatch(/id="value"[^>]*>1</)
         expect(html).toMatch(/id="plain"[^>]*>2</)
@@ -52,6 +53,15 @@ describe("SSR", () => {
         ;(container.querySelector("#set") as HTMLElement).click()
         await vi.waitFor(() => expect(text("#value")).toBe("5"))
         expect(text("#plain")).toBe("5")
+    })
+
+    test("useScroll with an accessor ref hydrates", async () => {
+        const { container, hydrate } = await renderToString(
+            ScrollContainerSignal
+        )
+        const bar = container.querySelector("#bar")
+        hydrate()
+        expect(container.querySelector("#bar")).toBe(bar)
     })
 
     test("sets tabindex for tap gestures", async () => {

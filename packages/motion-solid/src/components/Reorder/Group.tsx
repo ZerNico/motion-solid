@@ -88,7 +88,12 @@ export function ReorderGroup<
     const Component = (motion as any)[untrack(() => props.as) ?? "ul"]
 
     const itemLayouts = new Map<V, ItemData<V>["layout"]>()
-    const [detectedAxis, setDetectedAxis] = createSignal<ReorderAxis>("y")
+    const [detectedAxis, setDetectedAxis] = createSignal<ReorderAxis>("y", {
+        name:
+            process.env.NODE_ENV !== "production"
+                ? "Motion.Reorder.Group.axis"
+                : undefined,
+    })
     let isReordering = false
     const groupRef: { current: Element | null } = { current: null }
 
@@ -114,6 +119,12 @@ export function ReorderGroup<
                 if (!valuesSet.has(value)) itemLayouts.delete(value)
             })
             isReordering = false
+        },
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.Reorder.Group.values"
+                    : undefined,
         }
     )
 

@@ -30,7 +30,13 @@ export function useCombineMotionValues<R>(
         (latest) => {
             value.set(latest)
         },
-        { defer: true }
+        {
+            defer: true,
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.useCombineMotionValues.latest"
+                    : undefined,
+        }
     )
 
     /**
@@ -50,6 +56,12 @@ export function useCombineMotionValues<R>(
                 subscriptions.forEach((unsubscribe) => unsubscribe())
                 cancelFrame(updateValue)
             }
+        },
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.useCombineMotionValues.subscribe"
+                    : undefined,
         }
     )
 

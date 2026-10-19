@@ -63,7 +63,12 @@ export function LayoutGroup(props: Props) {
 
     const Children = () => {
         const children = resolveChildren(() => props.children)
-        createLayoutTrigger(children, () => scope.snapshot())
+        createLayoutTrigger(children, () => scope.snapshot(), undefined, {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.LayoutGroup.layout"
+                    : undefined,
+        })
         return children as unknown as JSX.Element
     }
 

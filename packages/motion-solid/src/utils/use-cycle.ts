@@ -23,7 +23,15 @@ export type CycleState<T> = [Accessor<T>, Cycle]
 export function useCycle<T>(...items: T[]): CycleState<T> {
     let index = 0
     // Boxed, as items can be functions.
-    const [current, setCurrent] = createSignal({ item: items[index] })
+    const [current, setCurrent] = createSignal(
+        { item: items[index] },
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.useCycle.current"
+                    : undefined,
+        }
+    )
 
     const runCycle = (next?: number) => {
         index =

@@ -50,7 +50,12 @@ export function LazyMotion(props: LazyProps) {
     const features = untrack(() => props.features)
     const [loadedRenderer, setLoadedRenderer] = createSignal<
         CreateVisualElement | undefined
-    >()
+    >(undefined, {
+        name:
+            process.env.NODE_ENV !== "production"
+                ? "Motion.LazyMotion.renderer"
+                : undefined,
+    })
 
     let renderer: () => CreateVisualElement | undefined
 

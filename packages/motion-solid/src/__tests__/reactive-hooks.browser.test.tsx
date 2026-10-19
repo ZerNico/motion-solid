@@ -14,7 +14,7 @@ import {
     useFollowValue,
     useInView,
     useMotionTemplate,
-    useMotionValueAccessor,
+    useMotionValueState,
     useMotionValueEvent,
     useReducedMotionConfig,
     useScroll,
@@ -258,12 +258,12 @@ describe("Reactive hook arguments", () => {
 })
 
 describe("Motion values in Solid", () => {
-    test("useMotionValueAccessor reads a motion value in memos and JSX", async () => {
+    test("useMotionValueState reads a motion value in memos and JSX", async () => {
         const x = motionValue(0)
         let doubled!: Accessor<number>
 
         const { container } = render(() => {
-            const value = useMotionValueAccessor(x)
+            const value = useMotionValueState(x)
             doubled = createMemo(() => value() * 2)
             return <span>{value()}</span>
         })
@@ -278,11 +278,11 @@ describe("Motion values in Solid", () => {
         await vi.waitFor(() => expect(container.textContent).toBe("100"))
     })
 
-    test("useMotionValueAccessor allows sets while components are created", () => {
+    test("useMotionValueState allows sets while components are created", () => {
         const x = motionValue(0)
 
         const { container } = render(() => {
-            const value = useMotionValueAccessor(x)
+            const value = useMotionValueState(x)
             x.set(3)
             return <span>{value()}</span>
         })
@@ -291,14 +291,14 @@ describe("Motion values in Solid", () => {
         expect(container.textContent).toBe("3")
     })
 
-    test("useMotionValueAccessor switches between motion values and unsubscribes", () => {
+    test("useMotionValueState switches between motion values and unsubscribes", () => {
         const a = motionValue(1)
         const b = motionValue(2)
         const [source, setSource] = createSignal(a)
         let value!: Accessor<number>
 
         const { unmount } = render(() => {
-            value = useMotionValueAccessor(source)
+            value = useMotionValueState(source)
             return null
         })
 
@@ -315,7 +315,7 @@ describe("Motion values in Solid", () => {
         expect((b as any).events.change?.getSize() ?? 0).toBe(0)
     })
 
-    test("useMotionValueAccessor updates are held with a held transition, like any signal", async () => {
+    test("useMotionValueState updates are held with a held transition, like any signal", async () => {
         const x = motionValue(0)
         const [id, setId] = createSignal(1)
         const data = createMemo(() => {
@@ -325,7 +325,7 @@ describe("Motion values in Solid", () => {
         })
 
         const { container } = render(() => {
-            const value = useMotionValueAccessor(x)
+            const value = useMotionValueState(x)
             return (
                 <Loading>
                     <span id="held">

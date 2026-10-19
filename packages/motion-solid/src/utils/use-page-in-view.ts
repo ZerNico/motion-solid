@@ -9,7 +9,13 @@ import { createSignal, onCleanup, type Accessor } from "solid-js"
  */
 export function usePageInView(): Accessor<boolean> {
     const [isInView, setIsInView] = createSignal(
-        typeof document === "undefined" ? true : !document.hidden
+        typeof document === "undefined" ? true : !document.hidden,
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.usePageInView.isInView"
+                    : undefined,
+        }
     )
 
     if (typeof document === "undefined") return isInView

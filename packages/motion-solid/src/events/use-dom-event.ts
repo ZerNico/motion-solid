@@ -1,5 +1,5 @@
 import { addDomEvent } from "motion-dom"
-import { createEffect } from "solid-js"
+import { createEffect, untrack } from "solid-js"
 import { resolveRef, type ElementRef } from "../utils/refs"
 
 /**
@@ -18,16 +18,22 @@ export function useDomEvent(
 ) {
     /**
      * Port note: the ref is read in the compute (so an accessor of a signal is tracked) and read
-     * again in the apply, once the component's elements exist: a plain `let` ref or a
+     * again (untracked) in the apply, once the component's elements exist: a plain `let` ref or a
      * `{ current }` object isn't set yet when the compute first runs.
      */
     createEffect(
         () => [resolveRef(ref)],
         () => {
-            const element = resolveRef(ref)
+            const element = untrack(() => resolveRef(ref))
             if (handler && element) {
                 return addDomEvent(element, eventName, handler, options)
             }
+        },
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.useDomEvent.listener"
+                    : undefined,
         }
     )
 }

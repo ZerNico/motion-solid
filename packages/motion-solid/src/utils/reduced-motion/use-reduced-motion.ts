@@ -5,7 +5,7 @@ import {
     prefersReducedMotion,
 } from "motion-dom"
 import { warnOnce } from "motion-utils"
-import { createSignal, type Accessor } from "solid-js"
+import { createSignal, isHydrating, onSettled, type Accessor } from "solid-js"
 
 /**
  * Port note: Solid-only. The device's Reduced Motion setting as a signal, shared by every
@@ -13,7 +13,11 @@ import { createSignal, type Accessor } from "solid-js"
  */
 let preference: Accessor<boolean | null> | undefined
 
-function getPreference(): Accessor<boolean | null> {
+/**
+ * Port note: Solid-only. The device setting without `useReducedMotion`'s hydration handling, for
+ * code that animates with it rather than rendering it (`useAnimate`).
+ */
+export function getReducedMotionPreference(): Accessor<boolean | null> {
     if (preference) return preference
 
     /**
@@ -25,7 +29,12 @@ function getPreference(): Accessor<boolean | null> {
         return () => prefersReducedMotion.current
     }
 
-    const [matches, setMatches] = createSignal(prefersReducedMotion.current)
+    const [matches, setMatches] = createSignal(prefersReducedMotion.current, {
+        name:
+            process.env.NODE_ENV !== "production"
+                ? "Motion.useReducedMotion.matches"
+                : undefined,
+    })
     window
         .matchMedia("(prefers-reduced-motion)")
         .addEventListener("change", (event) => setMatches(event.matches))
@@ -63,7 +72,7 @@ function getPreference(): Accessor<boolean | null> {
  * @public
  */
 export function useReducedMotion(): Accessor<boolean | null> {
-    const shouldReduceMotion = getPreference()
+    const shouldReduceMotion = getReducedMotionPreference()
 
     if (process.env.NODE_ENV !== "production") {
         warnOnce(
@@ -73,5 +82,21 @@ export function useReducedMotion(): Accessor<boolean | null> {
         )
     }
 
-    return shouldReduceMotion
+    if (!isServer && !isHydrating()) return shouldReduceMotion
+
+    /**
+     * Port note: the server doesn't know the device setting (`null`). While hydrating, return
+     * that too, so what's rendered with it matches the server's markup, then the device's. The
+     * server takes the same path, so both create the same nodes (hydration keys).
+     */
+    const [isHydrated, setIsHydrated] = createSignal(false, {
+        name:
+            process.env.NODE_ENV !== "production"
+                ? "Motion.useReducedMotion.isHydrated"
+                : undefined,
+    })
+    onSettled(() => {
+        setIsHydrated(true)
+    })
+    return () => (isHydrated() ? shouldReduceMotion() : null)
 }

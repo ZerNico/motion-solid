@@ -15,7 +15,7 @@ import { access, type MaybeAccessor } from "../utils/access"
  *
  * ```jsx
  * const { scrollYProgress } = useScroll()
- * const progress = useMotionValueAccessor(scrollYProgress)
+ * const progress = useMotionValueState(scrollYProgress)
  *
  * return (
  *   <>
@@ -36,7 +36,7 @@ import { access, type MaybeAccessor } from "../utils/access"
  *
  * @public
  */
-export function useMotionValueAccessor<T>(
+export function useMotionValueState<T>(
     value: MaybeAccessor<MotionValue<T>>
 ): Accessor<T> {
     const getValue = () => access(value)
@@ -47,7 +47,13 @@ export function useMotionValueAccessor<T>(
      */
     const [latest, setLatest] = createSignal<T>(
         untrack(getValue).get() as Exclude<T, Function>,
-        { ownedWrite: true }
+        {
+            ownedWrite: true,
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.useMotionValueState.latest"
+                    : undefined,
+        }
     )
 
     if (isServer || typeof window === "undefined") return latest
@@ -71,7 +77,14 @@ export function useMotionValueAccessor<T>(
                 unsubscribe = subscribe(motionValue)
             },
             // Client-only: doesn't take part in hydration ids.
-            { defer: true, transparent: true }
+            {
+                defer: true,
+                transparent: true,
+                name:
+                    process.env.NODE_ENV !== "production"
+                        ? "Motion.useMotionValueState.subscribe"
+                        : undefined,
+            }
         )
     }
 

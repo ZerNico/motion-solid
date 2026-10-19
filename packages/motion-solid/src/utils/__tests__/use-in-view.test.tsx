@@ -16,6 +16,26 @@ const enter = () => getActiveObserver()?.([{ target, isIntersecting: true }])
 const leave = () => getActiveObserver()?.([{ target, isIntersecting: false }])
 
 describe("useInView", () => {
+    // Port note: Solid-only. The refs are read again when the observer starts, untracked.
+    test("Doesn't warn about reading signal refs untracked", () => {
+        const warn = jest.spyOn(console, "warn")
+        const Component = () => {
+            const [ref, setRef] = createSignal<Element | null>(null)
+            const [root, setRoot] = createSignal<Element | null>(null)
+            useInView(ref, { root })
+            return (
+                <div ref={setRoot}>
+                    <div ref={setRef} />
+                </div>
+            )
+        }
+        render(() => <Component />)
+        expect(warn).not.toHaveBeenCalledWith(
+            expect.stringContaining("STRICT_READ_UNTRACKED")
+        )
+        warn.mockRestore()
+    })
+
     test("Returns false on mount", () => {
         const results: boolean[] = []
 

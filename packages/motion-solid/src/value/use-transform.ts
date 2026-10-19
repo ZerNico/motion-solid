@@ -221,14 +221,23 @@ export function useTransform<I, O, K extends string>(
      * Port note: the ranges and options are read in a memo, so accessors of them (and options
      * with getters) rebuild the transformer when they change.
      */
-    const transformer = createMemo(() =>
-        hasOutput
-            ? transform(
-                  access(inputRangeOrTransformer as MaybeAccessor<InputRange>),
-                  access(outputRangeOrMap as MaybeAccessor<O[]>),
-                  readOptions(options)
-              )
-            : (inputRangeOrTransformer as Transformer<I, O>)
+    const transformer = createMemo(
+        () =>
+            hasOutput
+                ? transform(
+                      access(
+                          inputRangeOrTransformer as MaybeAccessor<InputRange>
+                      ),
+                      access(outputRangeOrMap as MaybeAccessor<O[]>),
+                      readOptions(options)
+                  )
+                : (inputRangeOrTransformer as Transformer<I, O>),
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.useTransform.transformer"
+                    : undefined,
+        }
     )
 
     const latest: any[] = []

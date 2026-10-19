@@ -4,6 +4,20 @@ import { render } from "../../jest.setup"
 import { useDomEvent } from "../use-dom-event"
 
 describe("useDomEvent", () => {
+    // Port note: Solid-only. The ref is read again when the listener is added, untracked.
+    it("doesn't warn about reading a signal ref untracked", () => {
+        const warn = jest.spyOn(console, "warn")
+        const Component = () => {
+            const [ref, setRef] = createSignal<Element | null>(null)
+            useDomEvent(ref, "pointerdown", () => {})
+            return <div ref={setRef} />
+        }
+        render(() => <Component />)
+        expect(warn).not.toHaveBeenCalledWith(
+            expect.stringContaining("STRICT_READ_UNTRACKED")
+        )
+        warn.mockRestore()
+    })
     it("should handle the ref not being set correctly", () => {
         // TODO maybe show a warning too?
         const handler = jest.fn()

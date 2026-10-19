@@ -66,7 +66,13 @@ export function useComputed<O>(compute: () => O): MotionValue<O> {
                         value.set(current)
                         subscribe()
                     },
-                    { defer: true }
+                    {
+                        defer: true,
+                        name:
+                            process.env.NODE_ENV !== "production"
+                                ? "Motion.useComputed.compute"
+                                : undefined,
+                    }
                 )
             })
         )

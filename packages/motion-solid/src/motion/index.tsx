@@ -173,9 +173,13 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
          * `animate={{ x: record()!.x }}`) would throw. Frozen memos don't read their sources,
          * so they unsubscribe until the element is present again.
          */
-        const whilePresent = <T,>(read: () => T) =>
-            createMemo((previous?: T) =>
-                isPresentNow() || previous === undefined ? read() : previous
+        const whilePresent = <T,>(read: () => T, name?: string) =>
+            createMemo(
+                (previous?: T) =>
+                    isPresentNow() || previous === undefined
+                        ? read()
+                        : previous,
+                { name }
             )
 
         /**
@@ -189,7 +193,12 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
             }
             return values
         }
-        const rawProps = whilePresent(readRawProps)
+        const rawProps = whilePresent(
+            readRawProps,
+            process.env.NODE_ENV !== "production"
+                ? "Motion.motion.rawProps"
+                : undefined
+        )
 
         /**
          * The current motion props, like upstream's `configAndProps`: the `MotionConfig` values,
@@ -219,7 +228,12 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
             return configAndProps
         }
 
-        const motionProps = whilePresent(() => getConfigAndProps())
+        const motionProps = whilePresent(
+            () => getConfigAndProps(),
+            process.env.NODE_ENV !== "production"
+                ? "Motion.motion.props"
+                : undefined
+        )
 
         /**
          * Port note: read from the props themselves, not through `motionProps`. Since Solid 2
@@ -246,7 +260,13 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
                 isPresent: isPresentNow(),
                 initial: context.initial,
                 animate: context.animate,
-            })
+            }),
+            {
+                name:
+                    process.env.NODE_ENV !== "production"
+                        ? "Motion.motion.state"
+                        : undefined,
+            }
         )
 
         let visualElement: VisualElement<Instance> | undefined
@@ -280,7 +300,13 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
                             context.visualElement = visualElement
                         })
                     },
-                    clientOnly
+                    {
+                        ...clientOnly,
+                        name:
+                            process.env.NODE_ENV !== "production"
+                                ? "Motion.motion.lazyRenderer"
+                                : undefined,
+                    }
                 )
             }
         }
@@ -324,14 +350,23 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
          */
         let hasRenderedStyle = false
         const visualProps = reactiveProps(
-            createMemo(() => {
-                const built: Record<string, any> = buildVisualProps(
-                    motionProps()
-                )
-                const { style, ...rest } = built
-                if (style && Object.keys(style).length) hasRenderedStyle = true
-                return hasRenderedStyle ? built : rest
-            })
+            createMemo(
+                () => {
+                    const built: Record<string, any> = buildVisualProps(
+                        motionProps()
+                    )
+                    const { style, ...rest } = built
+                    if (style && Object.keys(style).length)
+                        hasRenderedStyle = true
+                    return hasRenderedStyle ? built : rest
+                },
+                {
+                    name:
+                        process.env.NODE_ENV !== "production"
+                            ? "Motion.motion.visualProps"
+                            : undefined,
+                }
+            )
         )
         const forwardedProps = filterProps(
             reactiveProps(rawProps),
@@ -384,11 +419,21 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
              * and their siblings. Upstream re-renders them with their parent, which snapshots
              * their layout: this component's siblings, and its whole subtree.
              */
-            createLayoutTrigger(children, () => {
-                if (!visualElement?.current) return
-                parentScope.snapshot()
-                scope.snapshot(true)
-            })
+            createLayoutTrigger(
+                children,
+                () => {
+                    if (!visualElement?.current) return
+                    parentScope.snapshot()
+                    scope.snapshot(true)
+                },
+                undefined,
+                {
+                    name:
+                        process.env.NODE_ENV !== "production"
+                            ? "Motion.motion.childrenLayout"
+                            : undefined,
+                }
+            )
 
             /**
              * If handed a motion value as its child, render its initial value: the
@@ -406,10 +451,19 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
              * updates the text content when it changes. Children aren't motion props here, so
              * this subscribes itself.
              */
-            createEffect(children, (child) => {
-                if (!isMotionValue(child)) return
-                return child.on("change", subscribeToTextContent)
-            })
+            createEffect(
+                children,
+                (child) => {
+                    if (!isMotionValue(child)) return
+                    return child.on("change", subscribeToTextContent)
+                },
+                {
+                    name:
+                        process.env.NODE_ENV !== "production"
+                            ? "Motion.motion.textContent"
+                            : undefined,
+                }
+            )
 
             return (
                 <Dynamic
@@ -957,11 +1011,20 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
              * creates it, before it's inserted (when async work holds that update, at its
              * landing).
              */
-            onLayoutCommit(() => {
-                if (isDisposed) return
-                parentScope.snapshot()
-                snapshotSharedLayout(committed.props.layoutId)
-            }, clientOnly)
+            onLayoutCommit(
+                () => {
+                    if (isDisposed) return
+                    parentScope.snapshot()
+                    snapshotSharedLayout(committed.props.layoutId)
+                },
+                {
+                    ...clientOnly,
+                    name:
+                        process.env.NODE_ENV !== "production"
+                            ? "Motion.motion.mountLayout"
+                            : undefined,
+                }
+            )
 
             /**
              * Mount once the element is in the document, never while it's detached (a
@@ -986,7 +1049,13 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
                 () => {
                     schedulePendingMount(tryMount)
                 },
-                clientOnly
+                {
+                    ...clientOnly,
+                    name:
+                        process.env.NODE_ENV !== "production"
+                            ? "Motion.motion.mount"
+                            : undefined,
+                }
             )
 
             const waitForDocument = () => {
@@ -1005,7 +1074,13 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
                 cancelWaitForDocument = () => cancelAnimationFrame(frameId)
             }
 
-            createEffect(() => true, waitForDocument, clientOnly)
+            createEffect(() => true, waitForDocument, {
+                ...clientOnly,
+                name:
+                    process.env.NODE_ENV !== "production"
+                        ? "Motion.motion.waitForDocument"
+                        : undefined,
+            })
 
             /**
              * The element was replaced: unmount, and mount on the new element once it's in the
@@ -1078,7 +1153,13 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
                     committed = value
                     if (isMounted) update(value)
                 },
-                clientOnly
+                {
+                    ...clientOnly,
+                    name:
+                        process.env.NODE_ENV !== "production"
+                            ? "Motion.motion.layout"
+                            : undefined,
+                }
             )
 
             createEffect(
@@ -1089,7 +1170,14 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
                     node.animationState?.animateChanges()
                     node.enteringChildren = undefined
                 },
-                { defer: true, ...clientOnly }
+                {
+                    defer: true,
+                    ...clientOnly,
+                    name:
+                        process.env.NODE_ENV !== "production"
+                            ? "Motion.motion.animate"
+                            : undefined,
+                }
             )
 
             onCleanup(() => {

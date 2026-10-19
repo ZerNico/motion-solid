@@ -14,7 +14,7 @@ import { motionValue, type MotionValue } from "motion-dom"
  * ```
  *
  * Port note: upstream re-renders the component on changes in a static `MotionConfig`. Solid
- * components don't re-render: read the value with `useMotionValueAccessor` instead.
+ * components don't re-render: read the value with `useMotionValueState` instead.
  *
  * @param initial - The initial state.
  *

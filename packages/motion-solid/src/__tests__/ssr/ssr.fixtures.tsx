@@ -1,6 +1,15 @@
 import { motionValue } from "motion-dom"
-import { createSignal } from "solid-js"
-import { AnimatePresence, motion, Show, useMotionValueAccessor } from "../.."
+import { createSignal, onSettled } from "solid-js"
+import {
+    AnimatePresence,
+    motion,
+    MotionConfig,
+    Show,
+    useAnimate,
+    useMotionValueState,
+    useReducedMotion,
+    useScroll,
+} from "../.."
 
 export function InitialStyles() {
     return (
@@ -61,12 +70,12 @@ export function Layout() {
     )
 }
 
-export function MotionValueAccessor() {
+export function MotionValueState() {
     const a = motionValue(1)
     const b = motionValue(2)
     const [source, setSource] = createSignal(a)
-    const value = useMotionValueAccessor(source)
-    const plain = useMotionValueAccessor(b)
+    const value = useMotionValueState(source)
+    const plain = useMotionValueState(b)
     return (
         <>
             <span id="value">{value()}</span>
@@ -75,5 +84,45 @@ export function MotionValueAccessor() {
             <button id="switch" onClick={() => setSource(() => b)} />
             <button id="set" onClick={() => b.set(5)} />
         </>
+    )
+}
+
+export function ScrollContainerSignal() {
+    const [container, setContainer] = createSignal<HTMLElement>()
+    const { scrollYProgress } = useScroll({ container })
+    return (
+        <div
+            id="container"
+            ref={setContainer}
+            style={{ height: "100px", overflow: "auto" }}
+        >
+            <div style={{ height: "300px" }} />
+            <motion.div id="bar" style={{ scaleX: scrollYProgress }} />
+        </div>
+    )
+}
+
+export function ReducedMotionText() {
+    const shouldReduceMotion = useReducedMotion()
+    return <p id="value">{String(shouldReduceMotion())}</p>
+}
+
+export function AnimateWhileHydrating() {
+    return (
+        <MotionConfig reducedMotion="user">
+            <AnimatedBox />
+        </MotionConfig>
+    )
+}
+
+function AnimatedBox() {
+    const [scope, animate] = useAnimate()
+    onSettled(() => {
+        animate("#box", { x: 100 }, { duration: 10 })
+    })
+    return (
+        <div ref={scope}>
+            <div id="box" />
+        </div>
     )
 }

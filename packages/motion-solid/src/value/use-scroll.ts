@@ -144,6 +144,9 @@ export function useScroll(options: MaybeAccessor<UseScrollOptions> = {}) {
         if (canAccelerateScroll(target, scrollOptions.offset)) {
             /**
              * Accelerated timelines attached with accessor refs, restarted when they change.
+             *
+             * Port note: client-only (it can't accelerate on the server), so `transparent`: it
+             * doesn't shift the hydration keys of what the component renders next.
              */
             const onRefsChange = new Set<VoidFunction>()
             if (
@@ -153,7 +156,14 @@ export function useScroll(options: MaybeAccessor<UseScrollOptions> = {}) {
                 createEffect(
                     () => [resolveRef(container), resolveRef(target)],
                     () => onRefsChange.forEach((restart) => restart()),
-                    { defer: true }
+                    {
+                        defer: true,
+                        transparent: true,
+                        name:
+                            process.env.NODE_ENV !== "production"
+                                ? "Motion.useScroll.refs"
+                                : undefined,
+                    }
                 )
             }
 
@@ -231,6 +241,12 @@ export function useScroll(options: MaybeAccessor<UseScrollOptions> = {}) {
                 cancelFrame(tryStart)
                 cleanup?.()
             }
+        },
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.useScroll.track"
+                    : undefined,
         }
     )
 

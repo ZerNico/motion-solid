@@ -80,15 +80,25 @@ function ShowImpl(props: AnyProps): JSX.Element {
     return createControlFlow(props, SolidShow, (boundary) => {
         const keyed = untrack(() => props.keyed) === true
 
-        const present = createMemo((): PresenceEntry<unknown>[] => {
-            const when = props.when
-            if (when) {
-                return [{ key: keyed ? when : whenKey, value: when, index: 0 }]
+        const present = createMemo(
+            (): PresenceEntry<unknown>[] => {
+                const when = props.when
+                if (when) {
+                    return [
+                        { key: keyed ? when : whenKey, value: when, index: 0 },
+                    ]
+                }
+                return hasFallback(props)
+                    ? [{ key: fallbackKey, value: undefined, index: 0 }]
+                    : []
+            },
+            {
+                name:
+                    process.env.NODE_ENV !== "production"
+                        ? "Motion.Show.present"
+                        : undefined,
             }
-            return hasFallback(props)
-                ? [{ key: fallbackKey, value: undefined, index: 0 }]
-                : []
-        })
+        )
 
         return createPresenceList(boundary, present, (value, _index, key) => {
             if (key === fallbackKey) return props.fallback
@@ -148,62 +158,70 @@ function ForImpl(props: AnyProps): JSX.Element {
         let duplicateKeys = new Map<unknown, (DuplicateKey | undefined)[]>()
         const childKeys = new Set<unknown>()
 
-        const present = createMemo((): PresenceEntry<unknown>[] => {
-            const each = (props.each || []) as readonly unknown[]
-            const occurrences = new Map<unknown, number>()
-            const nextDuplicateKeys = new Map<
-                unknown,
-                (DuplicateKey | undefined)[]
-            >()
-            const used = new Set<DuplicateKey>()
+        const present = createMemo(
+            (): PresenceEntry<unknown>[] => {
+                const each = (props.each || []) as readonly unknown[]
+                const occurrences = new Map<unknown, number>()
+                const nextDuplicateKeys = new Map<
+                    unknown,
+                    (DuplicateKey | undefined)[]
+                >()
+                const used = new Set<DuplicateKey>()
 
-            const entries = each.map((item, index) => {
-                let key = getKey(item, index)
-                const occurrence = occurrences.get(key) ?? 0
-                occurrences.set(key, occurrence + 1)
+                const entries = each.map((item, index) => {
+                    let key = getKey(item, index)
+                    const occurrence = occurrences.get(key) ?? 0
+                    occurrences.set(key, occurrence + 1)
 
-                if (occurrence > 0) {
-                    let keys = nextDuplicateKeys.get(key)
-                    if (!keys) {
-                        keys = [...(duplicateKeys.get(key) ?? [])]
-                        nextDuplicateKeys.set(key, keys)
+                    if (occurrence > 0) {
+                        let keys = nextDuplicateKeys.get(key)
+                        if (!keys) {
+                            keys = [...(duplicateKeys.get(key) ?? [])]
+                            nextDuplicateKeys.set(key, keys)
+                        }
+                        const duplicate = (keys[occurrence - 1] ??= {
+                            key,
+                            occurrence,
+                        })
+                        used.add(duplicate)
+                        key = duplicate
                     }
-                    const duplicate = (keys[occurrence - 1] ??= {
-                        key,
-                        occurrence,
-                    })
-                    used.add(duplicate)
-                    key = duplicate
-                }
 
-                return { key, value: item, index }
-            })
+                    return { key, value: item, index }
+                })
 
-            duplicateKeys.forEach((keys, key) => {
-                const nextKeys = nextDuplicateKeys.get(key) ?? [...keys]
-                for (let i = 0; i < nextKeys.length; i++) {
-                    const duplicate = nextKeys[i]
-                    if (
-                        duplicate &&
-                        !used.has(duplicate) &&
-                        !childKeys.has(duplicate)
-                    ) {
-                        nextKeys[i] = undefined
+                duplicateKeys.forEach((keys, key) => {
+                    const nextKeys = nextDuplicateKeys.get(key) ?? [...keys]
+                    for (let i = 0; i < nextKeys.length; i++) {
+                        const duplicate = nextKeys[i]
+                        if (
+                            duplicate &&
+                            !used.has(duplicate) &&
+                            !childKeys.has(duplicate)
+                        ) {
+                            nextKeys[i] = undefined
+                        }
                     }
-                }
-                while (nextKeys.length && !nextKeys[nextKeys.length - 1]) {
-                    nextKeys.pop()
-                }
-                if (nextKeys.length) nextDuplicateKeys.set(key, nextKeys)
-                else nextDuplicateKeys.delete(key)
-            })
-            duplicateKeys = nextDuplicateKeys
+                    while (nextKeys.length && !nextKeys[nextKeys.length - 1]) {
+                        nextKeys.pop()
+                    }
+                    if (nextKeys.length) nextDuplicateKeys.set(key, nextKeys)
+                    else nextDuplicateKeys.delete(key)
+                })
+                duplicateKeys = nextDuplicateKeys
 
-            if (!entries.length && hasFallback(props)) {
-                return [{ key: fallbackKey, value: undefined, index: 0 }]
+                if (!entries.length && hasFallback(props)) {
+                    return [{ key: fallbackKey, value: undefined, index: 0 }]
+                }
+                return entries
+            },
+            {
+                name:
+                    process.env.NODE_ENV !== "production"
+                        ? "Motion.For.present"
+                        : undefined,
             }
-            return entries
-        })
+        )
 
         return createPresenceList(
             boundary,

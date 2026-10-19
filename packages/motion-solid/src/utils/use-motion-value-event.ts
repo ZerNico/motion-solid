@@ -31,7 +31,13 @@ export function useMotionValueEvent<
             unsubscribe()
             unsubscribe = motionValue.on(event, callback)
         },
-        { defer: true }
+        {
+            defer: true,
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.useMotionValueEvent.subscribe"
+                    : undefined,
+        }
     )
     onCleanup(() => unsubscribe())
 }

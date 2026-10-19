@@ -91,14 +91,28 @@ export function useFollow<O extends object>(
             (current) => {
                 if (!isMotionValue(current)) target!.set(current)
             },
-            { defer: true }
+            {
+                defer: true,
+                name:
+                    process.env.NODE_ENV !== "production"
+                        ? "Motion.useFollowValue.source"
+                        : undefined,
+            }
         )
     }
 
-    const getFollowed = createMemo(() => {
-        const current = getSource()
-        return isMotionValue(current) || !target ? current : target
-    })
+    const getFollowed = createMemo(
+        () => {
+            const current = getSource()
+            return isMotionValue(current) || !target ? current : target
+        },
+        {
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.useFollowValue.followed"
+                    : undefined,
+        }
+    )
     const getOptions = () => readOptions(options) ?? ({} as O)
 
     let detach = attach(value, untrack(getFollowed), untrack(getOptions))
@@ -114,7 +128,13 @@ export function useFollow<O extends object>(
              */
             if (isMotionValue(followed)) value.set(followed.get())
         },
-        { defer: true }
+        {
+            defer: true,
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.useFollowValue.attach"
+                    : undefined,
+        }
     )
     onCleanup(() => {
         detach()

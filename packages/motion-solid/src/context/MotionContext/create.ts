@@ -25,6 +25,10 @@ export function useCreateMotionContext<Instance>(
                     variantLabelsAsDependency(b.initial) &&
                 variantLabelsAsDependency(a.animate) ===
                     variantLabelsAsDependency(b.animate),
+            name:
+                process.env.NODE_ENV !== "production"
+                    ? "Motion.MotionContext.variants"
+                    : undefined,
         }
     )
 

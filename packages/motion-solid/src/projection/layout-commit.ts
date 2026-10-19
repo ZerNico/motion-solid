@@ -17,7 +17,7 @@ export function createLayoutTrigger<T>(
     compute: () => T,
     onRetire: (next: T) => void,
     onApply?: (value: T) => void,
-    options?: { transparent?: boolean }
+    options?: { transparent?: boolean; name?: string }
 ) {
     let run = 0
     let latest: T
@@ -56,10 +56,11 @@ export function createLayoutTrigger<T>(
  */
 export function onLayoutCommit(
     callback: VoidFunction,
-    options?: { transparent?: boolean }
+    options?: { transparent?: boolean; name?: string }
 ) {
     const [committed, setCommitted] = createSignal(false, {
         ownedWrite: true,
+        name: options?.name && `${options.name}.committed`,
     })
     createLayoutTrigger(committed, callback, undefined, options)
     setCommitted(true)

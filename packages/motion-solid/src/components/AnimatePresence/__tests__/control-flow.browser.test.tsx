@@ -424,3 +424,174 @@ describe("presence-aware Show/For", () => {
         expect(opacity(child)).toBe(1)
     })
 })
+
+/**
+ * Port note: Solid-only. Upstream renders a child with nothing to finish before it's removed once
+ * more and completes its exit from a layout effect. Here the list's diff counts that exit as
+ * complete, so the child is removed in the update that removes it (see PORTING.md, "Solid dev
+ * diagnostics"). What can be observed is the same.
+ */
+describe("exits with nothing to finish", () => {
+    test("Show: the child is removed in the same flush, onExitComplete fires after it", async () => {
+        const [show, setShow] = createSignal(true)
+        const onExitComplete = vi.fn()
+
+        const { container } = render(() => (
+            <AnimatePresence onExitComplete={onExitComplete}>
+                <Show when={show()}>
+                    <motion.div id="child" />
+                </Show>
+            </AnimatePresence>
+        ))
+        const child = container.querySelector("#child")!
+
+        setShow(false)
+        flush()
+        expect(child.isConnected).toBe(false)
+        expect(onExitComplete).not.toHaveBeenCalled()
+
+        await Promise.resolve()
+        expect(onExitComplete).toHaveBeenCalledTimes(1)
+        await sleep(50)
+        expect(onExitComplete).toHaveBeenCalledTimes(1)
+    })
+
+    test("For: they wait for the exits of their siblings, and are removed with them", async () => {
+        const [items, setItems] = createSignal(["a", "b", "c"])
+        const onExitComplete = vi.fn()
+
+        const { container } = render(() => (
+            <AnimatePresence onExitComplete={onExitComplete}>
+                <For each={items()}>
+                    {(item) => (
+                        <motion.div
+                            data-key={item}
+                            exit={item === "b" ? { opacity: 0 } : undefined}
+                            transition={{ duration: 0.1 }}
+                        />
+                    )}
+                </For>
+            </AnimatePresence>
+        ))
+        const keys = () =>
+            Array.from(
+                container.querySelectorAll<HTMLElement>("[data-key]")
+            ).map((element) => element.dataset.key)
+
+        setItems([])
+        flush()
+        expect(keys()).toEqual(["a", "b", "c"])
+
+        await vi.waitFor(() => expect(keys()).toEqual([]))
+        await sleep(20)
+        expect(onExitComplete).toHaveBeenCalledTimes(1)
+    })
+
+    test("sibling lists: the list without exit animations waits for the other's exits", async () => {
+        const [show, setShow] = createSignal(true)
+        const onExitComplete = vi.fn()
+
+        const { container } = render(() => (
+            <AnimatePresence onExitComplete={onExitComplete}>
+                <Show when={show()}>
+                    <motion.div id="plain" />
+                </Show>
+                <Show when={show()}>
+                    <motion.div
+                        id="animated"
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.1 }}
+                    />
+                </Show>
+            </AnimatePresence>
+        ))
+        const plain = container.querySelector("#plain")!
+        const animated = container.querySelector("#animated")!
+
+        setShow(false)
+        flush()
+        expect(plain.isConnected).toBe(true)
+
+        await vi.waitFor(() => expect(animated.isConnected).toBe(false))
+        expect(plain.isConnected).toBe(false)
+        await sleep(20)
+        expect(onExitComplete).toHaveBeenCalledTimes(1)
+    })
+
+    test("mode=wait: the next child enters in the same flush", async () => {
+        const [key, setKey] = createSignal("a")
+        const onExitComplete = vi.fn()
+
+        const { container } = render(() => (
+            <AnimatePresence mode="wait" onExitComplete={onExitComplete}>
+                <Show when={key()} keyed>
+                    {(k) => <motion.div data-key={k} />}
+                </Show>
+            </AnimatePresence>
+        ))
+        const keys = () =>
+            Array.from(
+                container.querySelectorAll<HTMLElement>("[data-key]")
+            ).map((element) => element.dataset.key)
+
+        setKey("b")
+        flush()
+        expect(keys()).toEqual(["b"])
+        await sleep(20)
+        expect(onExitComplete).toHaveBeenCalledTimes(1)
+    })
+
+    test("propagate: a nested child with nothing to finish doesn't hold its parent", async () => {
+        const [show, setShow] = createSignal(true)
+        const onExitComplete = vi.fn()
+
+        const { container } = render(() => (
+            <AnimatePresence onExitComplete={onExitComplete}>
+                <Show when={show()}>
+                    <motion.div
+                        id="outer"
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.1 }}
+                    >
+                        <AnimatePresence propagate>
+                            <Show when={true}>
+                                <motion.div id="inner" />
+                            </Show>
+                        </AnimatePresence>
+                    </motion.div>
+                </Show>
+            </AnimatePresence>
+        ))
+        const outer = container.querySelector("#outer")!
+
+        setShow(false)
+        flush()
+        expect(outer.isConnected).toBe(true)
+        await vi.waitFor(() => expect(outer.isConnected).toBe(false))
+        await sleep(20)
+        expect(onExitComplete).toHaveBeenCalledTimes(1)
+    })
+
+    test("a child that's added again later is a new one", async () => {
+        const [items, setItems] = createSignal(["a", "b"])
+
+        const { container } = render(() => (
+            <AnimatePresence>
+                <For each={items()}>
+                    {(item) => <motion.div data-key={item} />}
+                </For>
+            </AnimatePresence>
+        ))
+        const first = container.querySelector("[data-key=b]")!
+
+        setItems(["a"])
+        flush()
+        expect(first.isConnected).toBe(false)
+
+        setItems(["a", "b"])
+        flush()
+        const second = container.querySelector("[data-key=b]")!
+        expect(second).not.toBe(first)
+        expect(second.isConnected).toBe(true)
+    })
+})
