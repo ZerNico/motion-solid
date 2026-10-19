@@ -242,6 +242,17 @@ export const sections: Section[] = [
       },
     ],
   },
+  {
+    title: "Integrations",
+    pages: [
+      {
+        slug: "base-ui-solid",
+        title: "Base UI Solid",
+        description:
+          "Animate Base UI Solid components: motion components in render props, exit and layout animations.",
+      },
+    ],
+  },
 ]
 
 export const pages = sections.flatMap((section) => section.pages)

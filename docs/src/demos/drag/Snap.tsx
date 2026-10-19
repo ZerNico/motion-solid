@@ -15,9 +15,7 @@ export default function Snap() {
           {(tick) => (
             <span
               class="pointer-events-none absolute size-1.5 rounded-full bg-border"
-              style={{
-                transform: `translateX(${tick * step}px)`,
-              }}
+              style={{ transform: `translateX(${tick * step}px)` }}
             />
           )}
         </For>

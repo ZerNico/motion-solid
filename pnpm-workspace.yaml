@@ -6,7 +6,12 @@ packages:
 
 allowBuilds:
     esbuild: true
+    # Only wrangler needs it, for `wrangler dev`, which the docs deploy doesn't use.
+    workerd: false
 
 engineStrict: true
 updateNotifier: false
 autoDedupe: true
+minimumReleaseAgeExclude:
+    - "@base-ui-solid/utils@0.3.1"
+    - base-ui-solid@0.3.1

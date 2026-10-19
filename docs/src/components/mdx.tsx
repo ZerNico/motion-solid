@@ -2,6 +2,7 @@ import { Link } from "@tanstack/solid-router"
 import { Dynamic, type JSX } from "@solidjs/web"
 import { CopyButton } from "./CopyButton"
 import { Demo } from "./Demo"
+import { InstallTabs } from "./InstallTabs"
 import { Note } from "./Note"
 
 function Anchor(props: JSX.AnchorHTMLAttributes<HTMLAnchorElement>) {
@@ -42,4 +43,5 @@ export const mdxComponents = {
   a: Anchor,
   pre: CodeBlock,
   Demo,
+  InstallTabs,
 }

@@ -15,9 +15,13 @@ pnpm docs:build      # static site in docs/dist/client
 - It starts with `# Title` and one or two sentences on what the feature is for. `##` and `###`
   headings make the table of contents.
 - Code blocks name their language (` ```tsx `) and import from `"@motion-s/solid"`.
+  Indent them with 2 spaces, like the rest of `docs/`: oxfmt formats the demos, but not code
+  blocks inside MDX.
 - `<Note>` sets a remark apart, `<Note type="warning">` a pitfall. Both take an optional `title`.
+- Install commands use `<InstallTabs packages="..." />`: a tab per package manager, and the
+  reader's choice is saved.
 - Internal links are absolute: `[useScroll](/docs/use-scroll)`.
-- Inside JSX like `<Note>`, Prettier can break inline code that contains `{{ }}` across lines.
+- Inside JSX like `<Note>`, the formatter can break inline code that contains `{{ }}` across lines.
   Put such code in a code block, or in plain Markdown outside the component.
 
 ## Demos
@@ -47,3 +51,9 @@ pnpm check:mdx       # every page compiles
 pnpm typecheck       # demos and the site
 pnpm build           # prerenders every page
 ```
+
+## Deploying
+
+Publishing a GitHub release deploys the site to Cloudflare Pages
+(`.github/workflows/deploy-docs.yml`, motion-solid.pages.dev). Running the workflow by hand
+deploys the branch it's run on.

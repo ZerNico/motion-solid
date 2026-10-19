@@ -19,11 +19,11 @@ render their element with its initial styles.
 import { domAnimation, LazyMotion, m } from "@motion-s/solid"
 
 function App() {
-    return (
-        <LazyMotion features={domAnimation}>
-            <m.div animate={{ opacity: 1 }} whileHover={{ scale: 1.1 }} />
-        </LazyMotion>
-    )
+  return (
+    <LazyMotion features={domAnimation}>
+      <m.div animate={{ opacity: 1 }} whileHover={{ scale: 1.1 }} />
+    </LazyMotion>
+  )
 }
 ```
 
@@ -61,7 +61,7 @@ import { LazyMotion, m } from "@motion-s/solid"
 const loadFeatures = () => import("./features").then((res) => res.default)
 
 <LazyMotion features={loadFeatures}>
-    <m.div animate={{ scale: 1.2 }} />
+  <m.div animate={{ scale: 1.2 }} />
 </LazyMotion>
 ```
 
@@ -81,7 +81,7 @@ With `strict`, rendering one there throws in development:
 
 ```tsx
 <LazyMotion features={domAnimation} strict>
-    <motion.div /> {/* throws: use m.div */}
+  <motion.div /> {/* throws: use m.div */}
 </LazyMotion>
 ```
 

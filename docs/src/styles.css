@@ -19,6 +19,14 @@ body {
   @apply bg-bg font-sans text-fg antialiased;
 }
 
+/* Tailwind 4 resets buttons to the default cursor. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
 /* Code blocks and demo sources, highlighted by Shiki with both themes. */
 .code pre {
   @apply overflow-x-auto bg-surface p-4 text-sm leading-relaxed;

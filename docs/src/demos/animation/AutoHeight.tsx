@@ -23,10 +23,7 @@ export default function AutoHeight() {
       <motion.div
         class="overflow-hidden"
         initial={false}
-        animate={{
-          height: isOpen() ? "auto" : 0,
-          opacity: isOpen() ? 1 : 0,
-        }}
+        animate={{ height: isOpen() ? "auto" : 0, opacity: isOpen() ? 1 : 0 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         <p class="px-4 pb-4 text-sm text-fg-muted">

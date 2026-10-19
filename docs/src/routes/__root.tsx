@@ -9,10 +9,7 @@ import styles from "../styles.css?url"
 export const Route = createRootRoute({
   head: () => ({
     meta: [
-      {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
-      },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "motion-solid" },
     ],
     links: [

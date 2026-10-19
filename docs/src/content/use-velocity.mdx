@@ -24,8 +24,8 @@ thrown, more the faster it goes:
 
 ```tsx
 const skewX = useSpring(
-    useTransform(xVelocity, [-2000, 0, 2000], [30, 0, -30]),
-    { stiffness: 400, damping: 30 }
+  useTransform(xVelocity, [-2000, 0, 2000], [30, 0, -30]),
+  { stiffness: 400, damping: 30 }
 )
 ```
 
@@ -54,7 +54,7 @@ const velocity = useVelocity(() => (vertical() ? y : x))
 
 ```ts
 function useVelocity(
-    value: MaybeAccessor<MotionValue<number>>
+  value: MaybeAccessor<MotionValue<number>>
 ): MotionValue<number>
 ```
 

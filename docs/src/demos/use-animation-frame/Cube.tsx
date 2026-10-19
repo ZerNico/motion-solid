@@ -33,9 +33,7 @@ export default function Cube() {
             {(face) => (
               <div
                 class="absolute inset-0 rounded-lg border border-white/40 bg-accent/70"
-                style={{
-                  transform: `${face} translateZ(40px)`,
-                }}
+                style={{ transform: `${face} translateZ(40px)` }}
               />
             )}
           </For>

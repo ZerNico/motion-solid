@@ -14,9 +14,9 @@ wraps around after the last one:
 
 ```tsx
 const [shape, cycleShape] = useCycle(
-    { borderRadius: "16px", rotate: 0 },
-    { borderRadius: "50%", rotate: 0 },
-    { borderRadius: "4px", rotate: 45 }
+  { borderRadius: "16px", rotate: 0 },
+  { borderRadius: "50%", rotate: 0 },
+  { borderRadius: "4px", rotate: 45 }
 )
 
 return <motion.div animate={shape()} onTap={() => cycleShape()} />
@@ -39,7 +39,7 @@ tab or minimizes the window (`document.hidden`). Use it to pause work nobody can
 const isPageInView = usePageInView()
 
 createEffect(isPageInView, (visible) => {
-    visible ? video.play() : video.pause()
+  visible ? video.play() : video.pause()
 })
 ```
 
@@ -97,12 +97,12 @@ exist. When a signal it reads switches to another element, the listener moves to
 let element!: HTMLDivElement
 
 useDomEvent(
-    () => element,
-    "wheel",
-    (event) => event.preventDefault(),
-    {
-        passive: false,
-    }
+  () => element,
+  "wheel",
+  (event) => event.preventDefault(),
+  {
+    passive: false,
+  }
 )
 
 return <div ref={element} />
@@ -110,10 +110,10 @@ return <div ref={element} />
 
 ```tsx
 function useDomEvent(
-    ref: ElementRef<EventTarget>,
-    eventName: string,
-    handler?: EventListener,
-    options?: AddEventListenerOptions
+  ref: ElementRef<EventTarget>,
+  eventName: string,
+  handler?: EventListener,
+  options?: AddEventListenerOptions
 ): void
 ```
 

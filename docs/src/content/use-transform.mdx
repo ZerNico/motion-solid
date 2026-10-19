@@ -75,8 +75,8 @@ mapped from the same input range:
 
 ```tsx
 const { opacity, scale } = useTransform(x, [0, 100], {
-    opacity: [0, 1],
-    scale: [0.5, 1],
+  opacity: [0, 1],
+  scale: [0.5, 1],
 })
 ```
 
@@ -106,8 +106,8 @@ value:
 
 ```tsx
 const output = useTransform(
-    () => props.value,
-    (latest) => latest * 2
+  () => props.value,
+  (latest) => latest * 2
 )
 ```
 
@@ -141,29 +141,29 @@ opposite way:
 ```ts
 // Map from one range to another
 function useTransform<O>(
-    input: MaybeAccessor<MotionValue<number>>,
-    inputRange: MaybeAccessor<number[]>,
-    outputRange: MaybeAccessor<O[]>,
-    options?: MaybeAccessor<TransformOptions<O>>
+  input: MaybeAccessor<MotionValue<number>>,
+  inputRange: MaybeAccessor<number[]>,
+  outputRange: MaybeAccessor<O[]>,
+  options?: MaybeAccessor<TransformOptions<O>>
 ): MotionValue<O>
 
 // Map to several output ranges
 function useTransform<T extends Record<string, any[]>>(
-    input: MaybeAccessor<MotionValue<number>>,
-    inputRange: MaybeAccessor<number[]>,
-    outputMap: MaybeAccessor<T>,
-    options?: MaybeAccessor<TransformOptions<T[keyof T][number]>>
+  input: MaybeAccessor<MotionValue<number>>,
+  inputRange: MaybeAccessor<number[]>,
+  outputMap: MaybeAccessor<T>,
+  options?: MaybeAccessor<TransformOptions<T[keyof T][number]>>
 ): { [K in keyof T]: MotionValue<T[K][number]> }
 
 // Transform function
 function useTransform<I, O>(
-    input: MaybeAccessor<MotionValue<I>>,
-    transformer: (latest: I) => O
+  input: MaybeAccessor<MotionValue<I>>,
+  transformer: (latest: I) => O
 ): MotionValue<O>
 
 function useTransform<I, O>(
-    input: MaybeAccessor<MotionValue[]>,
-    transformer: (latest: I[]) => O
+  input: MaybeAccessor<MotionValue[]>,
+  transformer: (latest: I[]) => O
 ): MotionValue<O>
 
 // Computed value

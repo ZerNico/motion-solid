@@ -10,10 +10,10 @@ size checks:
 
 | Import                                    | Size    |
 | :---------------------------------------- | :------ |
-| `motion`                                  | 42.5 kB |
-| `m`                                       | 9.6 kB  |
-| `m` + `LazyMotion` + `domAnimation`       | 29.4 kB |
-| `m` + `LazyMotion` + `domMax`             | 42.6 kB |
+| `motion`                                  | 42.7 kB |
+| `m`                                       | 9.8 kB  |
+| `m` + `LazyMotion` + `domAnimation`       | 29.6 kB |
+| `m` + `LazyMotion` + `domMax`             | 42.8 kB |
 | `animate` from `@motion-s/solid/dom`      | 18.9 kB |
 | `scroll` from `@motion-s/solid/dom`       | 3.6 kB  |
 | `animate` from `@motion-s/solid/dom/mini` | 3.1 kB  |
@@ -29,11 +29,11 @@ provides the features to the `m` components inside it, so only the bundle you pi
 import { domAnimation, LazyMotion, m } from "@motion-s/solid"
 
 function App() {
-    return (
-        <LazyMotion features={domAnimation} strict>
-            <m.div animate={{ opacity: 1 }} whileHover={{ scale: 1.05 }} />
-        </LazyMotion>
-    )
+  return (
+    <LazyMotion features={domAnimation} strict>
+      <m.div animate={{ opacity: 1 }} whileHover={{ scale: 1.05 }} />
+    </LazyMotion>
+  )
 }
 ```
 
@@ -59,7 +59,7 @@ export default domAnimation
 const loadFeatures = () => import("./features").then((res) => res.default)
 
 <LazyMotion features={loadFeatures}>
-    <m.div animate={{ opacity: 1 }} />
+  <m.div animate={{ opacity: 1 }} />
 </LazyMotion>
 ```
 
@@ -84,16 +84,16 @@ The mini entries animate elements with the browser's Web Animations API, for the
 import { useAnimate } from "@motion-s/solid/mini"
 
 function Toast() {
-    const [scope, animate] = useAnimate()
+  const [scope, animate] = useAnimate()
 
-    const dismiss = () =>
-        animate(scope.current, { opacity: 0, y: -8 }, { duration: 0.2 })
+  const dismiss = () =>
+    animate(scope.current, { opacity: 0, y: -8 }, { duration: 0.2 })
 
-    return (
-        <div ref={scope} onClick={dismiss}>
-            Saved
-        </div>
-    )
+  return (
+    <div ref={scope} onClick={dismiss}>
+      Saved
+    </div>
+  )
 }
 ```
 

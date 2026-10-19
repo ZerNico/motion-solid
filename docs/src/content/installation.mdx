@@ -7,21 +7,7 @@ Install motion-solid together with Solid 2. This page also lists the package's e
 motion-solid needs Solid 2.0 (`solid-js` and `@solidjs/web`, version `2.0.0-rc.15` or later). Solid
 2 is a release candidate and is published under the `next` tag:
 
-```sh
-pnpm add @motion-s/solid solid-js@next @solidjs/web@next
-```
-
-```sh
-npm install @motion-s/solid solid-js@next @solidjs/web@next
-```
-
-```sh
-yarn add @motion-s/solid solid-js@next @solidjs/web@next
-```
-
-```sh
-bun add @motion-s/solid solid-js@next @solidjs/web@next
-```
+<InstallTabs packages="@motion-s/solid solid-js@next @solidjs/web@next" />
 
 `motion-dom` and `motion-utils`, the engine shared with Motion for React, are installed as
 dependencies.
@@ -74,7 +60,7 @@ the main entry:
 import { motion, type Variants } from "@motion-s/solid"
 
 const variants: Variants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
 }
 ```

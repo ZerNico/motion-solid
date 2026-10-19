@@ -20,9 +20,7 @@ export function NavList(props: { onNavigate?: () => void }) {
                   <Link
                     to={pagePath(page)}
                     class="block rounded-md px-2 py-1 text-sm text-fg-muted hover:bg-surface hover:text-fg"
-                    activeProps={{
-                      class: "bg-surface text-fg font-medium",
-                    }}
+                    activeProps={{ class: "bg-surface text-fg font-medium" }}
                     onClick={() => props.onNavigate?.()}
                   >
                     {page.title}

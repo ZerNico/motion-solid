@@ -34,7 +34,9 @@ function Logo() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
       <rect width="20" height="20" rx="6" class="fill-accent" />
-      <path d="M5 14 10 6l5 8" class="fill-none stroke-white stroke-2" />
+      <circle cx="5.5" cy="10" r="1.6" class="fill-white opacity-40" />
+      <circle cx="9" cy="10" r="2.1" class="fill-white opacity-70" />
+      <circle cx="13.6" cy="10" r="2.9" class="fill-white" />
     </svg>
   )
 }

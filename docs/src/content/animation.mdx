@@ -26,9 +26,9 @@ props describe its states:
 import { motion } from "@motion-s/solid"
 
 <motion.div
-    initial={{ opacity: 0, y: 16 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0 }}
+  initial={{ opacity: 0, y: 16 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0 }}
 />
 ```
 
@@ -81,8 +81,8 @@ Animate a CSS variable by its name. Other styles can then use it:
 
 ```tsx
 <motion.div
-    style={{ "--hue": 0, background: "hsl(var(--hue) 80% 60%)" }}
-    animate={{ "--hue": 240 }}
+  style={{ "--hue": 0, background: "hsl(var(--hue) 80% 60%)" }}
+  animate={{ "--hue": 240 }}
 />
 ```
 
@@ -135,8 +135,8 @@ Variants are named sets of values. Define them in the `variants` prop, then use 
 
 ```tsx
 const variants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { opacity: 1, scale: 1 },
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: { opacity: 1, scale: 1 },
 }
 
 <motion.div variants={variants} initial="hidden" animate="visible" />
@@ -174,18 +174,18 @@ Use it to give each element a different animation from the same variants:
 
 ```tsx
 const variants = {
-    visible: (index: number) => ({
-        opacity: 1,
-        transition: { delay: index * 0.1 },
-    }),
+  visible: (index: number) => ({
+    opacity: 1,
+    transition: { delay: index * 0.1 },
+  }),
 }
 
 <For each={items()}>
-    {(item, index) => (
-        <motion.li custom={index()} variants={variants} initial={{ opacity: 0 }} animate="visible">
-            {item.label}
-        </motion.li>
-    )}
+  {(item, index) => (
+    <motion.li custom={index()} variants={variants} initial={{ opacity: 0 }} animate="visible">
+      {item.label}
+    </motion.li>
+  )}
 </For>
 ```
 
@@ -202,12 +202,12 @@ For `exit` animations, `AnimatePresence` can pass a `custom` value too: see
 
 ```tsx
 <motion.div
-    animate={isOpen() ? "open" : "closed"}
-    variants={variants}
-    onAnimationComplete={(definition) => {
-        if (definition === "closed") setVisible(false)
-    }}
-    onUpdate={(latest) => console.log(latest.opacity)}
+  animate={isOpen() ? "open" : "closed"}
+  variants={variants}
+  onAnimationComplete={(definition) => {
+    if (definition === "closed") setVisible(false)
+  }}
+  onUpdate={(latest) => console.log(latest.opacity)}
 />
 ```
 
@@ -221,10 +221,10 @@ animate, like `display` or `visibility`:
 
 ```tsx
 <motion.div
-    animate={
-        isVisible()
-            ? { opacity: 1, display: "block" }
-            : { opacity: 0, transitionEnd: { display: "none" } }
-    }
+  animate={
+    isVisible()
+      ? { opacity: 1, display: "block" }
+      : { opacity: 0, transitionEnd: { display: "none" } }
+  }
 />
 ```

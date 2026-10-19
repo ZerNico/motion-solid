@@ -16,6 +16,7 @@ import { Route as DocsAccessibilityRouteImport } from './routes/docs.accessibili
 import { Route as DocsAnimateFunctionRouteImport } from './routes/docs.animate-function'
 import { Route as DocsAnimatePresenceRouteImport } from './routes/docs.animate-presence'
 import { Route as DocsAnimationRouteImport } from './routes/docs.animation'
+import { Route as DocsBaseUiSolidRouteImport } from './routes/docs.base-ui-solid'
 import { Route as DocsBundleSizeRouteImport } from './routes/docs.bundle-size'
 import { Route as DocsComingFromReactRouteImport } from './routes/docs.coming-from-react'
 import { Route as DocsDragRouteImport } from './routes/docs.drag'
@@ -80,6 +81,11 @@ const DocsAnimatePresenceRoute = DocsAnimatePresenceRouteImport.update({
 const DocsAnimationRoute = DocsAnimationRouteImport.update({
   id: '/animation',
   path: '/animation',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsBaseUiSolidRoute = DocsBaseUiSolidRouteImport.update({
+  id: '/base-ui-solid',
+  path: '/base-ui-solid',
   getParentRoute: () => DocsRoute,
 } as any)
 const DocsBundleSizeRoute = DocsBundleSizeRouteImport.update({
@@ -240,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/docs/animate-function': typeof DocsAnimateFunctionRoute
   '/docs/animate-presence': typeof DocsAnimatePresenceRoute
   '/docs/animation': typeof DocsAnimationRoute
+  '/docs/base-ui-solid': typeof DocsBaseUiSolidRoute
   '/docs/bundle-size': typeof DocsBundleSizeRoute
   '/docs/coming-from-react': typeof DocsComingFromReactRoute
   '/docs/drag': typeof DocsDragRoute
@@ -278,6 +285,7 @@ export interface FileRoutesByTo {
   '/docs/animate-function': typeof DocsAnimateFunctionRoute
   '/docs/animate-presence': typeof DocsAnimatePresenceRoute
   '/docs/animation': typeof DocsAnimationRoute
+  '/docs/base-ui-solid': typeof DocsBaseUiSolidRoute
   '/docs/bundle-size': typeof DocsBundleSizeRoute
   '/docs/coming-from-react': typeof DocsComingFromReactRoute
   '/docs/drag': typeof DocsDragRoute
@@ -318,6 +326,7 @@ export interface FileRoutesById {
   '/docs/animate-function': typeof DocsAnimateFunctionRoute
   '/docs/animate-presence': typeof DocsAnimatePresenceRoute
   '/docs/animation': typeof DocsAnimationRoute
+  '/docs/base-ui-solid': typeof DocsBaseUiSolidRoute
   '/docs/bundle-size': typeof DocsBundleSizeRoute
   '/docs/coming-from-react': typeof DocsComingFromReactRoute
   '/docs/drag': typeof DocsDragRoute
@@ -359,6 +368,7 @@ export interface FileRouteTypes {
     | '/docs/animate-function'
     | '/docs/animate-presence'
     | '/docs/animation'
+    | '/docs/base-ui-solid'
     | '/docs/bundle-size'
     | '/docs/coming-from-react'
     | '/docs/drag'
@@ -397,6 +407,7 @@ export interface FileRouteTypes {
     | '/docs/animate-function'
     | '/docs/animate-presence'
     | '/docs/animation'
+    | '/docs/base-ui-solid'
     | '/docs/bundle-size'
     | '/docs/coming-from-react'
     | '/docs/drag'
@@ -436,6 +447,7 @@ export interface FileRouteTypes {
     | '/docs/animate-function'
     | '/docs/animate-presence'
     | '/docs/animation'
+    | '/docs/base-ui-solid'
     | '/docs/bundle-size'
     | '/docs/coming-from-react'
     | '/docs/drag'
@@ -523,6 +535,13 @@ declare module '@tanstack/solid-router' {
       path: '/animation'
       fullPath: '/docs/animation'
       preLoaderRoute: typeof DocsAnimationRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/base-ui-solid': {
+      id: '/docs/base-ui-solid'
+      path: '/base-ui-solid'
+      fullPath: '/docs/base-ui-solid'
+      preLoaderRoute: typeof DocsBaseUiSolidRouteImport
       parentRoute: typeof DocsRoute
     }
     '/docs/bundle-size': {
@@ -743,6 +762,7 @@ interface DocsRouteChildren {
   DocsAnimateFunctionRoute: typeof DocsAnimateFunctionRoute
   DocsAnimatePresenceRoute: typeof DocsAnimatePresenceRoute
   DocsAnimationRoute: typeof DocsAnimationRoute
+  DocsBaseUiSolidRoute: typeof DocsBaseUiSolidRoute
   DocsBundleSizeRoute: typeof DocsBundleSizeRoute
   DocsComingFromReactRoute: typeof DocsComingFromReactRoute
   DocsDragRoute: typeof DocsDragRoute
@@ -781,6 +801,7 @@ const DocsRouteChildren: DocsRouteChildren = {
   DocsAnimateFunctionRoute: DocsAnimateFunctionRoute,
   DocsAnimatePresenceRoute: DocsAnimatePresenceRoute,
   DocsAnimationRoute: DocsAnimationRoute,
+  DocsBaseUiSolidRoute: DocsBaseUiSolidRoute,
   DocsBundleSizeRoute: DocsBundleSizeRoute,
   DocsComingFromReactRoute: DocsComingFromReactRoute,
   DocsDragRoute: DocsDragRoute,

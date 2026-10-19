@@ -9,7 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "check:mdx": "node scripts/check-mdx.ts",
     "check:pages": "node scripts/check-pages.ts",
-    "routes": "node scripts/routes.ts && prettier --write src/routes"
+    "routes": "node scripts/routes.ts && oxfmt src/routes"
   },
   "dependencies": {
     "@motion-s/solid": "workspace:*",
@@ -17,6 +17,7 @@
     "@tanstack/solid-router": "2.0.0-rc.8",
     "@tanstack/solid-start": "2.0.0-rc.8",
     "@tanstack/solid-start-server": "2.0.0-rc.8",
+    "base-ui-solid": "0.3.1",
     "solid-js": "2.0.0-rc.15"
   },
   "devDependencies": {
@@ -36,6 +37,7 @@
     "shiki": "^4.5.0",
     "tailwindcss": "4.3.3",
     "unist-util-visit": "^5.1.0",
-    "vite": "^8.3.4"
+    "vite": "^8.3.4",
+    "wrangler": "4.151.1"
   }
 }

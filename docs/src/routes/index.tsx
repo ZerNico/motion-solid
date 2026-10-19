@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import { For } from "solid-js"
 import { Header } from "../components/Header"
+import { InstallTabs } from "../components/InstallTabs"
 import { Hero } from "../demos/Hero"
 
 const features = [
@@ -68,9 +69,7 @@ export const Route = createFileRoute("/")({
               GitHub
             </a>
           </div>
-          <code class="rounded-lg bg-surface px-4 py-2 font-mono text-sm">
-            pnpm add @motion-s/solid
-          </code>
+          <InstallTabs packages="@motion-s/solid" class="w-full max-w-md" />
         </section>
         <section class="grid gap-4 pb-24 sm:grid-cols-2 lg:grid-cols-3">
           <For each={features}>

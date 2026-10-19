@@ -1,0 +1,57 @@
+import PressTrigger from "../demos/base-ui-solid/PressTrigger"
+import pressTriggerSource from "../demos/base-ui-solid/PressTrigger.tsx?source"
+import PopoverExit from "../demos/base-ui-solid/PopoverExit"
+import popoverExitSource from "../demos/base-ui-solid/PopoverExit.tsx?source"
+import DialogExit from "../demos/base-ui-solid/DialogExit"
+import dialogExitSource from "../demos/base-ui-solid/DialogExit.tsx?source"
+import TabsIndicator from "../demos/base-ui-solid/TabsIndicator"
+import tabsIndicatorSource from "../demos/base-ui-solid/TabsIndicator.tsx?source"
+
+# Base UI Solid
+
+[Base UI Solid](https://github.com/zernico/base-ui-solid) is a Solid 2 port of Base UI: unstyled,
+accessible components like menus, popovers, dialogs and tabs. Each part takes a `render` prop,
+and that's where a motion component goes.
+
+<InstallTabs packages="base-ui-solid" />
+
+## Render a motion component
+
+Pass `render` a function that returns a motion component, and spread the props Base UI Solid gives
+it onto that component with `toMotionProps`. They include the `ref`, the event handlers and the ARIA
+attributes, so don't leave any out:
+
+<Demo component={PressTrigger} source={pressTriggerSource} />
+
+`toMotionProps` leaves out the DOM event handlers whose names Motion uses for its own callbacks
+(`onAnimationStart` and the `onDrag` events), and passes everything else on. See
+[Props from other components](/docs/motion#props-from-other-components).
+
+## Exit animations
+
+When a popup closes, Base UI Solid keeps it rendered until the animations running on its element
+have finished, then removes it. So there's no `AnimatePresence` here: read `state.open` in the
+render function and animate to the closed state when it's `false`. Opening the popup again before
+the exit has finished animates it back from where it is.
+
+<Demo component={PopoverExit} source={popoverExitSource} />
+
+<Note type="warning" title="Animate a value the browser runs">
+    Base UI Solid finds the running animations with `element.getAnimations()`, which only lists
+    animations run by the browser. Motion runs `opacity`, `transform`, `filter` and `clipPath` in
+    the browser, while `x`, `scale` and the other individual transforms run on Motion's frame
+    loop. Animate at least one of the browser-run values on close, like `opacity` above.
+</Note>
+
+The same works for every part with an open state, like the dialog's backdrop and popup:
+
+<Demo component={DialogExit} source={dialogExitSource} />
+
+With `keepMounted` on the portal, the popup is hidden instead of removed once the exit is done.
+
+## Layout animations
+
+Motion components inside Base UI Solid parts animate their layout like anywhere else. Here the
+highlight of the selected tab moves between the tabs with a shared `layoutId`:
+
+<Demo component={TabsIndicator} source={tabsIndicatorSource} />

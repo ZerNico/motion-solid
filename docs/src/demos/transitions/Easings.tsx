@@ -26,10 +26,7 @@ export default function Easings() {
                 <motion.div
                   class="size-6 rounded-full bg-accent"
                   animate={{ x: isEnd() ? 200 : 0 }}
-                  transition={{
-                    duration: 1,
-                    ease: easing.ease,
-                  }}
+                  transition={{ duration: 1, ease: easing.ease }}
                 />
               </div>
             </div>

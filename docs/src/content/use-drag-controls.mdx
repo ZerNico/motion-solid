@@ -17,19 +17,19 @@ Create the controls, pass them to the draggable element's `dragControls` prop, a
 import { motion, useDragControls } from "@motion-s/solid"
 
 function Panel() {
-    const controls = useDragControls()
+  const controls = useDragControls()
 
-    return (
-        <>
-            <div
-                class="touch-none"
-                onPointerDown={(event) => controls.start(event)}
-            >
-                Drag here
-            </div>
-            <motion.div drag="x" dragControls={controls} />
-        </>
-    )
+  return (
+    <>
+      <div
+        class="touch-none"
+        onPointerDown={(event) => controls.start(event)}
+      >
+        Drag here
+      </div>
+      <motion.div drag="x" dragControls={controls} />
+    </>
+  )
 }
 ```
 

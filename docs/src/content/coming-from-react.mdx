@@ -38,28 +38,28 @@ Props on motion components are Motion's props, with Solid's attribute names for 
 ```tsx
 // React
 function Card() {
-    const card = useRef(null)
-    return (
-        <motion.div
-            className="card"
-            style={{ backgroundColor: "#fff" }}
-            ref={card}
-        />
-    )
+  const card = useRef(null)
+  return (
+    <motion.div
+      className="card"
+      style={{ backgroundColor: "#fff" }}
+      ref={card}
+    />
+  )
 }
 ```
 
 ```tsx
 // Solid
 function Card() {
-    let card!: HTMLDivElement
-    return (
-        <motion.div
-            class="card"
-            style={{ "background-color": "#fff" }}
-            ref={card}
-        />
-    )
+  let card!: HTMLDivElement
+  return (
+    <motion.div
+      class="card"
+      style={{ "background-color": "#fff" }}
+      ref={card}
+    />
+  )
 }
 ```
 
@@ -70,10 +70,10 @@ prop and passes it to its root element:
 
 ```tsx
 function Button(props: {
-    ref?: (el: HTMLButtonElement) => void
-    children?: JSX.Element
+  ref?: (el: HTMLButtonElement) => void
+  children?: JSX.Element
 }) {
-    return <button ref={props.ref}>{props.children}</button>
+  return <button ref={props.ref}>{props.children}</button>
 }
 
 const MotionButton = motion.create(Button)
@@ -191,7 +191,7 @@ and `animations`:
 const [scope, animate] = useAnimate()
 
 onSettled(() => {
-    animate("li", { opacity: 1 })
+  animate("li", { opacity: 1 })
 })
 
 return <ul ref={scope}>...</ul>
@@ -269,7 +269,7 @@ keep removed children alive until their exit animations are done.
 import { AnimatePresence, motion } from "motion/react"
 
 <AnimatePresence>
-    {isOpen && <motion.div key="modal" exit={{ opacity: 0 }} />}
+  {isOpen && <motion.div key="modal" exit={{ opacity: 0 }} />}
 </AnimatePresence>
 ```
 
@@ -278,9 +278,9 @@ import { AnimatePresence, motion } from "motion/react"
 import { AnimatePresence, motion, Show } from "@motion-s/solid"
 
 <AnimatePresence>
-    <Show when={isOpen()}>
-        <motion.div exit={{ opacity: 0 }} />
-    </Show>
+  <Show when={isOpen()}>
+    <motion.div exit={{ opacity: 0 }} />
+  </Show>
 </AnimatePresence>
 ```
 
@@ -292,16 +292,16 @@ child each time the value changes:
 import { AnimatePresence, motion } from "motion/react"
 
 <AnimatePresence mode="wait">
-    <motion.div key={tab} exit={{ opacity: 0 }}>{tab}</motion.div>
+  <motion.div key={tab} exit={{ opacity: 0 }}>{tab}</motion.div>
 </AnimatePresence>
 
 // Solid
 import { AnimatePresence, motion, Show } from "@motion-s/solid"
 
 <AnimatePresence mode="wait">
-    <Show when={tab()} keyed>
-        {(tab) => <motion.div exit={{ opacity: 0 }}>{tab}</motion.div>}
-    </Show>
+  <Show when={tab()} keyed>
+    {(tab) => <motion.div exit={{ opacity: 0 }}>{tab}</motion.div>}
+  </Show>
 </AnimatePresence>
 ```
 
@@ -311,9 +311,9 @@ For lists, use motion-solid's `For` instead of `array.map` with keys:
 import { AnimatePresence, For, motion } from "@motion-s/solid"
 
 <AnimatePresence>
-    <For each={items()}>
-        {(item) => <motion.li exit={{ opacity: 0 }}>{item.label}</motion.li>}
-    </For>
+  <For each={items()}>
+    {(item) => <motion.li exit={{ opacity: 0 }}>{item.label}</motion.li>}
+  </For>
 </AnimatePresence>
 ```
 
@@ -356,7 +356,7 @@ tracked: the element animates its layout when the value changes.
 
 ```tsx
 <motion.div layout layoutDependency={isOpen()}>
-    <div style={{ height: isOpen() ? "200px" : "80px" }} />
+  <div style={{ height: isOpen() ? "200px" : "80px" }} />
 </motion.div>
 ```
 

@@ -12,11 +12,7 @@ export default function Transforms() {
         <motion.div
           class="size-20 rounded-2xl bg-accent"
           animate={{ x: x(), rotate: rotate(), scale: scale() }}
-          transition={{
-            type: "spring",
-            visualDuration: 0.3,
-            bounce: 0.3,
-          }}
+          transition={{ type: "spring", visualDuration: 0.3, bounce: 0.3 }}
         />
       </div>
       <div class="flex w-48 flex-col gap-3 text-sm">

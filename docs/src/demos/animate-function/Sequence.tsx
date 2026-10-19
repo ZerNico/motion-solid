@@ -24,16 +24,19 @@ export default function Sequence() {
       <div class="flex w-64 items-center gap-4 rounded-xl border border-border bg-bg p-4">
         <div
           ref={avatar}
-          class="size-12 shrink-0 scale-0 rounded-full bg-accent"
+          class="size-12 shrink-0 rounded-full bg-accent"
+          style={{ transform: "scale(0)" }}
         />
         <div class="flex flex-1 flex-col gap-2">
           <div
             ref={title}
-            class="h-3 w-3/4 origin-left scale-x-0 rounded-full bg-accent"
+            class="h-3 w-3/4 origin-left rounded-full bg-accent"
+            style={{ transform: "scaleX(0)" }}
           />
           <div
             ref={text}
-            class="h-3 origin-left scale-x-0 rounded-full bg-accent/40"
+            class="h-3 origin-left rounded-full bg-accent/40"
+            style={{ transform: "scaleX(0)" }}
           />
           <div
             ref={badge}

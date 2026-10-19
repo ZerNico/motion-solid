@@ -19,9 +19,9 @@ import { motion, useSpring } from "@motion-s/solid"
 const scale = useSpring(1)
 
 <motion.div
-    style={{ scale }}
-    onPointerEnter={() => scale.set(1.2)}
-    onPointerLeave={() => scale.set(1)}
+  style={{ scale }}
+  onPointerEnter={() => scale.set(1.2)}
+  onPointerLeave={() => scale.set(1)}
 />
 ```
 
@@ -92,9 +92,9 @@ import { useFollowValue, useMotionValue } from "@motion-s/solid"
 
 const x = useMotionValue(0)
 const smoothX = useFollowValue(x, {
-    type: "tween",
-    duration: 0.3,
-    ease: "easeOut",
+  type: "tween",
+  duration: 0.3,
+  ease: "easeOut",
 })
 ```
 
@@ -106,23 +106,23 @@ Without a `type`, it uses a spring. It accepts the options of a value transition
 
 ```ts
 function useSpring(
-    source: MaybeAccessor<MotionValue<number> | number>,
-    options?: MaybeAccessor<SpringOptions & { skipInitialAnimation?: boolean }>
+  source: MaybeAccessor<MotionValue<number> | number>,
+  options?: MaybeAccessor<SpringOptions & { skipInitialAnimation?: boolean }>
 ): MotionValue<number>
 
 function useSpring(
-    source: MaybeAccessor<MotionValue<string> | string>,
-    options?: MaybeAccessor<SpringOptions & { skipInitialAnimation?: boolean }>
+  source: MaybeAccessor<MotionValue<string> | string>,
+  options?: MaybeAccessor<SpringOptions & { skipInitialAnimation?: boolean }>
 ): MotionValue<string>
 
 function useFollowValue(
-    source: MaybeAccessor<MotionValue<number> | number>,
-    options?: MaybeAccessor<FollowValueOptions>
+  source: MaybeAccessor<MotionValue<number> | number>,
+  options?: MaybeAccessor<FollowValueOptions>
 ): MotionValue<number>
 
 function useFollowValue(
-    source: MaybeAccessor<MotionValue<string> | string>,
-    options?: MaybeAccessor<FollowValueOptions>
+  source: MaybeAccessor<MotionValue<string> | string>,
+  options?: MaybeAccessor<FollowValueOptions>
 ): MotionValue<string>
 ```
 

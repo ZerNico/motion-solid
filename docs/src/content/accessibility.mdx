@@ -19,11 +19,11 @@ setting:
 import { MotionConfig } from "@motion-s/solid"
 
 function Root() {
-    return (
-        <MotionConfig reducedMotion="user">
-            <App />
-        </MotionConfig>
-    )
+  return (
+    <MotionConfig reducedMotion="user">
+      <App />
+    </MotionConfig>
+  )
 }
 ```
 
@@ -49,8 +49,8 @@ them at once, `false` to always animate them.
 ```tsx
 // A progress bar's movement carries information: keep it.
 <motion.div
-    animate={{ scaleX: progress() }}
-    transition={{ reduceMotion: false }}
+  animate={{ scaleX: progress() }}
+  transition={{ reduceMotion: false }}
 />
 ```
 
@@ -64,8 +64,8 @@ autoplaying video, turning off parallax effects driven by [scroll](/docs/scroll-
 const shouldReduceMotion = useReducedMotion()
 
 <motion.div
-    initial={shouldReduceMotion() ? { opacity: 0 } : { opacity: 0, y: 40 }}
-    animate={{ opacity: 1, y: 0 }}
+  initial={shouldReduceMotion() ? { opacity: 0 } : { opacity: 0, y: 40 }}
+  animate={{ opacity: 1, y: 0 }}
 />
 ```
 
@@ -97,13 +97,13 @@ const shouldReduceMotion = useReducedMotion()
 
   ```tsx
   function Panel() {
-      const isPresent = useIsPresent()
+    const isPresent = useIsPresent()
 
-      return (
-          <motion.div exit={{ opacity: 0 }}>
-              <div inert={!isPresent()}>…</div>
-          </motion.div>
-      )
+    return (
+      <motion.div exit={{ opacity: 0 }}>
+        <div inert={!isPresent()}>…</div>
+      </motion.div>
+    )
   }
   ```
 

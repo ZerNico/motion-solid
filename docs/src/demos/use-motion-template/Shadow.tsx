@@ -20,12 +20,7 @@ export default function Shadow() {
       <motion.div
         class="size-20 cursor-grab rounded-2xl border border-border bg-bg active:cursor-grabbing"
         drag
-        dragConstraints={{
-          left: -100,
-          right: 100,
-          top: -50,
-          bottom: 50,
-        }}
+        dragConstraints={{ left: -100, right: 100, top: -50, bottom: 50 }}
         style={{ x, y, boxShadow }}
       />
       <label class="flex items-center gap-3 text-sm text-fg-muted">

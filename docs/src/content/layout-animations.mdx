@@ -76,7 +76,7 @@ For those, pass `layoutDependency`. The element measures when its value changes:
 
 ```tsx
 <motion.div layout layoutDependency={isOpen()}>
-    <div class={isOpen() ? "h-64" : "h-16"} />
+  <div class={isOpen() ? "h-64" : "h-16"} />
 </motion.div>
 ```
 
@@ -103,7 +103,7 @@ it's somewhere else in the tree:
 
 ```tsx
 <Show when={selected() === tab}>
-    <motion.span layoutId="tab-highlight" />
+  <motion.span layoutId="tab-highlight" />
 </Show>
 ```
 
@@ -117,21 +117,21 @@ that opens into a dialog is the usual case:
 
 ```tsx
 <For each={photos}>
-    {(photo) => (
-        <motion.img layoutId={photo.id} src={photo.src} onClick={() => setOpen(photo)} />
-    )}
+  {(photo) => (
+    <motion.img layoutId={photo.id} src={photo.src} onClick={() => setOpen(photo)} />
+  )}
 </For>
 <AnimatePresence>
-    <Show when={open()}>
-        {(photo) => (
-            <motion.img
-                layoutId={photo().id}
-                src={photo().src}
-                class="dialog"
-                onClick={() => setOpen(undefined)}
-            />
-        )}
-    </Show>
+  <Show when={open()}>
+    {(photo) => (
+      <motion.img
+        layoutId={photo().id}
+        src={photo().src}
+        class="dialog"
+        onClick={() => setOpen(undefined)}
+      />
+    )}
+  </Show>
 </AnimatePresence>
 ```
 
@@ -152,7 +152,7 @@ stretch its `border-radius`, its `box-shadow` and its children. Motion corrects:
 
 ```tsx
 <motion.div layout style={{ borderRadius: 16 }}>
-    <motion.h2 layout="position">Title</motion.h2>
+  <motion.h2 layout="position">Title</motion.h2>
 </motion.div>
 ```
 
@@ -163,12 +163,12 @@ Layout animations use the component's `transition`. To give them a different one
 
 ```tsx
 <motion.div
-    layout
-    animate={{ opacity: 1 }}
-    transition={{
-        opacity: { duration: 0.2 },
-        layout: { type: "spring", bounce: 0.25, duration: 0.6 },
-    }}
+  layout
+  animate={{ opacity: 1 }}
+  transition={{
+    opacity: { duration: 0.2 },
+    layout: { type: "spring", bounce: 0.25, duration: 0.6 },
+  }}
 />
 ```
 
@@ -183,7 +183,7 @@ Two props help Motion measure elements inside scrolling containers and fixed ele
 
 ```tsx
 <motion.ul layoutScroll class="overflow-y-auto">
-    <For each={items()}>{(item) => <motion.li layout>{item}</motion.li>}</For>
+  <For each={items()}>{(item) => <motion.li layout>{item}</motion.li>}</For>
 </motion.ul>
 ```
 

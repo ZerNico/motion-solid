@@ -15,9 +15,7 @@ export default function ExpandingCard() {
       style={{ borderRadius: 16 }}
       aria-expanded={isOpen() ? "true" : "false"}
       onClick={() => setIsOpen((open) => !open)}
-      transition={{
-        layout: { type: "spring", bounce: 0.2, duration: 0.5 },
-      }}
+      transition={{ layout: { type: "spring", bounce: 0.2, duration: 0.5 } }}
     >
       <motion.div layout="position" class="flex items-center gap-3">
         <div class="size-10 shrink-0 rounded-full bg-accent" />

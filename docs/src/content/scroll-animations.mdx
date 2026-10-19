@@ -36,9 +36,9 @@ The demo below scrolls inside its own box, so it passes the box as the viewport'
 
 ```tsx
 <motion.section
-    initial={{ opacity: 0, y: 40 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, amount: 0.5, margin: "0px 0px -100px 0px" }}
+  initial={{ opacity: 0, y: 40 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true, amount: 0.5, margin: "0px 0px -100px 0px" }}
 />
 ```
 
@@ -56,9 +56,9 @@ The demo below scrolls inside its own box, so it passes the box as the viewport'
 const root = { current: null as HTMLElement | null }
 
 return (
-    <div ref={(element) => (root.current = element)} class="overflow-y-auto">
-        <motion.div whileInView={{ opacity: 1 }} viewport={{ root }} />
-    </div>
+  <div ref={(element) => (root.current = element)} class="overflow-y-auto">
+    <motion.div whileInView={{ opacity: 1 }} viewport={{ root }} />
+  </div>
 )
 ```
 
@@ -70,8 +70,8 @@ element has entered.
 
 ```tsx
 <motion.div
-    onViewportEnter={(entry) => console.log("entered", entry?.target)}
-    onViewportLeave={() => console.log("left")}
+  onViewportEnter={(entry) => console.log("entered", entry?.target)}
+  onViewportLeave={() => console.log("left")}
 />
 ```
 
@@ -114,9 +114,9 @@ Progress goes from `0` to `1`. Map it to other values with [`useTransform`](/doc
 const { scrollYProgress } = useScroll()
 const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 const backgroundColor = useTransform(
-    scrollYProgress,
-    [0, 1],
-    ["#4f6bff", "#ff4f8b"]
+  scrollYProgress,
+  [0, 1],
+  ["#4f6bff", "#ff4f8b"]
 )
 ```
 
@@ -129,10 +129,10 @@ container's end".
 
 ```tsx
 const { scrollYProgress } = useScroll({
-    target,
-    // 0 when the target's top reaches the bottom of the viewport,
-    // 1 when its bottom leaves through the top.
-    offset: ["start end", "end start"],
+  target,
+  // 0 when the target's top reaches the bottom of the viewport,
+  // 1 when its bottom leaves through the top.
+  offset: ["start end", "end start"],
 })
 ```
 
@@ -165,20 +165,20 @@ import { animate, scroll } from "@motion-s/solid"
 import { onSettled } from "solid-js"
 
 function ProgressBar() {
-    let container!: HTMLDivElement
-    let bar!: HTMLDivElement
+  let container!: HTMLDivElement
+  let bar!: HTMLDivElement
 
-    onSettled(() => {
-        const animation = animate(bar, { scaleX: [0, 1] }, { ease: "linear" })
-        return scroll(animation, { container })
-    })
+  onSettled(() => {
+    const animation = animate(bar, { scaleX: [0, 1] }, { ease: "linear" })
+    return scroll(animation, { container })
+  })
 
-    return (
-        <div ref={container} class="h-64 overflow-y-auto">
-            <div ref={bar} class="sticky top-0 h-1 origin-left bg-accent" />
-            {/* content */}
-        </div>
-    )
+  return (
+    <div ref={container} class="h-64 overflow-y-auto">
+      <div ref={bar} class="sticky top-0 h-1 origin-left bg-accent" />
+      {/* content */}
+    </div>
+  )
 }
 ```
 

@@ -24,11 +24,7 @@ export default function ListReorder() {
               layout
               class="size-16"
               style={{ backgroundColor: color, borderRadius: 12 }}
-              transition={{
-                type: "spring",
-                bounce: 0.25,
-                duration: 0.6,
-              }}
+              transition={{ type: "spring", bounce: 0.25, duration: 0.6 }}
             />
           )}
         </For>

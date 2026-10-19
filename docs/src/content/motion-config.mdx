@@ -9,10 +9,10 @@ handle reduced motion, and a few others.
 ```tsx
 import { MotionConfig, motion } from "@motion-s/solid"
 <MotionConfig
-    transition={{ type: "spring", bounce: 0.2 }}
-    reducedMotion="user"
+  transition={{ type: "spring", bounce: 0.2 }}
+  reducedMotion="user"
 >
-    <App />
+  <App />
 </MotionConfig>
 ```
 
@@ -34,10 +34,10 @@ it with the outer transition instead:
 
 ```tsx
 <MotionConfig transition={{ type: "spring", bounce: 0.3 }}>
-    {/* delay: 0.2 with the outer spring */}
-    <MotionConfig transition={{ inherit: true, delay: 0.2 }}>
-        <motion.div animate={{ x: 100 }} />
-    </MotionConfig>
+  {/* delay: 0.2 with the outer spring */}
+  <MotionConfig transition={{ inherit: true, delay: 0.2 }}>
+    <motion.div animate={{ x: 100 }} />
+  </MotionConfig>
 </MotionConfig>
 ```
 
@@ -56,7 +56,7 @@ Other values, like `opacity` and `backgroundColor`, still animate.
 
 ```tsx
 <MotionConfig reducedMotion="user">
-    <App />
+  <App />
 </MotionConfig>
 ```
 
@@ -71,7 +71,7 @@ targets. Use it in end-to-end tests and visual regression tests.
 
 ```tsx
 <MotionConfig skipAnimations={isTestRun}>
-    <App />
+  <App />
 </MotionConfig>
 ```
 
@@ -95,7 +95,7 @@ reach the element. A component reads it once, when it's created.
 
 ```tsx
 <MotionConfig isValidProp={(key) => !key.startsWith("$")}>
-    <App />
+  <App />
 </MotionConfig>
 ```
 
@@ -110,16 +110,16 @@ element, an accessor of one, or a `{ current }` object:
 import { correctParentTransform, MotionConfig, motion } from "@motion-s/solid"
 
 function Board() {
-    let board!: HTMLDivElement
-    return (
-        <motion.div ref={board} style={{ rotate: 45 }}>
-            <MotionConfig
-                transformPagePoint={correctParentTransform(() => board)}
-            >
-                <motion.div drag />
-            </MotionConfig>
-        </motion.div>
-    )
+  let board!: HTMLDivElement
+  return (
+    <motion.div ref={board} style={{ rotate: 45 }}>
+      <MotionConfig
+        transformPagePoint={correctParentTransform(() => board)}
+      >
+        <motion.div drag />
+      </MotionConfig>
+    </motion.div>
+  )
 }
 ```
 

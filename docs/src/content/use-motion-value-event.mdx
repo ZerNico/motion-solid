@@ -15,7 +15,7 @@ import { useMotionValue, useMotionValueEvent } from "@motion-s/solid"
 const x = useMotionValue(0)
 
 useMotionValueEvent(x, "change", (latest) => {
-    console.log("x is now", latest)
+  console.log("x is now", latest)
 })
 ```
 
@@ -38,9 +38,9 @@ motion value the accessor returns:
 
 ```tsx
 useMotionValueEvent(
-    () => (vertical() ? y : x),
-    "change",
-    (latest) => save(latest)
+  () => (vertical() ? y : x),
+  "change",
+  (latest) => save(latest)
 )
 ```
 
@@ -82,16 +82,16 @@ The demo below logs the animation events of `x` and shows its value through an a
 
 ```ts
 function useMotionValueEvent<
-    V,
-    EventName extends keyof MotionValueEventCallbacks<V>
+  V,
+  EventName extends keyof MotionValueEventCallbacks<V>
 >(
-    value: MaybeAccessor<MotionValue<V>>,
-    event: EventName,
-    callback: MotionValueEventCallbacks<V>[EventName]
+  value: MaybeAccessor<MotionValue<V>>,
+  event: EventName,
+  callback: MotionValueEventCallbacks<V>[EventName]
 ): void
 
 function useMotionValueState<T>(
-    value: MaybeAccessor<MotionValue<T>>
+  value: MaybeAccessor<MotionValue<T>>
 ): Accessor<T>
 ```
 

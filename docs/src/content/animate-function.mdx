@@ -35,13 +35,13 @@ transforms (`x`, `rotate`, `scale`), and keyframe arrays.
 let box!: HTMLDivElement
 
 function shake() {
-    animate(box, { x: [0, -8, 8, -8, 0] }, { duration: 0.4 })
+  animate(box, { x: [0, -8, 8, -8, 0] }, { duration: 0.4 })
 }
 
 return (
-    <div ref={box} onClick={shake}>
-        Click me
-    </div>
+  <div ref={box} onClick={shake}>
+    Click me
+  </div>
 )
 ```
 
@@ -49,9 +49,9 @@ The third argument is the transition. Values can have their own transitions:
 
 ```tsx
 animate(
-    box,
-    { x: 200, opacity: 0.5 },
-    { type: "spring", bounce: 0.3, opacity: { duration: 0.2 } }
+  box,
+  { x: 200, opacity: 0.5 },
+  { type: "spring", bounce: 0.3, opacity: { duration: 0.2 } }
 )
 ```
 
@@ -86,8 +86,8 @@ Pass a number (or a string like a color) as the starting value, and read the ani
 
 ```tsx
 animate("#ff0088", "#0d63f8", {
-    duration: 1,
-    onUpdate: (color) => console.log(color),
+  duration: 1,
+  onUpdate: (color) => console.log(color),
 })
 ```
 
@@ -100,12 +100,12 @@ which is useful for canvas or WebGL scenes:
 const camera = { zoom: 1, angle: 0 }
 
 animate(
-    camera,
-    { zoom: 2, angle: 90 },
-    {
-        duration: 2,
-        onUpdate: () => draw(camera),
-    }
+  camera,
+  { zoom: 2, angle: 90 },
+  {
+    duration: 2,
+    onUpdate: () => draw(camera),
+  }
 )
 ```
 
@@ -139,12 +139,12 @@ An animation keeps running after the component that started it is removed. Stop 
 
 ```tsx
 onSettled(() => {
-    const controls = animate(
-        box,
-        { rotate: 360 },
-        { repeat: Infinity, duration: 2 }
-    )
-    return () => controls.stop()
+  const controls = animate(
+    box,
+    { rotate: 360 },
+    { repeat: Infinity, duration: 2 }
+  )
+  return () => controls.stop()
 })
 ```
 
@@ -173,12 +173,12 @@ from it with `at`:
 
 ```tsx
 animate([
-    [header, { opacity: 1 }],
-    "content",
-    [title, { y: [20, 0] }, { at: "content" }],
-    [image, { scale: [0.9, 1] }, { at: "content" }],
-    { name: "end", at: "+0.5" },
-    [button, { opacity: 1 }, { at: "end" }],
+  [header, { opacity: 1 }],
+  "content",
+  [title, { y: [20, 0] }, { at: "content" }],
+  [image, { scale: [0.9, 1] }, { at: "content" }],
+  { name: "end", at: "+0.5" },
+  [button, { opacity: 1 }, { at: "end" }],
 ])
 ```
 
@@ -208,8 +208,8 @@ it.
 import { animate, scroll } from "@motion-s/solid"
 
 onSettled(() => {
-    const animation = animate(bar, { scaleX: [0, 1] }, { ease: "linear" })
-    return scroll(animation)
+  const animation = animate(bar, { scaleX: [0, 1] }, { ease: "linear" })
+  return scroll(animation)
 })
 ```
 
@@ -233,14 +233,14 @@ code when the element leaves. `inView()` returns a function that stops watching.
 import { animate, inView } from "@motion-s/solid"
 
 onSettled(() =>
-    inView(
-        card,
-        (element) => {
-            animate(element, { opacity: 1, y: 0 })
-            return () => animate(element, { opacity: 0, y: 20 })
-        },
-        { amount: 0.5 }
-    )
+  inView(
+    card,
+    (element) => {
+      animate(element, { opacity: 1, y: 0 })
+      return () => animate(element, { opacity: 0, y: 20 })
+    },
+    { amount: 0.5 }
+  )
 )
 ```
 

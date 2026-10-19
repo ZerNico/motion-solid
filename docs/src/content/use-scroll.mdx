@@ -15,14 +15,14 @@ changes. For animations that start when an element comes into view, see
 import { motion, useScroll } from "@motion-s/solid"
 
 function PageProgress() {
-    const { scrollYProgress } = useScroll()
+  const { scrollYProgress } = useScroll()
 
-    return (
-        <motion.div
-            class="fixed inset-x-0 top-0 h-1 origin-left bg-accent"
-            style={{ scaleX: scrollYProgress }}
-        />
-    )
+  return (
+    <motion.div
+      class="fixed inset-x-0 top-0 h-1 origin-left bg-accent"
+      style={{ scaleX: scrollYProgress }}
+    />
+  )
 }
 ```
 
@@ -47,12 +47,12 @@ const container = { current: null as HTMLElement | null }
 const { scrollYProgress } = useScroll({ container })
 
 return (
-    <div
-        ref={(element) => (container.current = element)}
-        class="h-64 overflow-y-auto"
-    >
-        ...
-    </div>
+  <div
+    ref={(element) => (container.current = element)}
+    class="h-64 overflow-y-auto"
+  >
+    ...
+  </div>
 )
 ```
 
@@ -80,16 +80,16 @@ container, instead of how far the container has scrolled:
 ```tsx
 const target = { current: null as HTMLElement | null }
 const { scrollYProgress } = useScroll({
-    target,
-    offset: ["start end", "end start"],
+  target,
+  offset: ["start end", "end start"],
 })
 const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0])
 
 return (
-    <motion.section
-        ref={(element) => (target.current = element)}
-        style={{ opacity }}
-    />
+  <motion.section
+    ref={(element) => (target.current = element)}
+    style={{ opacity }}
+  />
 )
 ```
 
@@ -143,8 +143,8 @@ restarts when what they read changes:
 
 ```tsx
 const { scrollYProgress } = useScroll(() => ({
-    target: target(),
-    offset: compact() ? ["start end", "end end"] : ["start end", "end start"],
+  target: target(),
+  offset: compact() ? ["start end", "end end"] : ["start end", "end start"],
 }))
 ```
 
@@ -164,10 +164,10 @@ const { scrollYProgress } = useScroll(() => ({
 
 ```tsx
 function useScroll(options?: UseScrollOptions | (() => UseScrollOptions)): {
-    scrollX: MotionValue<number>
-    scrollY: MotionValue<number>
-    scrollXProgress: MotionValue<number>
-    scrollYProgress: MotionValue<number>
+  scrollX: MotionValue<number>
+  scrollY: MotionValue<number>
+  scrollXProgress: MotionValue<number>
+  scrollYProgress: MotionValue<number>
 }
 ```
 

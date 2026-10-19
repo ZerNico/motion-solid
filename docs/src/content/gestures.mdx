@@ -79,9 +79,9 @@ don't react to presses that start on the child:
 
 ```tsx
 <motion.div whileTap={{ scale: 0.98 }} onTap={openCard}>
-    <motion.button propagate={{ tap: false }} onTap={removeCard}>
-        Remove
-    </motion.button>
+  <motion.button propagate={{ tap: false }} onTap={removeCard}>
+    Remove
+  </motion.button>
 </motion.div>
 ```
 

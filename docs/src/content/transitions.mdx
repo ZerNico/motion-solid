@@ -18,8 +18,8 @@ The `transition` prop applies to every animation of the component:
 
 ```tsx
 <motion.div
-    animate={{ x: isOpen() ? 200 : 0 }}
-    transition={{ duration: 0.4, ease: "easeOut" }}
+  animate={{ x: isOpen() ? 200 : 0 }}
+  transition={{ duration: 0.4, ease: "easeOut" }}
 />
 ```
 
@@ -28,9 +28,9 @@ depending on the state, or for a gesture:
 
 ```tsx
 <motion.div
-    animate={{ opacity: 1, transition: { duration: 1 } }}
-    whileHover={{ scale: 1.1, transition: { duration: 0.15 } }}
-    exit={{ opacity: 0, transition: { duration: 0.2 } }}
+  animate={{ opacity: 1, transition: { duration: 1 } }}
+  whileHover={{ scale: 1.1, transition: { duration: 0.15 } }}
+  exit={{ opacity: 0, transition: { duration: 0.2 } }}
 />
 ```
 
@@ -82,8 +82,8 @@ you describe how it looks:
 
 ```tsx
 <motion.div
-    animate={{ x: 200 }}
-    transition={{ type: "spring", visualDuration: 0.4, bounce: 0.25 }}
+  animate={{ x: 200 }}
+  transition={{ type: "spring", visualDuration: 0.4, bounce: 0.25 }}
 />
 ```
 
@@ -163,11 +163,11 @@ use the rest of the transition:
 
 ```tsx
 <motion.div
-    animate={{ x: 100, opacity: 1 }}
-    transition={{
-        duration: 0.5,
-        opacity: { duration: 0.2, ease: "linear" },
-    }}
+  animate={{ x: 100, opacity: 1 }}
+  transition={{
+    duration: 0.5,
+    opacity: { duration: 0.2, ease: "linear" },
+  }}
 />
 ```
 
@@ -175,8 +175,8 @@ use the rest of the transition:
 
 ```tsx
 transition={{
-    default: { type: "spring", bounce: 0.3 },
-    opacity: { duration: 0.2 },
+  default: { type: "spring", bounce: 0.3 },
+  opacity: { duration: 0.2 },
 }}
 ```
 
@@ -192,9 +192,9 @@ it:
 import { MotionConfig, motion } from "@motion-s/solid"
 
 <MotionConfig
-    transition={{ type: "spring", visualDuration: 0.3, bounce: 0.2 }}
+  transition={{ type: "spring", visualDuration: 0.3, bounce: 0.2 }}
 >
-    <motion.div animate={{ x: 100 }} />
+  <motion.div animate={{ x: 100 }} />
 </MotionConfig>
 ```
 
@@ -207,11 +207,11 @@ prop, unless it has `inherit: true`:
 
 ```tsx
 <motion.div
-    transition={{ type: "spring", bounce: 0.4 }}
-    whileHover={{
-        scale: 1.1,
-        transition: { inherit: true, visualDuration: 0.15 },
-    }}
+  transition={{ type: "spring", bounce: 0.4 }}
+  whileHover={{
+    scale: 1.1,
+    transition: { inherit: true, visualDuration: 0.15 },
+  }}
 />
 ```
 

@@ -24,17 +24,17 @@ alive until its exit is done:
 import { AnimatePresence, motion, Show } from "@motion-s/solid"
 
 function Example(props: { isVisible: boolean }) {
-    return (
-        <AnimatePresence>
-            <Show when={props.isVisible}>
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                />
-            </Show>
-        </AnimatePresence>
-    )
+  return (
+    <AnimatePresence>
+      <Show when={props.isVisible}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        />
+      </Show>
+    </AnimatePresence>
+  )
 }
 ```
 
@@ -70,9 +70,9 @@ exits and a new one is created for the new value.
 
 ```tsx
 <AnimatePresence>
-    <Show when={photos[index()]} keyed>
-        {(photo) => <motion.img src={photo.src} exit={{ opacity: 0 }} />}
-    </Show>
+  <Show when={photos[index()]} keyed>
+    {(photo) => <motion.img src={photo.src} exit={{ opacity: 0 }} />}
+  </Show>
 </AnimatePresence>
 ```
 
@@ -87,9 +87,9 @@ through the callback form of `Show`: its argument keeps the last value while the
 
 ```tsx
 <AnimatePresence>
-    <Show when={selected()}>
-        {(record) => <motion.p exit={{ opacity: 0 }}>{record().name}</motion.p>}
-    </Show>
+  <Show when={selected()}>
+    {(record) => <motion.p exit={{ opacity: 0 }}>{record().name}</motion.p>}
+  </Show>
 </AnimatePresence>
 ```
 
@@ -166,19 +166,19 @@ are removed with it, without their exit. Set `propagate` on the inner one to run
 
 ```tsx
 <AnimatePresence>
-    <Show when={isOpen()}>
-        <motion.div exit={{ opacity: 0 }}>
-            <AnimatePresence propagate>
-                <For each={notifications()}>
-                    {(notification) => (
-                        <motion.p exit={{ x: -20, opacity: 0 }}>
-                            {notification.text}
-                        </motion.p>
-                    )}
-                </For>
-            </AnimatePresence>
-        </motion.div>
-    </Show>
+  <Show when={isOpen()}>
+    <motion.div exit={{ opacity: 0 }}>
+      <AnimatePresence propagate>
+        <For each={notifications()}>
+          {(notification) => (
+            <motion.p exit={{ x: -20, opacity: 0 }}>
+              {notification.text}
+            </motion.p>
+          )}
+        </For>
+      </AnimatePresence>
+    </motion.div>
+  </Show>
 </AnimatePresence>
 ```
 
@@ -197,21 +197,21 @@ children need to exit.
 ```tsx
 // The Show takes part: it's rendered by a component, without an element in between.
 function Toast(props: { message?: string }) {
-    return (
-        <Show when={props.message}>
-            {(message) => (
-                <motion.div exit={{ opacity: 0 }}>{message()}</motion.div>
-            )}
-        </Show>
-    )
+  return (
+    <Show when={props.message}>
+      {(message) => (
+        <motion.div exit={{ opacity: 0 }}>{message()}</motion.div>
+      )}
+    </Show>
+  )
 }
 
 function App(props: { message?: string }) {
-    return (
-        <AnimatePresence>
-            <Toast message={props.message} />
-        </AnimatePresence>
-    )
+  return (
+    <AnimatePresence>
+      <Toast message={props.message} />
+    </AnimatePresence>
+  )
 }
 ```
 
@@ -246,17 +246,17 @@ import { usePresence } from "@motion-s/solid"
 import { createEffect } from "solid-js"
 
 function Notice() {
-    const [isPresent, safeToRemove] = usePresence()
+  const [isPresent, safeToRemove] = usePresence()
 
-    createEffect(isPresent, (present) => {
-        if (!present) setTimeout(() => safeToRemove?.(), 300)
-    })
+  createEffect(isPresent, (present) => {
+    if (!present) setTimeout(() => safeToRemove?.(), 300)
+  })
 
-    return (
-        <div class={isPresent() ? "notice" : "notice notice-leaving"}>
-            Saved
-        </div>
-    )
+  return (
+    <div class={isPresent() ? "notice" : "notice notice-leaving"}>
+      Saved
+    </div>
+  )
 }
 ```
 

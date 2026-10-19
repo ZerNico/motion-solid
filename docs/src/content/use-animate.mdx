@@ -18,17 +18,17 @@ selectors given to `animate` are looked up inside it.
 import { useAnimate } from "@motion-s/solid"
 
 function Notification() {
-    const [scope, animate] = useAnimate()
+  const [scope, animate] = useAnimate()
 
-    const shake = () =>
-        animate(".icon", { rotate: [0, -15, 15, -15, 0] }, { duration: 0.4 })
+  const shake = () =>
+    animate(".icon", { rotate: [0, -15, 15, -15, 0] }, { duration: 0.4 })
 
-    return (
-        <div ref={scope}>
-            <span class="icon">🔔</span>
-            <button onClick={shake}>Ring</button>
-        </div>
-    )
+  return (
+    <div ref={scope}>
+      <span class="icon">🔔</span>
+      <button onClick={shake}>Ring</button>
+    </div>
+  )
 }
 ```
 
@@ -54,7 +54,7 @@ document:
 
 ```tsx
 onSettled(() => {
-    animate("li", { opacity: [0, 1] }, { delay: stagger(0.05) })
+  animate("li", { opacity: [0, 1] }, { delay: stagger(0.05) })
 })
 ```
 
@@ -73,9 +73,9 @@ Pass an array of segments to play animations one after another. Each segment is
 
 ```tsx
 animate([
-    [".title", { opacity: [0, 1] }],
-    [".subtitle", { opacity: [0, 1] }, { at: "-0.1" }],
-    [".button", { scale: [0.8, 1] }, { at: "<" }],
+  [".title", { opacity: [0, 1] }],
+  [".subtitle", { opacity: [0, 1] }, { at: "-0.1" }],
+  [".button", { scale: [0.8, 1] }, { at: "<" }],
 ])
 ```
 
@@ -90,9 +90,9 @@ In the demo, the bars grow one after another (`stagger`), then the total fades i
 
 ```tsx
 const animation = animate(
-    ".spinner",
-    { rotate: 360 },
-    { repeat: Infinity, ease: "linear" }
+  ".spinner",
+  { rotate: 360 },
+  { repeat: Infinity, ease: "linear" }
 )
 
 animation.speed = 0.5
@@ -103,8 +103,8 @@ The controls can also be awaited, which resolves when the animation finishes:
 
 ```tsx
 const close = async () => {
-    await animate(scope.current, { opacity: 0 })
-    setOpen(false)
+  await animate(scope.current, { opacity: 0 })
+  setOpen(false)
 }
 ```
 
@@ -139,8 +139,8 @@ disposed.
 
 ```tsx
 function useAnimate<T extends Element = any>(): [
-    scope: SolidAnimationScope<T>,
-    animate: typeof animate
+  scope: SolidAnimationScope<T>,
+  animate: typeof animate
 ]
 ```
 

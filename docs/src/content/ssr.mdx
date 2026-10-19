@@ -11,9 +11,9 @@ runs on the server.
 
 ```tsx
 <motion.div
-    initial={{ opacity: 0, x: 100 }}
-    animate={{ opacity: 1, x: 0 }}
-    style={{ "background-color": "red" }}
+  initial={{ opacity: 0, x: 100 }}
+  animate={{ opacity: 1, x: 0 }}
+  style={{ "background-color": "red" }}
 />
 ```
 
@@ -96,12 +96,12 @@ hydrates.
 
     ```tsx
     <motion.h1
-        data-framer-appear-id="hero-title"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, ease: "linear" }}
+      data-framer-appear-id="hero-title"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8, ease: "linear" }}
     >
-        Welcome
+      Welcome
     </motion.h1>
     ```
 
@@ -112,13 +112,13 @@ hydrates.
     import { startOptimizedAppearAnimation } from "@motion-s/solid"
 
     const title = document.querySelector<HTMLElement>(
-        '[data-framer-appear-id="hero-title"]'
+      '[data-framer-appear-id="hero-title"]'
     )
     if (title) {
-        startOptimizedAppearAnimation(title, "opacity", [0, 1], {
-            duration: 800,
-            ease: "linear",
-        })
+      startOptimizedAppearAnimation(title, "opacity", [0, 1], {
+        duration: 800,
+        ease: "linear",
+      })
     }
     ```
 

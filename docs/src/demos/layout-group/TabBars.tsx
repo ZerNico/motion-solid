@@ -22,11 +22,7 @@ function Tabs(props: { tabs: string[] }) {
                 layoutId="highlight"
                 class="absolute inset-0 bg-accent"
                 style={{ borderRadius: 9999 }}
-                transition={{
-                  type: "spring",
-                  bounce: 0.2,
-                  duration: 0.5,
-                }}
+                transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
               />
             </Show>
             <span class="relative">{tab}</span>

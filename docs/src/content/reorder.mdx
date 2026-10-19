@@ -21,9 +21,9 @@ import { createSignal, For } from "solid-js"
 const [items, setItems] = createSignal(["Apples", "Bread", "Coffee"])
 
 <Reorder.Group axis="y" values={items()} onReorder={setItems}>
-    <For each={items()}>
-        {(item) => <Reorder.Item value={item}>{item}</Reorder.Item>}
-    </For>
+  <For each={items()}>
+    {(item) => <Reorder.Item value={item}>{item}</Reorder.Item>}
+  </For>
 </Reorder.Group>
 ```
 
@@ -44,14 +44,14 @@ repeat.
 const [state, setState] = createStore({ items: ["Apples", "Bread", "Coffee"] })
 
 const reorder = (order: string[]) =>
-    setState((draft) => {
-        draft.items.splice(0, draft.items.length, ...order)
-    })
+  setState((draft) => {
+    draft.items.splice(0, draft.items.length, ...order)
+  })
 
 <Reorder.Group values={state.items} onReorder={reorder}>
-    <For each={state.items}>
-        {(item) => <Reorder.Item value={item}>{item}</Reorder.Item>}
-    </For>
+  <For each={state.items}>
+    {(item) => <Reorder.Item value={item}>{item}</Reorder.Item>}
+  </For>
 </Reorder.Group>
 ```
 
@@ -65,8 +65,8 @@ listener with `dragListener={false}`, and start the drag from the handle with
 const controls = useDragControls()
 
 <Reorder.Item value={item} dragListener={false} dragControls={controls}>
-    {item}
-    <span onPointerDown={(event) => controls.start(event)}>⠿</span>
+  {item}
+  <span onPointerDown={(event) => controls.start(event)}>⠿</span>
 </Reorder.Item>
 ```
 

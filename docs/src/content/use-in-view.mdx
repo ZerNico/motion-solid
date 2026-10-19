@@ -17,14 +17,14 @@ Pass the element to observe. `useInView` returns an `Accessor<boolean>`:
 import { useInView } from "@motion-s/solid"
 
 function Section() {
-    let element!: HTMLElement
-    const isInView = useInView(() => element)
+  let element!: HTMLElement
+  const isInView = useInView(() => element)
 
-    return (
-        <section ref={element}>
-            {isInView() ? "In view" : "Not in view"}
-        </section>
-    )
+  return (
+    <section ref={element}>
+      {isInView() ? "In view" : "Not in view"}
+    </section>
+  )
 }
 ```
 
@@ -78,7 +78,7 @@ observed again with the new options. `initial` is only read once.
 
 ```tsx
 const isInView = useInView(element, () => ({
-    amount: strict() ? "all" : "some",
+  amount: strict() ? "all" : "some",
 }))
 ```
 
@@ -98,10 +98,10 @@ import { inView } from "@motion-s/solid"
 import { onSettled } from "solid-js"
 
 onSettled(() =>
-    inView(".card", (element) => {
-        element.classList.add("visible")
-        return () => element.classList.remove("visible")
-    })
+  inView(".card", (element) => {
+    element.classList.add("visible")
+    return () => element.classList.remove("visible")
+  })
 )
 ```
 
@@ -112,8 +112,8 @@ It takes `root` (an element), `margin` and `amount`, and is also exported from
 
 ```tsx
 function useInView(
-    ref: ElementRef<Element>,
-    options?: UseInViewOptions | (() => UseInViewOptions)
+  ref: ElementRef<Element>,
+  options?: UseInViewOptions | (() => UseInViewOptions)
 ): Accessor<boolean>
 ```
 
