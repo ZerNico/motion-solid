@@ -4,6 +4,7 @@ import tailwind from "@tailwindcss/vite"
 import { tanstackStart } from "@tanstack/solid-start/plugin/vite"
 import { defineConfig } from "vite"
 import { mdxOptions } from "./src/mdx/options.ts"
+import { llmsPlugin } from "./src/mdx/llms-plugin.ts"
 import { sourcePlugin } from "./src/mdx/source-plugin.ts"
 
 export default defineConfig({
@@ -14,6 +15,7 @@ export default defineConfig({
   ssr: { noExternal: ["solid-js", "@solidjs/web", "@motion-s/solid"] },
   plugins: [
     sourcePlugin(),
+    llmsPlugin(),
     { ...mdx(mdxOptions), enforce: "pre" },
     tanstackStart({
       prerender: {
@@ -23,6 +25,8 @@ export default defineConfig({
         // `page.html` rather than `page/index.html`, so static hosts serve `/page`
         // without redirecting to `/page/`.
         autoSubfolderIndex: false,
+        // The Markdown files are written after the build (`scripts/llms.ts`).
+        filter: (page) => !/\.(md|txt)$/.test(page.path),
       },
     }),
     solid({ ssr: true, extensions: [".mdx"] }),

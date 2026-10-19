@@ -1,3 +1,6 @@
 # Cloudflare Pages headers. Vite emits hashed file names to /assets/.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+/*.md
+  Content-Type: text/markdown; charset=utf-8

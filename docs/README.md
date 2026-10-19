@@ -24,6 +24,13 @@ pnpm docs:build      # static site in docs/dist/client
 - Inside JSX like `<Note>`, the formatter can break inline code that contains `{{ }}` across lines.
   Put such code in a code block, or in plain Markdown outside the component.
 
+## Markdown for AI assistants
+
+Every page is also served as Markdown at `/docs/<slug>.md`, with an index at `/llms.txt` and all
+pages in `/llms-full.txt` (`src/mdx/markdown.ts`, written by `scripts/llms.ts` after the build).
+Demos become their source, `<Note>` a blockquote and `<InstallTabs>` the install commands. A
+component the converter doesn't know fails the build, so add it there along with the site.
+
 ## Demos
 
 A demo is a component in `src/demos/<slug>/<Name>.tsx` (default export), shown live with its

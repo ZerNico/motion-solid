@@ -1,12 +1,25 @@
 import type { JSX } from "@solidjs/web"
+import { useLocation } from "@tanstack/solid-router"
 import { For, Show } from "solid-js"
+import { CopyButton } from "./CopyButton"
 import type { TocEntry } from "../mdx/remark-toc"
 import { Pager } from "./Pager"
 
 export function DocPage(props: { toc: TocEntry[]; children: JSX.Element }) {
+  const location = useLocation()
+  // The page as Markdown (`src/mdx/markdown.ts`).
+  const markdown = () =>
+    fetch(`${location().pathname}.md`).then((response) => {
+      if (!response.ok) throw new Error(`${response.status}`)
+      return response.text()
+    })
+
   return (
     <>
       <main class="min-w-0 flex-1 py-10">
+        <div class="float-right -mt-1">
+          <CopyButton text={markdown} label="Copy page" />
+        </div>
         <article class="prose">{props.children}</article>
         <Pager />
       </main>

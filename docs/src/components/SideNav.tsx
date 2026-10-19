@@ -28,6 +28,18 @@ export function NavList(props: { onNavigate?: () => void }) {
                 </li>
               )}
             </For>
+            <For each={section.links ?? []}>
+              {(link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    class="block rounded-md px-2 py-1 text-sm text-fg-muted hover:bg-surface hover:text-fg"
+                  >
+                    {link.title}
+                  </a>
+                </li>
+              )}
+            </For>
           </ul>
         </div>
       )}

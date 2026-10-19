@@ -1,3 +1,8 @@
+/**
+ * Where the docs are deployed (`.github/workflows/deploy-docs.yml`).
+ */
+export const siteUrl = "https://motion-solid.pages.dev"
+
 export interface Page {
   /**
    * The page's file in `src/content` (without `.mdx`) and its route under `/docs/`.
@@ -10,6 +15,10 @@ export interface Page {
 export interface Section {
   title: string
   pages: Page[]
+  /**
+   * Links after the pages, to files that aren't pages.
+   */
+  links?: { title: string; href: string }[]
 }
 
 /**
@@ -215,6 +224,7 @@ export const sections: Section[] = [
   },
   {
     title: "Guides",
+    links: [{ title: "llms.txt", href: "/llms.txt" }],
     pages: [
       {
         slug: "animate-function",

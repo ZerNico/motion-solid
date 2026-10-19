@@ -1,6 +1,6 @@
 /**
  * Opens pages of a running docs server in Chromium and reports errors: uncaught exceptions,
- * console errors and warnings, and failed requests. Run with
+ * console errors and warnings, and failed requests. Then checks their Markdown versions. Run with
  * `pnpm check:pages [--base http://127.0.0.1:3006] [slug ...]` (every page without slugs).
  */
 import { chromium } from "playwright"
@@ -38,4 +38,26 @@ for (const slug of slugs) {
   await page.close()
 }
 await browser.close()
+
+// The Markdown versions (`src/mdx/markdown.ts`): every page, without MDX left in them.
+for (const path of [
+  ...slugs.map((slug) => `/docs/${slug}.md`),
+  "/llms.txt",
+  "/llms-full.txt",
+]) {
+  const response = await fetch(base + path)
+  const text = response.ok ? await response.text() : ""
+  const outsideCode = text.replace(/^```[\s\S]*?^```/gm, "")
+  const problem = !response.ok
+    ? `status ${response.status}`
+    : /^(import|export) |^<[A-Z]/m.test(outsideCode)
+      ? "MDX left in the Markdown"
+      : undefined
+  console.log(`${problem ? "✗" : "✓"} ${path}`)
+  if (problem) {
+    console.log(`    ${problem}`)
+    failed++
+  }
+}
+
 if (failed) process.exit(1)
