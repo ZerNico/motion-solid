@@ -71,3 +71,17 @@ useMotionValueEvent(x, "animationComplete", () => …)
 
 See `PORTING.md` in the repository for how it differs from the React version, in particular how
 layout animations are triggered in Solid.
+
+## AI assistants
+
+Models know Motion for React well and tend to write its API. The package ships an agent skill,
+`skills/motion-solid/SKILL.md`, with the differences that matter and a short reference. Point your
+agent at it, for example in your `AGENTS.md`:
+
+```md
+For animations, read `node_modules/@motion-s/solid/skills/motion-solid/SKILL.md` first.
+```
+
+It's in the format of [TanStack Intent](https://tanstack.com/blog/from-docs-to-agents), so
+`npx @tanstack/intent install` finds it too. The docs are also available as Markdown, indexed in
+[llms.txt](https://motion-solid.pages.dev/llms.txt).

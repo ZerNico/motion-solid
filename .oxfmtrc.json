@@ -7,7 +7,7 @@
     "sortPackageJson": false,
     "overrides": [
         {
-            "files": ["*.mdx"],
+            "files": ["*.mdx", "*.md"],
             "options": {
                 "embeddedLanguageFormatting": "off"
             }

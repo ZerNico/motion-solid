@@ -25,6 +25,7 @@
     "sideEffects": false,
     "files": [
         "dist",
+        "skills",
         "LICENSE",
         "README.md"
     ],
@@ -104,7 +105,7 @@
     "scripts": {
         "build": "tsdown",
         "prepack": "tsdown",
-        "check:package": "rm -rf .pack && pnpm pack --out .pack/package.tgz && publint .pack/package.tgz && attw .pack/package.tgz --profile esm-only"
+        "check:package": "rm -rf .pack && pnpm pack --out .pack/package.tgz && publint .pack/package.tgz && attw .pack/package.tgz --profile esm-only && tar -tzf .pack/package.tgz package/skills/motion-solid/SKILL.md"
     },
     "dependencies": {
         "csstype": "^3.2.3",
