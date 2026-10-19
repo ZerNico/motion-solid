@@ -336,5 +336,3 @@ baseline per scenario.
   Cypress specs and React Playwright specs with their test pages (one file per spec, helpers in
   `test/e2e/utils.tsx`, translation notes as `Port note:` comments). Where an upstream page relies
   on a re-render to take part in a layout update, the port uses `layoutDependency` and says so.
-- `playground/` and `playground-react/` render the same demos with motion-solid and motion/react
-  (`pnpm dev`, `pnpm dev:react`), `scripts/compare-*.mjs` compare them in a headless browser.

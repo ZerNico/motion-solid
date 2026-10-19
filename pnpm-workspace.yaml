@@ -1,8 +1,6 @@
 packages:
     - packages/*
     - docs
-    - playground
-    - playground-react
 
 allowBuilds:
     esbuild: true

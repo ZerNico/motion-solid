@@ -24,7 +24,6 @@
     "include": [
         "packages/*/src",
         "packages/*/test",
-        "playground/src",
         "test",
         "vitest.shared.mts"
     ],
