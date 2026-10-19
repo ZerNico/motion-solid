@@ -5,3 +5,4 @@ pnpm-lock.yaml
 **/__tests__/polyfill.js
 test-results
 .vitest-attachments
+**/routeTree.gen.ts

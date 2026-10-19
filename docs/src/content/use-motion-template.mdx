@@ -1,0 +1,52 @@
+import Shadow from "../demos/use-motion-template/Shadow"
+import shadowSource from "../demos/use-motion-template/Shadow.tsx?source"
+
+# useMotionTemplate
+
+`useMotionTemplate` builds a string motion value from a template literal. Use it for CSS values
+made of several parts, like a shadow, a filter or a gradient, where some parts are motion values.
+
+## Usage
+
+Write it as a tagged template. Each motion value in it is replaced by its latest value:
+
+```tsx
+import { motion, useMotionTemplate, useMotionValue } from "@motion-s/solid"
+
+const blur = useMotionValue(4)
+const filter = useMotionTemplate`blur(${blur}px)`
+
+<motion.div style={{ filter }} />
+```
+
+When any motion value in the template changes, the string is rebuilt in Motion's frame loop.
+
+## Accessors
+
+Parts that come from Solid are passed as accessors. The template follows them like it follows
+motion values:
+
+```tsx
+const transform = useMotionTemplate`translateX(${x}${() => props.unit})`
+```
+
+An accessor can also return a motion value, to switch which one is used. Plain numbers and
+strings are inserted as they are, `0` included.
+
+In this demo, the shadow offset comes from the drag position through `useTransform`, and the blur
+from a signal set by the range input:
+
+<Demo component={Shadow} source={shadowSource} />
+
+## API reference
+
+```ts
+function useMotionTemplate(
+    fragments: TemplateStringsArray,
+    ...values: Array<MaybeAccessor<MotionValue | number | string>>
+): MotionValue<string>
+```
+
+-   `values`: motion values, numbers, strings, or accessors of any of them.
+
+Returns a `MotionValue<string>`.

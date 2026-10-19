@@ -1,0 +1,131 @@
+import SharedTransition from "../demos/motion-config/SharedTransition"
+import sharedTransitionSource from "../demos/motion-config/SharedTransition.tsx?source"
+
+# MotionConfig
+
+`MotionConfig` sets options for every motion component inside it: a default transition, how to
+handle reduced motion, and a few others.
+
+```tsx
+import { MotionConfig, motion } from "@motion-s/solid"
+<MotionConfig
+    transition={{ type: "spring", bounce: 0.2 }}
+    reducedMotion="user"
+>
+    <App />
+</MotionConfig>
+```
+
+## Default transition
+
+`transition` is used by every motion component inside that doesn't set its own `transition`. The
+props are read through getters, so when `transition` changes, the next animations use the new
+value:
+
+<Demo component={SharedTransition} source={sharedTransitionSource} />
+
+A component's own `transition` prop replaces the one from `MotionConfig`.
+
+### Nested configs
+
+An inner `MotionConfig` inherits every option from the outer one, and overrides the ones it sets.
+For `transition`, the inner value replaces the outer one completely. Add `inherit: true` to merge
+it with the outer transition instead:
+
+```tsx
+<MotionConfig transition={{ type: "spring", bounce: 0.3 }}>
+    {/* delay: 0.2 with the outer spring */}
+    <MotionConfig transition={{ inherit: true, delay: 0.2 }}>
+        <motion.div animate={{ x: 100 }} />
+    </MotionConfig>
+</MotionConfig>
+```
+
+## Reduced motion
+
+`reducedMotion` decides whether motion components respect the "reduce motion" setting of the
+device. With reduced motion on, values that move or resize the element (transforms like `x` and
+`scale`, `width`, `height`, `top`, `left`, ...) and layout animations jump to their end values.
+Other values, like `opacity` and `backgroundColor`, still animate.
+
+| Value      | Behavior                                          |
+| :--------- | :------------------------------------------------ |
+| `"never"`  | Always animate (the default)                      |
+| `"user"`   | Reduce motion when the device setting asks for it |
+| `"always"` | Always reduce motion                              |
+
+```tsx
+<MotionConfig reducedMotion="user">
+    <App />
+</MotionConfig>
+```
+
+A motion component reads this setting when it's created: changing `reducedMotion` later affects
+components created after the change. `useReducedMotion()` and `useAnimate()` follow it while the app
+runs. See [Accessibility](/docs/accessibility).
+
+## Skipping animations
+
+With `skipAnimations`, every animation inside finishes right away and values are set to their
+targets. Use it in end-to-end tests and visual regression tests.
+
+```tsx
+<MotionConfig skipAnimations={isTestRun}>
+    <App />
+</MotionConfig>
+```
+
+## Props
+
+| Prop                 | Type                            | Default   | Description                                                                             |
+| :------------------- | :------------------------------ | :-------- | :-------------------------------------------------------------------------------------- |
+| `transition`         | `Transition`                    |           | Default transition for the motion components inside                                     |
+| `reducedMotion`      | `"never" \| "user" \| "always"` | `"never"` | Whether to make movement and layout animations instant                                  |
+| `skipAnimations`     | `boolean`                       | `false`   | Finish every animation instantly                                                        |
+| `nonce`              | `string`                        |           | Nonce for the `<style>` tag that `AnimatePresence`'s `mode="popLayout"` adds, for a CSP |
+| `isValidProp`        | `(key: string) => boolean`      |           | Decides which props are forwarded to the DOM                                            |
+| `transformPagePoint` | `(point: Point) => Point`       |           | Converts pointer positions for drag and pan, for elements in a transformed container    |
+| `isStatic`           | `boolean`                       | `false`   | Render the motion components inside without animating them                              |
+
+### `isValidProp`
+
+By default, motion components forward every prop that isn't a motion prop to the element. When you
+wrap them with a styling library that adds props of its own, `isValidProp` decides which props
+reach the element. A component reads it once, when it's created.
+
+```tsx
+<MotionConfig isValidProp={(key) => !key.startsWith("$")}>
+    <App />
+</MotionConfig>
+```
+
+### `transformPagePoint`
+
+Drag and pan read pointer positions in page coordinates. If the element is inside a scaled or
+rotated container, or inside an SVG whose `viewBox` doesn't match its size, those coordinates need
+to be converted. Two helpers build a `transformPagePoint` function for these cases. Both take an
+element, an accessor of one, or a `{ current }` object:
+
+```tsx
+import { correctParentTransform, MotionConfig, motion } from "@motion-s/solid"
+
+function Board() {
+    let board!: HTMLDivElement
+    return (
+        <motion.div ref={board} style={{ rotate: 45 }}>
+            <MotionConfig
+                transformPagePoint={correctParentTransform(() => board)}
+            >
+                <motion.div drag />
+            </MotionConfig>
+        </motion.div>
+    )
+}
+```
+
+`transformViewBoxPoint(svg)` does the same for an SVG's `viewBox` scaling.
+
+### `isStatic`
+
+`isStatic` is read once, when the `MotionConfig` is created. Motion components inside render their
+`initial` and `style` values, and update them when they change, but don't animate.

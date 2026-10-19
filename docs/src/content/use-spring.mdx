@@ -1,0 +1,132 @@
+import Follower from "../demos/use-spring/Follower"
+import followerSource from "../demos/use-spring/Follower.tsx?source"
+import Counter from "../demos/use-spring/Counter"
+import counterSource from "../demos/use-spring/Counter.tsx?source"
+
+# useSpring
+
+`useSpring` creates a motion value that animates with a spring towards its target. The target can
+be set directly, come from another motion value, or come from a Solid accessor.
+
+## Usage
+
+With a number or a string with a unit, `useSpring` creates a motion value that animates whenever
+you `set` it:
+
+```tsx
+import { motion, useSpring } from "@motion-s/solid"
+
+const scale = useSpring(1)
+
+<motion.div
+    style={{ scale }}
+    onPointerEnter={() => scale.set(1.2)}
+    onPointerLeave={() => scale.set(1)}
+/>
+```
+
+`jump(value)` sets it without animating.
+
+## Following a motion value
+
+Pass a motion value, and the spring follows it: each time the source changes, the spring animates
+towards its new value from where it is, keeping its velocity.
+
+```tsx
+const x = useMotionValue(0)
+const smoothX = useSpring(x, { stiffness: 300, damping: 30 })
+```
+
+The ring below is set to the pointer position. The dot springs after it:
+
+<Demo component={Follower} source={followerSource} />
+
+## Following a signal
+
+Pass an accessor, and the spring follows its value. When the value changes, the spring heads for
+the new target from its current position and velocity. A running animation is steered, not
+restarted:
+
+```tsx
+const [count, setCount] = createSignal(0)
+const value = useSpring(count, { visualDuration: 0.6, bounce: 0 })
+```
+
+<Demo component={Counter} source={counterSource} />
+
+An accessor can also return a motion value, to switch which one the spring follows. Switching
+stops the running animation, attaches to the new motion value and animates towards its value. The
+same happens when the options change.
+
+## Options
+
+The second argument takes spring options. It can be an object, an accessor of one, or an object
+with getters; the spring is attached again when they change.
+
+| Option                 | Default | Description                                                                                  |
+| ---------------------- | ------- | -------------------------------------------------------------------------------------------- |
+| `stiffness`            | `100`   | How strongly the spring pulls. Higher values move faster.                                    |
+| `damping`              | `10`    | How strongly motion is slowed. `0` oscillates forever.                                       |
+| `mass`                 | `1`     | The weight of the moving object. Higher values move more slowly.                             |
+| `visualDuration`       |         | The time in seconds the animation appears to take to reach the target. Overrides `duration`. |
+| `duration`             |         | The total duration in seconds.                                                               |
+| `bounce`               |         | From `0` (no bounce) to `1`. Used with `duration` or `visualDuration`.                       |
+| `velocity`             |         | The initial velocity.                                                                        |
+| `restSpeed`            |         | Below this speed (units per second), and within `restDelta`, the animation ends.             |
+| `restDelta`            |         | Below this distance from the target, and under `restSpeed`, the animation ends.              |
+| `skipInitialAnimation` | `false` | Jump to the source's first change instead of animating to it, then animate later changes.    |
+
+`stiffness`, `damping` and `mass` take precedence over `duration`, `visualDuration` and `bounce`.
+
+<Note>
+    Inside `<MotionConfig isStatic>`, the returned value follows its source without animating.
+</Note>
+
+## useFollowValue
+
+`useFollowValue` works like `useSpring`, but takes any transition, such as a tween or inertia. Its
+source is a value, a motion value or an accessor, as for `useSpring`:
+
+```tsx
+import { useFollowValue, useMotionValue } from "@motion-s/solid"
+
+const x = useMotionValue(0)
+const smoothX = useFollowValue(x, {
+    type: "tween",
+    duration: 0.3,
+    ease: "easeOut",
+})
+```
+
+Without a `type`, it uses a spring. It accepts the options of a value transition except
+`repeat`, `repeatType`, `repeatDelay` and the callbacks (`onUpdate`, `onComplete`, `onPlay`,
+`onRepeat`, `onStop`), plus `skipInitialAnimation`.
+
+## API reference
+
+```ts
+function useSpring(
+    source: MaybeAccessor<MotionValue<number> | number>,
+    options?: MaybeAccessor<SpringOptions & { skipInitialAnimation?: boolean }>
+): MotionValue<number>
+
+function useSpring(
+    source: MaybeAccessor<MotionValue<string> | string>,
+    options?: MaybeAccessor<SpringOptions & { skipInitialAnimation?: boolean }>
+): MotionValue<string>
+
+function useFollowValue(
+    source: MaybeAccessor<MotionValue<number> | number>,
+    options?: MaybeAccessor<FollowValueOptions>
+): MotionValue<number>
+
+function useFollowValue(
+    source: MaybeAccessor<MotionValue<string> | string>,
+    options?: MaybeAccessor<FollowValueOptions>
+): MotionValue<string>
+```
+
+-   `source`: the initial value, a motion value to follow, or an accessor of either.
+-   `options`: the spring options above (`useSpring`) or a transition (`useFollowValue`).
+
+Returns a `MotionValue`. Its animation stops when the owner (the component) is disposed.

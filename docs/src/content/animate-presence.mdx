@@ -1,0 +1,291 @@
+import ShowExit from "../demos/animate-presence/ShowExit"
+import showExitSource from "../demos/animate-presence/ShowExit.tsx?source"
+import ForList from "../demos/animate-presence/ForList"
+import forListSource from "../demos/animate-presence/ForList.tsx?source"
+import WaitMode from "../demos/animate-presence/WaitMode"
+import waitModeSource from "../demos/animate-presence/WaitMode.tsx?source"
+import PopLayout from "../demos/animate-presence/PopLayout"
+import popLayoutSource from "../demos/animate-presence/PopLayout.tsx?source"
+import Slideshow from "../demos/animate-presence/Slideshow"
+import slideshowSource from "../demos/animate-presence/Slideshow.tsx?source"
+
+# AnimatePresence
+
+`AnimatePresence` keeps a removed component in the DOM until its `exit` animation has finished.
+Use it for anything that leaves the page: modals, toasts, list items, slides.
+
+## With `Show`
+
+In Solid, control flow adds and removes components. motion-solid exports its own `Show` and
+`For`, with the same props as Solid's. Inside an `AnimatePresence`, they keep a removed child
+alive until its exit is done:
+
+```tsx
+import { AnimatePresence, motion, Show } from "@motion-s/solid"
+
+function Example(props: { isVisible: boolean }) {
+    return (
+        <AnimatePresence>
+            <Show when={props.isVisible}>
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                />
+            </Show>
+        </AnimatePresence>
+    )
+}
+```
+
+<Demo component={ShowExit} source={showExitSource} />
+
+`exit` takes the same values as `animate`: a target, a variant label, or keyframes. It can have
+its own `transition`, which is used instead of the component's `transition`:
+
+```tsx
+<motion.div exit={{ opacity: 0, transition: { duration: 0.2 } }} />
+```
+
+If a child has several `motion` components with `exit`, it's removed once all of them have
+finished. Variants propagate through the tree as usual, so a parent's `exit` label also runs the
+`exit` of its variant children.
+
+## With `For`
+
+Items removed from a `For` exit where they were. Items that are added or come back enter with
+their `initial` animation. Give the items `layout` and the ones that stay move to their new
+position:
+
+<Demo component={ForList} source={forListSource} />
+
+An item that's added back while it's still exiting is the same component instance: its exit
+reverses and its state is kept.
+
+## Swapping one child for another
+
+React's `AnimatePresence` tells children apart by their `key`, and changing a `key` swaps one child
+for another. In Solid, use `<Show when={value()} keyed>`: when `value()` changes, the old child
+exits and a new one is created for the new value.
+
+```tsx
+<AnimatePresence>
+    <Show when={photos[index()]} keyed>
+        {(photo) => <motion.img src={photo.src} exit={{ opacity: 0 }} />}
+    </Show>
+</AnimatePresence>
+```
+
+`when` must be truthy for the child to render. If the value can be `0` or an empty string, pass
+an object instead (here, the photo rather than its index).
+
+## Reading data while exiting
+
+An exiting child keeps running: its reactive content still updates. If it reads data that's
+gone, for example `record()!.name` after the record was removed, that read throws. Read the value
+through the callback form of `Show`: its argument keeps the last value while the child exits.
+
+```tsx
+<AnimatePresence>
+    <Show when={selected()}>
+        {(record) => <motion.p exit={{ opacity: 0 }}>{record().name}</motion.p>}
+    </Show>
+</AnimatePresence>
+```
+
+The props of an exiting `motion` component are frozen: they keep the values they had when the
+exit started, so a prop change can't restart its `animate` target in the middle of an exit. To
+give an exiting component new data, use the `custom` prop of `AnimatePresence`
+([see below](#dynamic-exit-animations)).
+
+## Props
+
+| Prop                    | Type                              | Default         | Description                                                                                                          |
+| :---------------------- | :-------------------------------- | :-------------- | :------------------------------------------------------------------------------------------------------------------- |
+| `initial`               | `boolean`                         | `true`          | With `false`, children present on the first render start at their `animate` values, without their initial animation. |
+| `mode`                  | `"sync" \| "wait" \| "popLayout"` | `"sync"`        | How entering and exiting children are sequenced. See [Modes](#modes).                                                |
+| `custom`                | `any`                             |                 | Data for the dynamic variants of exiting children. See [Dynamic exit animations](#dynamic-exit-animations).          |
+| `onExitComplete`        | `() => void`                      |                 | Called once every exiting child has finished and been removed.                                                       |
+| `propagate`             | `boolean`                         | `false`         | Run the exits of these children when a parent `AnimatePresence` removes the component around them. Read once.        |
+| `presenceAffectsLayout` | `boolean`                         | `true`          | With `false`, children entering or exiting don't make their siblings with `layout` animate.                          |
+| `anchorX`               | `"left" \| "right"`               | `"left"`        | With `mode="popLayout"`, the side the exiting child stays attached to horizontally.                                  |
+| `anchorY`               | `"top" \| "bottom"`               | `"top"`         | With `mode="popLayout"`, the side the exiting child stays attached to vertically.                                    |
+| `root`                  | `HTMLElement \| ShadowRoot`       | `document.head` | With `mode="popLayout"`, where the style that positions the exiting child is added. Set it inside a shadow DOM.      |
+
+## Modes
+
+### `sync`
+
+The default. Children enter and exit at the same time, as soon as they're added or removed.
+
+### `wait`
+
+The entering child is created once the exiting child has finished. Use it to swap one element for
+another in the same spot, like the steps of a wizard or the label of a button:
+
+<Demo component={WaitMode} source={waitModeSource} />
+
+`mode="wait"` expects one child at a time. With more than one, it warns in development.
+
+### `popLayout`
+
+The exiting child is taken out of the page layout as soon as it starts exiting: it's positioned
+absolutely where it was, and its siblings can take its place right away. Combine it with `layout`
+on the siblings so they move into the free space while the child fades out:
+
+<Demo component={PopLayout} source={popLayoutSource} />
+
+<Note>
+    The exiting child is positioned relative to its offset parent. Give the
+    parent a `position` other than `static` (here, `relative` on the `ul`), or
+    the child jumps when it exits.
+</Note>
+
+If the exiting element was placed against the right or bottom edge of its parent, set `anchorX`
+or `anchorY` so it stays there while it exits.
+
+## Dynamic exit animations
+
+A variant can be a function of the `custom` value. When a component exits, its props are frozen,
+so it can't receive a new `custom` value through its own props. Pass it to `AnimatePresence`
+instead: exiting children resolve their variants with the latest `custom` of their
+`AnimatePresence`.
+
+A slideshow is the usual case: the old slide leaves to the left or to the right depending on the
+button pressed after it was rendered.
+
+<Demo component={Slideshow} source={slideshowSource} />
+
+Entering children get their `custom` value from their own `custom` prop, so pass it to both.
+
+## Nested presence
+
+By default, only the children of the `AnimatePresence` that removes them exit. When a parent
+`AnimatePresence` removes a component that contains another `AnimatePresence`, the inner children
+are removed with it, without their exit. Set `propagate` on the inner one to run their exits too:
+
+```tsx
+<AnimatePresence>
+    <Show when={isOpen()}>
+        <motion.div exit={{ opacity: 0 }}>
+            <AnimatePresence propagate>
+                <For each={notifications()}>
+                    {(notification) => (
+                        <motion.p exit={{ x: -20, opacity: 0 }}>
+                            {notification.text}
+                        </motion.p>
+                    )}
+                </For>
+            </AnimatePresence>
+        </motion.div>
+    </Show>
+</AnimatePresence>
+```
+
+## Which children take part
+
+Like in React, an `AnimatePresence` only governs its direct children. motion-solid's `Show` and
+`For` take part when the `AnimatePresence` reaches them while resolving its children: directly,
+or through components, fragments, conditionals and Solid's own control flow.
+
+They don't take part when they're inside an element, a context provider (including
+`LayoutGroup`), `Loading`, `Errored`, a `Portal`, or inside what another presence-aware `Show` or
+`For` renders. There,
+they behave like Solid's own `Show` and `For`. Put another `AnimatePresence` around them if their
+children need to exit.
+
+```tsx
+// The Show takes part: it's rendered by a component, without an element in between.
+function Toast(props: { message?: string }) {
+    return (
+        <Show when={props.message}>
+            {(message) => (
+                <motion.div exit={{ opacity: 0 }}>{message()}</motion.div>
+            )}
+        </Show>
+    )
+}
+
+function App(props: { message?: string }) {
+    return (
+        <AnimatePresence>
+            <Toast message={props.message} />
+        </AnimatePresence>
+    )
+}
+```
+
+Outside an `AnimatePresence`, motion-solid's `Show` and `For` are Solid's own. The only addition:
+`For` makes `layout` items animate when it reorders them (see
+[Layout animations](/docs/layout-animations#when-layout-animations-run)).
+
+### Solid's own `Show` and `For`
+
+Solid's `Show` and `For` dispose a removed child right away. Directly inside an `AnimatePresence`,
+their `motion` children still play their `exit`, but with limits:
+
+-   a child that comes back is a new instance, while the old one finishes exiting,
+-   reactive content, cleanups and portals inside an exiting child don't keep running,
+-   in `mode="wait"`, entering children only wait for the exits of the same `Show` or `For`.
+
+Use motion-solid's `Show` and `For` inside `AnimatePresence`. They don't have these limits.
+
+## Hooks
+
+Components rendered inside an `AnimatePresence` can read their presence with these hooks. Outside
+an `AnimatePresence`, a component is always present.
+
+### `usePresence`
+
+`usePresence()` returns `[isPresent, safeToRemove]`. `isPresent` is an accessor, `false` once the
+component has been removed. The component then stays in the DOM until `safeToRemove()` is called.
+Use it to run an exit that isn't a `motion` animation:
+
+```tsx
+import { usePresence } from "@motion-s/solid"
+import { createEffect } from "solid-js"
+
+function Notice() {
+    const [isPresent, safeToRemove] = usePresence()
+
+    createEffect(isPresent, (present) => {
+        if (!present) setTimeout(() => safeToRemove?.(), 300)
+    })
+
+    return (
+        <div class={isPresent() ? "notice" : "notice notice-leaving"}>
+            Saved
+        </div>
+    )
+}
+```
+
+`safeToRemove` is `null` outside an `AnimatePresence`. Calling it while the component is present
+does nothing. The exit only waits for it when the component is rendered by motion-solid's `Show`
+or `For`.
+
+### `useIsPresent`
+
+`useIsPresent()` returns the `isPresent` accessor alone. The exit doesn't wait for it.
+
+```tsx
+const isPresent = useIsPresent()
+
+<button disabled={!isPresent()}>Undo</button>
+```
+
+### `usePresenceData`
+
+`usePresenceData()` returns an accessor of the `custom` value of the closest `AnimatePresence`.
+It updates while the component exits, so the slideshow above could read the direction with it:
+
+```tsx
+const direction = usePresenceData()
+```
+
+## Exits with nothing to animate
+
+A child without `exit`, without a running layout animation and without `usePresence` is removed in
+the same update that removes it. `onExitComplete` still fires, after that update, together with
+the other exits of the `AnimatePresence`. React renders such a child one more time before removing
+it.

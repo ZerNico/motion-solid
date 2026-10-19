@@ -1,0 +1,93 @@
+import Checkmark from "../demos/svg-animations/Checkmark"
+import checkmarkSource from "../demos/svg-animations/Checkmark.tsx?source"
+import Spinner from "../demos/svg-animations/Spinner"
+import spinnerSource from "../demos/svg-animations/Spinner.tsx?source"
+import Morph from "../demos/svg-animations/Morph"
+import morphSource from "../demos/svg-animations/Morph.tsx?source"
+
+# SVG animations
+
+Every SVG element has a `motion` version: `motion.svg`, `motion.path`, `motion.circle`,
+`motion.rect`, `motion.g` and the others. They animate attributes, draw lines, and morph shapes.
+
+## Animating attributes
+
+SVG attributes animate like styles. Write them in camelCase in `animate`, `initial` and the
+gesture props, as Motion's values:
+
+```tsx
+<motion.circle
+    cx={50}
+    cy={50}
+    initial={{ r: 0 }}
+    animate={{ r: 40, fill: "#4f6bff", strokeWidth: 4 }}
+/>
+```
+
+As props on the element, they keep Solid's attribute names (`stroke-width`, `stroke-linecap`).
+
+`x`, `y` and `scale` are transforms on every `motion` element, also in SVG. To animate the `x`,
+`y` and `scale` attributes instead, use `attrX`, `attrY` and `attrScale`:
+
+```tsx
+<motion.rect width={20} height={20} animate={{ attrX: 100 }} />
+```
+
+## Drawing lines
+
+Three values control how much of a path's stroke is visible. They work on `path`, `circle`,
+`ellipse`, `line`, `polygon`, `polyline` and `rect`, and are all progress values from `0` to `1`:
+
+| Value         | Description                                                            |
+| :------------ | :--------------------------------------------------------------------- |
+| `pathLength`  | How much of the stroke is drawn. `0` is nothing, `1` the whole path.   |
+| `pathOffset`  | Where the drawn part starts along the path.                            |
+| `pathSpacing` | The gap after the drawn part, when the stroke repeats. `1` by default. |
+
+Animating `pathLength` from `0` to `1` draws the line:
+
+<Demo component={Checkmark} source={checkmarkSource} />
+
+With a round `stroke-linecap`, a stroke of length `0` still shows a dot. Animate `opacity` along
+with `pathLength` to hide it.
+
+Motion sets `stroke-dasharray` and `stroke-dashoffset` from these values, and the element's
+`pathLength` attribute to `1`. Don't set those yourself on the same element.
+
+Animating `pathLength` and `pathOffset` together moves a segment along the path:
+
+<Demo component={Spinner} source={spinnerSource} />
+
+## Transforms
+
+Transforms like `rotate` and `scale` work on SVG elements too. Motion sets `transform-box:
+fill-box` and a transform origin of `50% 50%`, so an element rotates and scales around its own
+center, like an HTML element. Without them, SVG transforms use the origin of the drawing's
+coordinate system, its top-left corner. The spinner above rotates its circle this way.
+
+To change the origin, set `originX` and `originY` (progress values, `0` is the left or top edge) or
+`transformOrigin`. A `transformBox` in `style` replaces the `fill-box` default.
+
+## The viewBox
+
+`viewBox` animates on `motion.svg`. Moving and resizing it pans and zooms the drawing:
+
+```tsx
+<motion.svg
+    viewBox="0 0 200 200"
+    animate={{ viewBox: zoomed() ? "50 50 100 100" : "0 0 200 200" }}
+/>
+```
+
+## Morphing shapes
+
+The `d` attribute of a path can animate from one shape to another. Motion interpolates the numbers
+in the two strings one by one, so it works when both paths have the same commands in the same
+order, with the same number of points:
+
+<Demo component={Morph} source={morphSource} />
+
+To morph between paths with different structures, like two unrelated icons, convert them to
+matching paths first. A library such as [flubber](https://github.com/veltman/flubber) does that.
+Use its interpolator with a motion value and [useTransform](/docs/use-transform), and render the
+result as `d`.

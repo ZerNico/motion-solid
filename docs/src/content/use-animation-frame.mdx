@@ -1,0 +1,53 @@
+import Cube from "../demos/use-animation-frame/Cube"
+import cubeSource from "../demos/use-animation-frame/Cube.tsx?source"
+
+# useAnimationFrame
+
+`useAnimationFrame` runs a callback on every animation frame, in Motion's frame loop, until its
+owner is disposed. Use it for per-frame work that isn't a single value: updating an element
+directly, a canvas, or a simulation.
+
+## Usage
+
+```tsx
+import { useAnimationFrame } from "@motion-s/solid"
+
+useAnimationFrame((time, delta) => {
+    // ...
+})
+```
+
+The callback receives two numbers, in milliseconds:
+
+-   `time`: the time since the first frame the callback ran in.
+-   `delta`: the time since the previous frame.
+
+Use `delta` to move things at the same speed whatever the frame rate. The cube below turns 60
+degrees per second. Its element is updated through a ref, so Solid isn't involved on each frame.
+The pause button sets a signal that the callback reads:
+
+<Demo component={Cube} source={cubeSource} />
+
+The callback keeps running until the component (or the owner it was called in) is disposed. To
+stop it at some point, render the component that calls it conditionally, for example in a
+`<Show>`.
+
+<Note>
+    Inside `<MotionConfig isStatic>`, the callback never runs.
+</Note>
+
+For a value of the elapsed time that you can pass to `motion` components, use
+[`useTime`](/docs/use-time).
+
+## API reference
+
+```ts
+function useAnimationFrame(
+    callback: (time: number, delta: number) => void
+): void
+```
+
+-   `callback`: called on every frame with the time since its first frame and the time since the
+    previous frame, both in milliseconds.
+
+Returns nothing.

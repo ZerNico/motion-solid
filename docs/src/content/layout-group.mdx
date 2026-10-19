@@ -1,0 +1,78 @@
+import Accordion from "../demos/layout-group/Accordion"
+import accordionSource from "../demos/layout-group/Accordion.tsx?source"
+import TabBars from "../demos/layout-group/TabBars"
+import tabBarsSource from "../demos/layout-group/TabBars.tsx?source"
+
+# LayoutGroup
+
+`LayoutGroup` groups components whose layout animations affect each other, so a change in one
+animates the others too. Its `id` also namespaces the `layoutId`s inside it.
+
+```tsx
+import { LayoutGroup } from "@motion-s/solid"
+
+function Page() {
+    return (
+        <LayoutGroup>
+            <Sidebar />
+            <Content />
+        </LayoutGroup>
+    )
+}
+```
+
+It doesn't render an element.
+
+## Grouping layout animations
+
+When a layout change happens, motion-solid measures the elements with `layout` in the closest
+`motion` component, `LayoutGroup` or `AnimatePresence` around it (see
+[when layout animations run](/docs/layout-animations#when-layout-animations-run)). Siblings in the
+same parent already animate together, without a `LayoutGroup`.
+
+That's not the case when the components are inside different `motion` parents. Each `motion`
+parent only measures what's inside it, so an element in another one jumps to its new position.
+Wrap them in a `LayoutGroup`: when one of its members measures, all of them do.
+
+In this accordion, each section has its own `motion` wrapper for a hover effect. Without the
+`LayoutGroup`, opening a section would make the sections below it jump:
+
+<Demo component={Accordion} source={accordionSource} />
+
+<Note title="Different from React">
+    In React, every component that doesn't re-render needs a `LayoutGroup` to
+    take part in a layout animation. In motion-solid, a change measures every
+    element with `layout` in its scope, so a `LayoutGroup` is only needed across
+    `motion` parents, or for its `id`.
+</Note>
+
+## Namespacing `layoutId`s
+
+`layoutId` is global: two elements with the same `layoutId` animate from one to the other,
+wherever they are. A component that uses a `layoutId`, rendered twice, would have its two
+instances animate into each other.
+
+Give each instance a `LayoutGroup` with its own `id`. The `layoutId`s inside it are prefixed with
+the `id`, so they only match within the group:
+
+<Demo component={TabBars} source={tabBarsSource} />
+
+Nested groups combine their `id`s: a `layoutId` of `"highlight"` inside `<LayoutGroup id="b">`,
+itself inside `<LayoutGroup id="a">`, becomes `"a-b-highlight"`.
+
+## Props
+
+| Prop      | Type              | Default | Description                                          |
+| :-------- | :---------------- | :------ | :--------------------------------------------------- |
+| `id`      | `string`          |         | Prefix for the `layoutId`s inside the group.         |
+| `inherit` | `boolean \| "id"` | `true`  | What to take from a parent `LayoutGroup`. See below. |
+
+`inherit` decides how a group nested in another one relates to it:
+
+-   `true`: it's part of the parent group (its members measure with the parent's), and its `id`
+    is prefixed with the parent's.
+-   `"id"`: its `id` is prefixed with the parent's, but it's a separate group: its members aren't
+    measured together with the elements outside it.
+-   `false`: a separate group, with its own `id` only.
+
+`id` and `inherit` are read once, when the group is created.

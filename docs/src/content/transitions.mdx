@@ -1,0 +1,244 @@
+import Easings from "../demos/transitions/Easings"
+import easingsSource from "../demos/transitions/Easings.tsx?source"
+import Springs from "../demos/transitions/Springs"
+import springsSource from "../demos/transitions/Springs.tsx?source"
+import Repeat from "../demos/transitions/Repeat"
+import repeatSource from "../demos/transitions/Repeat.tsx?source"
+import Stagger from "../demos/transitions/Stagger"
+import staggerSource from "../demos/transitions/Stagger.tsx?source"
+
+# Transitions
+
+A transition describes how a value moves to its target: with a duration and an easing curve, with
+spring physics, or by decelerating from a velocity.
+
+## Setting a transition
+
+The `transition` prop applies to every animation of the component:
+
+```tsx
+<motion.div
+    animate={{ x: isOpen() ? 200 : 0 }}
+    transition={{ duration: 0.4, ease: "easeOut" }}
+/>
+```
+
+A target can carry its own `transition`, which wins over the prop. Use it to animate differently
+depending on the state, or for a gesture:
+
+```tsx
+<motion.div
+    animate={{ opacity: 1, transition: { duration: 1 } }}
+    whileHover={{ scale: 1.1, transition: { duration: 0.15 } }}
+    exit={{ opacity: 0, transition: { duration: 0.2 } }}
+/>
+```
+
+The same goes for variants: a variant's `transition` is used when animating to it.
+
+### Defaults
+
+Without a transition, Motion picks one per value:
+
+-   `x`, `y`, `rotate` and the other transforms use a spring. `scale` uses a spring without
+    bounce.
+-   Other values, like `opacity` and colors, use a 0.3 second tween.
+-   Animations with more than two keyframes use a 0.8 second tween.
+
+A transition with only orchestration options (`delay`, `repeat`, `when`, ...) keeps these
+defaults.
+
+## Tween
+
+A tween animates over a fixed `duration` (in seconds), shaped by an easing curve. It's the type
+used when you set `duration` or `ease` without a `type`. You can also set `type: "tween"`.
+
+| Option     | Type                 | Default     | Description                                                                             |
+| :--------- | :------------------- | :---------- | :-------------------------------------------------------------------------------------- |
+| `duration` | `number`             | `0.3`       | Length of the animation, in seconds. `0.8` for more than two keyframes.                 |
+| `ease`     | `Easing \| Easing[]` | `"easeOut"` | The easing curve. An array sets one curve per keyframe segment.                         |
+| `times`    | `number[]`           |             | Where each keyframe falls, from `0` to `1`. See [keyframes](/docs/animation#keyframes). |
+
+### Easing
+
+`ease` accepts:
+
+-   A name: `"linear"`, `"easeIn"`, `"easeOut"`, `"easeInOut"`, `"circIn"`, `"circOut"`,
+    `"circInOut"`, `"backIn"`, `"backOut"`, `"backInOut"` or `"anticipate"`.
+-   A cubic bezier curve as an array of four numbers, like in CSS: `[0.7, 0, 0.3, 1]`.
+-   A function that takes a progress from `0` to `1` and returns the eased progress. The easing
+    functions are exported too (`easeOut`, `backOut`, `steps(4)`, `cubicBezier(…)`, ...).
+
+<Demo component={Easings} source={easingsSource} />
+
+## Spring
+
+`type: "spring"` moves the value like a spring. Springs keep the value's velocity when they're
+interrupted, so a new target redirects the movement instead of restarting it. That makes them a
+good fit for gestures and for values that change often.
+
+There are two ways to configure a spring. With `visualDuration` (or `duration`) and `bounce`,
+you describe how it looks:
+
+```tsx
+<motion.div
+    animate={{ x: 200 }}
+    transition={{ type: "spring", visualDuration: 0.4, bounce: 0.25 }}
+/>
+```
+
+Set `bounce` together with `visualDuration`: on its own, `visualDuration` is ignored and the
+spring uses the default physics.
+
+With `stiffness`, `damping` and `mass`, you describe the physics. These override `duration` and
+`bounce`. Without any of these options, a spring uses `stiffness: 100`, `damping: 10` and
+`mass: 1`.
+
+<Demo component={Springs} source={springsSource} />
+
+| Option           | Type     | Default | Description                                                                                                                                                  |
+| :--------------- | :------- | :------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `visualDuration` | `number` |         | The time (in seconds) the spring takes to visually reach its target. Bouncing continues after it. Overrides `duration`. Takes effect together with `bounce`. |
+| `duration`       | `number` |         | The total time of the animation, in seconds.                                                                                                                 |
+| `bounce`         | `number` |         | From `0` (no bounce) to `1` (very bouncy). Negative values down to `-1` start faster and settle more slowly. With `duration` alone, it's `0.3`.              |
+| `stiffness`      | `number` | `100`   | Higher values move more suddenly.                                                                                                                            |
+| `damping`        | `number` | `10`    | The force against the movement. `0` oscillates forever.                                                                                                      |
+| `mass`           | `number` | `1`     | Higher values move more slowly.                                                                                                                              |
+| `velocity`       | `number` | current | The starting velocity. By default the value's current velocity.                                                                                              |
+| `restSpeed`      | `number` |         | The animation ends when the speed (units per second) is below this, and the distance below `restDelta`.                                                      |
+| `restDelta`      | `number` |         | The animation ends when the distance to the target is below this, and the speed below `restSpeed`.                                                           |
+
+<Note>Springs animate between two values. For keyframes, use a tween.</Note>
+
+## Inertia
+
+`type: "inertia"` decelerates a value from its velocity, like something thrown that slows down.
+It's what [drag](/docs/drag) uses when you release an element, and what `dragTransition`
+configures. It doesn't animate to a target: the velocity and `power` decide where the value comes
+to rest.
+
+| Option            | Type                         | Default | Description                                                                                 |
+| :---------------- | :--------------------------- | :------ | :------------------------------------------------------------------------------------------ |
+| `velocity`        | `number`                     | current | The starting velocity.                                                                      |
+| `power`           | `number`                     | `0.8`   | Higher values travel further.                                                               |
+| `timeConstant`    | `number`                     | `700`   | How long the deceleration takes, in milliseconds.                                           |
+| `modifyTarget`    | `(target: number) => number` |         | Receives the calculated resting point and returns a new one, for example to snap to a grid. |
+| `min`, `max`      | `number`                     |         | Bounds. The value springs back when it would cross them.                                    |
+| `bounceStiffness` | `number`                     | `500`   | Stiffness of the spring at the bounds.                                                      |
+| `bounceDamping`   | `number`                     | `10`    | Damping of the spring at the bounds.                                                        |
+
+## No animation
+
+`type: false` sets the values right away, without animating. `duration: 0` does the same for a
+tween.
+
+## Delay
+
+`delay` waits this many seconds before the animation starts:
+
+```tsx
+<motion.div animate={{ opacity: 1 }} transition={{ delay: 0.5 }} />
+```
+
+## Repeat
+
+| Option        | Type                              | Default  | Description                                           |
+| :------------ | :-------------------------------- | :------- | :---------------------------------------------------- |
+| `repeat`      | `number`                          | `0`      | How many times to repeat. `Infinity` repeats forever. |
+| `repeatType`  | `"loop" \| "reverse" \| "mirror"` | `"loop"` | How each repetition plays.                            |
+| `repeatDelay` | `number`                          | `0`      | Seconds to wait between repetitions.                  |
+
+-   `"loop"` starts again from the first keyframe.
+-   `"reverse"` plays backwards, then forwards again. The easing is reversed too.
+-   `"mirror"` swaps the start and the end, and plays forwards with the same easing.
+
+The difference between `"reverse"` and `"mirror"` shows with an asymmetric easing like `easeIn`:
+
+<Demo component={Repeat} source={repeatSource} />
+
+## Per-value transitions
+
+A transition can set options for single values by their name. Values without their own options
+use the rest of the transition:
+
+```tsx
+<motion.div
+    animate={{ x: 100, opacity: 1 }}
+    transition={{
+        duration: 0.5,
+        opacity: { duration: 0.2, ease: "linear" },
+    }}
+/>
+```
+
+`default` sets the transition of every value without its own options:
+
+```tsx
+transition={{
+    default: { type: "spring", bounce: 0.3 },
+    opacity: { duration: 0.2 },
+}}
+```
+
+A value's options replace the general ones; only `delay` carries over. Add `inherit: true` to a
+value's options to merge them with the general ones instead.
+
+## Inheriting transitions
+
+[MotionConfig](/docs/motion-config) sets a default `transition` for every `motion` component inside
+it:
+
+```tsx
+import { MotionConfig, motion } from "@motion-s/solid"
+
+<MotionConfig
+    transition={{ type: "spring", visualDuration: 0.3, bounce: 0.2 }}
+>
+    <motion.div animate={{ x: 100 }} />
+</MotionConfig>
+```
+
+A component's own `transition` prop replaces the one from `MotionConfig`. A nested `MotionConfig`
+replaces its parent's, unless its `transition` has `inherit: true`: then the two are merged, and
+its own options win.
+
+In the same way, a transition inside a target or a variant replaces the component's `transition`
+prop, unless it has `inherit: true`:
+
+```tsx
+<motion.div
+    transition={{ type: "spring", bounce: 0.4 }}
+    whileHover={{
+        scale: 1.1,
+        transition: { inherit: true, visualDuration: 0.15 },
+    }}
+/>
+```
+
+## Staggering children
+
+When a parent animates a variant, the orchestration options of its transition time its `motion`
+children (see [variants](/docs/animation#variants)). `delayChildren` delays them. With the
+`stagger()` helper, each child gets its own delay:
+
+```tsx
+import { stagger } from "@motion-s/solid"
+
+transition={{ delayChildren: stagger(0.05, { from: "center" }) }}
+```
+
+`stagger(interval, options)` adds `interval` seconds between children:
+
+| Option       | Type                                      | Default   | Description                                                             |
+| :----------- | :---------------------------------------- | :-------- | :---------------------------------------------------------------------- |
+| `startDelay` | `number`                                  | `0`       | A delay before the first child, in seconds.                             |
+| `from`       | `"first" \| "center" \| "last" \| number` | `"first"` | The child that starts first. The others follow by their distance to it. |
+| `ease`       | `Easing`                                  |           | Distributes the delays along an easing curve instead of evenly.         |
+
+<Demo component={Stagger} source={staggerSource} />
+
+The older options `staggerChildren` (seconds between children) and `staggerDirection` (`1` from
+the first child, `-1` from the last) still work.
+
+The `transition` of the parent is read when the animation starts, so it can depend on signals like
+any other prop, as `from()` does in the demo.

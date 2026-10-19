@@ -1,0 +1,209 @@
+import ExpandingCard from "../demos/layout-animations/ExpandingCard"
+import expandingCardSource from "../demos/layout-animations/ExpandingCard.tsx?source"
+import SharedTabs from "../demos/layout-animations/SharedTabs"
+import sharedTabsSource from "../demos/layout-animations/SharedTabs.tsx?source"
+import ListReorder from "../demos/layout-animations/ListReorder"
+import listReorderSource from "../demos/layout-animations/ListReorder.tsx?source"
+
+# Layout animations
+
+A layout animation moves and resizes an element from its old layout to its new one, after a change
+in the DOM or in CSS. It works for any layout change: a different `width`, a new grid position,
+a reordered list, `justify-content` switching sides. A shared layout animation does the same
+between two different elements with the same `layoutId`.
+
+## The `layout` prop
+
+Add `layout` to a `motion` component. When an update changes its size or position, it animates
+from where it was:
+
+```tsx
+<motion.div layout class={isOpen() ? "w-80" : "w-48"} />
+```
+
+<Demo component={ExpandingCard} source={expandingCardSource} />
+
+The element itself changes layout at once. Motion measures it before and after the update, then
+animates `transform` from the old box to the new one. That keeps the animation on the compositor,
+whatever CSS property changed.
+
+| Value               | Animates                                                                       |
+| :------------------ | :----------------------------------------------------------------------------- |
+| `true`              | Size and position.                                                             |
+| `"position"`        | Position only. The size changes at once.                                       |
+| `"size"`            | Size only. The position changes at once.                                       |
+| `"preserve-aspect"` | Size and position if the aspect ratio stays the same, otherwise position only. |
+| `"x"`, `"y"`        | Along one axis only.                                                           |
+
+`layout` and `layoutId` can be turned on or off at any time. Turned on, the element animates from
+the next layout change, including one in the same update.
+
+## When layout animations run
+
+<Note title="Different from React">
+    React re-renders a component when its state changes, and Motion measures
+    every `motion` component that re-renders. Solid doesn't re-render, so
+    motion-solid measures on specific changes instead.
+</Note>
+
+An update measures the elements with `layout` when one of these happens:
+
+-   a prop of a `motion` component changes, other than animation-only props (`animate`, `initial`,
+    `exit`, `variants`, `transition`, `custom`, `while*`, event handlers). For example `class`,
+    `style` or `layout`,
+-   children of a `motion` component are added, removed or reordered,
+-   a `motion` component is created or removed,
+-   `AnimatePresence`, motion-solid's `Show`/`For`, or a `LayoutGroup` add or remove children, or
+    a child starts or stops exiting,
+-   motion-solid's `For` reorders its items, also outside an `AnimatePresence`,
+-   an element with the same `layoutId` is created, removed, or starts or stops exiting.
+
+When it happens, motion-solid measures the closest `motion` component, `LayoutGroup` or
+`AnimatePresence` around the change, and everything inside it: the changed element, its siblings,
+and their children. Without any of these around it, every element with `layout` on the page is
+measured. The element with `layout` doesn't need to be the one that changed: a card grows, and the
+cards below it move.
+
+### What isn't detected
+
+Changes that don't go through a `motion` component can't be seen:
+
+-   the `class` or `style` of a plain element (`<div>`, not `<motion.div>`),
+-   text that changes in a plain element inside a `motion` component,
+-   CSS changes from outside, like a media query or a stylesheet.
+
+For those, pass `layoutDependency`. The element measures when its value changes:
+
+```tsx
+<motion.div layout layoutDependency={isOpen()}>
+    <div class={isOpen() ? "h-64" : "h-16"} />
+</motion.div>
+```
+
+`layoutDependency` is tracked like any prop. Once it's set, the other triggers above don't make the
+element animate any more: only a change of its value, or of its presence, does. Making the
+container a `motion` element works too.
+
+### Lists
+
+Solid's `For` moves the DOM nodes of reordered items without running any code, so nothing can
+notice the new order. Under a plain parent, the items jump. Use one of these:
+
+-   motion-solid's `For`, which measures when the order changes,
+-   a `motion` parent, which measures when its children are reordered,
+-   `layoutDependency` with the list.
+
+<Demo component={ListReorder} source={listReorderSource} />
+
+## Shared layout animations
+
+Two elements with the same `layoutId` animate from one to the other. When a new element with a
+`layoutId` appears, it animates from the box of the last element with that `layoutId`, even if
+it's somewhere else in the tree:
+
+```tsx
+<Show when={selected() === tab}>
+    <motion.span layoutId="tab-highlight" />
+</Show>
+```
+
+<Demo component={SharedTabs} source={sharedTabsSource} />
+
+If the previous element is still in the page, the two crossfade while they move. Set
+`layoutCrossfade={false}` on an element to keep its own opacity during the animation.
+
+With `AnimatePresence`, the old element can exit while the new one animates from it. A thumbnail
+that opens into a dialog is the usual case:
+
+```tsx
+<For each={photos}>
+    {(photo) => (
+        <motion.img layoutId={photo.id} src={photo.src} onClick={() => setOpen(photo)} />
+    )}
+</For>
+<AnimatePresence>
+    <Show when={open()}>
+        {(photo) => (
+            <motion.img
+                layoutId={photo().id}
+                src={photo().src}
+                class="dialog"
+                onClick={() => setOpen(undefined)}
+            />
+        )}
+    </Show>
+</AnimatePresence>
+```
+
+When the dialog closes, the thumbnail animates back from the dialog's box.
+
+`layoutId`s are global. To use the same `layoutId` in several instances of a component, wrap each
+instance in a [`LayoutGroup`](/docs/layout-group) with an `id`.
+
+## Scale correction
+
+A layout animation changes the size of an element with `scale`. Without help, that would also
+stretch its `border-radius`, its `box-shadow` and its children. Motion corrects:
+
+-   `borderRadius` and `boxShadow`, when they're set through `style`, `initial` or `animate`.
+    Values from a CSS class aren't corrected.
+-   children that have `layout` themselves. Give a child `layout="position"` to move it with its
+    parent without stretching it. A child without `layout` is stretched.
+
+```tsx
+<motion.div layout style={{ borderRadius: 16 }}>
+    <motion.h2 layout="position">Title</motion.h2>
+</motion.div>
+```
+
+## Transition
+
+Layout animations use the component's `transition`. To give them a different one, set
+`transition.layout`:
+
+```tsx
+<motion.div
+    layout
+    animate={{ opacity: 1 }}
+    transition={{
+        opacity: { duration: 0.2 },
+        layout: { type: "spring", bounce: 0.25, duration: 0.6 },
+    }}
+/>
+```
+
+## Scrolling containers and fixed elements
+
+Two props help Motion measure elements inside scrolling containers and fixed elements:
+
+-   `layoutScroll` on a scrolling ancestor of elements with `layout`. Without it, scrolling the
+    container between two measurements looks like a layout change.
+-   `layoutRoot` on a `position: fixed` or `sticky` element. Its children are measured relative to
+    it, and its own layout changes apply at once.
+
+```tsx
+<motion.ul layoutScroll class="overflow-y-auto">
+    <For each={items()}>{(item) => <motion.li layout>{item}</motion.li>}</For>
+</motion.ul>
+```
+
+## Props
+
+| Prop                        | Type                                                                 | Description                                                                                                                                                          |
+| :-------------------------- | :------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `layout`                    | `boolean \| "position" \| "size" \| "preserve-aspect" \| "x" \| "y"` | Animate layout changes of this element.                                                                                                                              |
+| `layoutId`                  | `string`                                                             | Animate between elements with the same id.                                                                                                                           |
+| `layoutDependency`          | `any`                                                                | Only animate when this value changes.                                                                                                                                |
+| `layoutScroll`              | `boolean`                                                            | Measure this element's scroll offset.                                                                                                                                |
+| `layoutRoot`                | `boolean`                                                            | Measure children relative to this element, for fixed or sticky elements.                                                                                             |
+| `layoutCrossfade`           | `boolean`                                                            | With `false`, keep this element's opacity during a shared layout animation. Default `true`.                                                                          |
+| `layoutAnchor`              | `{ x: number, y: number } \| false`                                  | The point of the parent that children follow during the parent's layout animation. Default `{ x: 0, y: 0 }` (top left). `{ x: 0.5, y: 0.5 }` suits centered content. |
+| `onLayoutAnimationStart`    | `() => void`                                                         | Called when a layout animation starts.                                                                                                                               |
+| `onLayoutAnimationComplete` | `() => void`                                                         | Called when a layout animation finishes.                                                                                                                             |
+
+## Things to know
+
+-   Transforms don't apply to `display: inline` elements. Use `inline-block` or a block element.
+-   With [reduced motion](/docs/accessibility) on, layout changes happen at once.
+-   To coordinate layout animations across components in different `motion` parents, see
+    [LayoutGroup](/docs/layout-group).

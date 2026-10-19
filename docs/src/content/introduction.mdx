@@ -1,0 +1,60 @@
+import Enter from "../demos/introduction/Enter"
+import enterSource from "../demos/introduction/Enter.tsx?source"
+import Gestures from "../demos/introduction/Gestures"
+import gesturesSource from "../demos/introduction/Gestures.tsx?source"
+import Exit from "../demos/introduction/Exit"
+import exitSource from "../demos/introduction/Exit.tsx?source"
+
+# Introduction
+
+motion-solid (`@motion-s/solid`) is a port of [Motion](https://motion.dev) for React to Solid 2. It
+uses the same animation engine, `motion-dom`, so animations, springs, gestures, exit and layout
+animations behave the way they do in Motion for React. The API follows Solid's conventions:
+`class` instead of `className`, ref callbacks, signals and accessors.
+
+It's an unofficial port. It tracks `motion/react` v14 and targets Solid 2.0, which is currently a
+release candidate.
+
+## Install
+
+```sh
+pnpm add @motion-s/solid solid-js@next @solidjs/web@next
+```
+
+See [Installation](/docs/installation) for other package managers and the entry points.
+
+## Animate on mount
+
+Every HTML and SVG element has a `motion` counterpart, like `motion.div` or `motion.circle`. It
+starts from `initial` and animates to `animate` when it mounts. When the values in `animate`
+change, it animates to the new values.
+
+<Demo component={Enter} source={enterSource} />
+
+## Gestures
+
+`whileHover`, `whileTap`, `whileFocus`, `whileInView` and `whileDrag` animate to their values while
+the gesture is active, and back when it ends:
+
+<Demo component={Gestures} source={gesturesSource} />
+
+## Exit animations
+
+In Solid, `Show` and `For` add and remove elements. motion-solid exports its own `Show` and `For`
+with the same props. Inside `AnimatePresence`, they keep a removed element in the document until
+its `exit` animation has finished:
+
+<Demo component={Exit} source={exitSource} />
+
+## Where to go next
+
+-   [Coming from React](/docs/coming-from-react): what's different if you know Motion for React.
+-   [motion](/docs/motion): the props of motion components.
+-   [Animation](/docs/animation) and [Transitions](/docs/transitions): targets, keyframes, variants
+    and how values move.
+-   [Gestures](/docs/gestures) and [Drag](/docs/drag).
+-   [AnimatePresence](/docs/animate-presence): exit animations.
+-   [Layout animations](/docs/layout-animations): animate changes of size and position.
+-   [Motion values](/docs/motion-values): values that update the DOM without going through Solid.
+-   [animate()](/docs/animate-function): imperative animations and timelines.
+-   [Server-side rendering](/docs/ssr).

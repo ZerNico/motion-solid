@@ -1,0 +1,230 @@
+import Transforms from "../demos/animation/Transforms"
+import transformsSource from "../demos/animation/Transforms.tsx?source"
+import AutoHeight from "../demos/animation/AutoHeight"
+import autoHeightSource from "../demos/animation/AutoHeight.tsx?source"
+import Keyframes from "../demos/animation/Keyframes"
+import keyframesSource from "../demos/animation/Keyframes.tsx?source"
+import VariantsDemo from "../demos/animation/Variants"
+import variantsSource from "../demos/animation/Variants.tsx?source"
+
+# Animation
+
+A `motion` component animates to the values in its `animate` prop. This page covers the values
+you can animate, keyframes, variants, and how animations follow your Solid state.
+
+## Enter, update and exit
+
+Every HTML and SVG element has a `motion` version, like `motion.div` or `motion.circle`. Three
+props describe its states:
+
+-   `initial`: the values the element starts with when it's created.
+-   `animate`: the values it animates to. When they change, it animates to the new ones.
+-   `exit`: the values it animates to before it's removed. This needs an
+    [AnimatePresence](/docs/animate-presence) around it.
+
+```tsx
+import { motion } from "@motion-s/solid"
+
+<motion.div
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0 }}
+/>
+```
+
+Without `initial`, the element starts with the values in its `style` (or the browser's current
+values) and animates from there. `initial={false}` skips the enter animation: the element starts
+with the values of `animate`.
+
+## Following signals
+
+The `animate` prop is reactive like any other prop. Read a signal inside it, and the element
+animates whenever the signal changes:
+
+```tsx
+const [isOpen, setIsOpen] = createSignal(false)
+
+<motion.div animate={{ rotate: isOpen() ? 180 : 0 }} />
+```
+
+There's no need for an effect or a key. Values that didn't change aren't animated again.
+
+## Animatable values
+
+### Transforms
+
+Motion animates each transform on its own: `x`, `y`, `z`, `scale`, `scaleX`, `scaleY`, `rotate`,
+`rotateX`, `rotateY`, `rotateZ`, `skewX`, `skewY` and `transformPerspective`. They can have
+different transitions, start at different times and be interrupted one by one. Motion builds the
+`transform` string from them.
+
+Numbers are pixels for `x`, `y` and `z`, and degrees for rotations and skews. Strings with units
+work too: `x: "50%"`, `rotate: "0.5turn"`.
+
+<Demo component={Transforms} source={transformsSource} />
+
+`originX`, `originY` and `originZ` set the transform origin. Like `scale`, they're numbers, where
+`0.5` is the center.
+
+### Colors
+
+Colors animate between hex, `rgb()` and `hsl()` values, also when the two ends use different
+formats. Values like `backgroundColor`, `color`, `borderColor` and `fill` all work.
+
+```tsx
+<motion.div animate={{ backgroundColor: isActive() ? "#4f6bff" : "#e4e4e9" }} />
+```
+
+### CSS variables
+
+Animate a CSS variable by its name. Other styles can then use it:
+
+```tsx
+<motion.div
+    style={{ "--hue": 0, background: "hsl(var(--hue) 80% 60%)" }}
+    animate={{ "--hue": 240 }}
+/>
+```
+
+A value can also be a variable (`animate={{ color: "var(--accent)" }}`): Motion reads its value
+from the element and animates to it.
+
+<Note>
+    Animating a CSS variable re-renders every element that uses it, on every
+    frame. To animate one element, animate its own values instead.
+</Note>
+
+### Width and height to `auto`
+
+`width` and `height` can animate to and from `"auto"`. Motion measures the element to find the
+size. Add `overflow: hidden` so the content doesn't show outside the element while it's small:
+
+<Demo component={AutoHeight} source={autoHeightSource} />
+
+### Unit conversion
+
+`width`, `height`, `top`, `left`, `right`, `bottom`, `x` and `y` can animate between two
+different units, for example from `0` to `"50%"`, or from `"2rem"` to `"100%"`.
+Motion measures the element to convert them. This works for animations with two keyframes.
+
+## Keyframes
+
+An array is a sequence of keyframes. The element animates through each value in order:
+
+```tsx
+<motion.div animate={{ x: [0, 100, 50, 0] }} />
+```
+
+`null` as a keyframe stands for the value the element has when the animation starts. As the first
+keyframe, it lets an animation continue from wherever the element is:
+
+```tsx
+<motion.div animate={{ scale: [null, 1.3, 1] }} />
+```
+
+By default, keyframes are spaced evenly over the animation. The `times` option of the
+[transition](/docs/transitions) sets where each keyframe falls, as a progress between `0` and `1`,
+with one entry per keyframe:
+
+<Demo component={Keyframes} source={keyframesSource} />
+
+## Variants
+
+Variants are named sets of values. Define them in the `variants` prop, then use their names in
+`initial`, `animate`, `exit` and the [gesture](/docs/gestures) props:
+
+```tsx
+const variants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1 },
+}
+
+<motion.div variants={variants} initial="hidden" animate="visible" />
+```
+
+A variant can have its own `transition`, used when animating to that variant.
+
+### Propagation
+
+A variant name flows down to the `motion` children. A child with `variants` but without its own
+`animate` animates to the variant with the same name whenever its parent does. So switching one
+signal in the parent animates a whole tree.
+
+A variant can define orchestration options in its `transition`, to time the children against the
+parent:
+
+| Option            | Description                                                                                                                    |
+| :---------------- | :----------------------------------------------------------------------------------------------------------------------------- |
+| `when`            | `"beforeChildren"` runs this element's animation before its children's, `"afterChildren"` after. By default they run together. |
+| `delayChildren`   | Delays the children's animations, in seconds. A `stagger()` gives each child a different delay.                                |
+| `staggerChildren` | Adds this many seconds of delay for each child, in order. `delayChildren: stagger(…)` is the newer form.                       |
+
+<Demo component={VariantsDemo} source={variantsSource} />
+
+The children can be rendered by `For`, `Show` or any component: what counts is that they're
+`motion` components inside the parent. Set `inherit={false}` on a child to stop it from following
+its parent's variants.
+
+`animate` and `initial` also accept an array of names, which are applied together.
+
+### Dynamic variants
+
+A variant can be a function. It receives the component's `custom` prop and returns the values.
+Use it to give each element a different animation from the same variants:
+
+```tsx
+const variants = {
+    visible: (index: number) => ({
+        opacity: 1,
+        transition: { delay: index * 0.1 },
+    }),
+}
+
+<For each={items()}>
+    {(item, index) => (
+        <motion.li custom={index()} variants={variants} initial={{ opacity: 0 }} animate="visible">
+            {item.label}
+        </motion.li>
+    )}
+</For>
+```
+
+For `exit` animations, `AnimatePresence` can pass a `custom` value too: see
+[AnimatePresence](/docs/animate-presence).
+
+## Animation events
+
+| Prop                  | Called with                | When                                                           |
+| :-------------------- | :------------------------- | :------------------------------------------------------------- |
+| `onAnimationStart`    | the target or variant name | An animation of `animate` (or a variant from a parent) starts. |
+| `onAnimationComplete` | the target or variant name | That animation has finished.                                   |
+| `onUpdate`            | the latest values, by name | The animated values change, at most once per frame.            |
+
+```tsx
+<motion.div
+    animate={isOpen() ? "open" : "closed"}
+    variants={variants}
+    onAnimationComplete={(definition) => {
+        if (definition === "closed") setVisible(false)
+    }}
+    onUpdate={(latest) => console.log(latest.opacity)}
+/>
+```
+
+The definition passed to `onAnimationStart` and `onAnimationComplete` is the variant name, or the
+object of values that was animated, so one handler can tell the animations apart.
+
+## Values after the animation
+
+`transitionEnd` sets values once an animation has finished. Use it for values that can't
+animate, like `display` or `visibility`:
+
+```tsx
+<motion.div
+    animate={
+        isVisible()
+            ? { opacity: 1, display: "block" }
+            : { opacity: 0, transitionEnd: { display: "none" } }
+    }
+/>
+```

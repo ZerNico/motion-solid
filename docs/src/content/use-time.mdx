@@ -1,0 +1,48 @@
+import Orbit from "../demos/use-time/Orbit"
+import orbitSource from "../demos/use-time/Orbit.tsx?source"
+
+# useTime
+
+`useTime` returns a motion value of the time, in milliseconds, that has passed since its first
+animation frame. It updates on every frame, which makes it a clock for animations that never end.
+
+## Usage
+
+```tsx
+import { useTime } from "@motion-s/solid"
+
+const time = useTime()
+```
+
+On its own, `time` counts up. Map it with [`useTransform`](/docs/use-transform) to drive other
+values. With `clamp: false`, a range mapping continues past its end, so this rotation goes on at
+one turn every four seconds:
+
+```tsx
+const rotate = useTransform(time, [0, 4000], [0, 360], { clamp: false })
+
+<motion.div style={{ rotate }} />
+```
+
+A computed `useTransform` can use any formula. Here, `cx` and `cy` move a circle along a path:
+
+```tsx
+const cx = useTransform(() => 80 + Math.cos(time.get() / 600) * 56)
+const cy = useTransform(() => 80 + Math.sin(time.get() / 600) * 56)
+
+<motion.circle cx={cx} cy={cy} r="8" />
+```
+
+<Demo component={Orbit} source={orbitSource} />
+
+The clock stops when its owner is disposed. To run your own code on every frame instead, use
+[`useAnimationFrame`](/docs/use-animation-frame).
+
+## API reference
+
+```ts
+function useTime(): MotionValue<number>
+```
+
+Returns a `MotionValue<number>` that starts at `0` and holds the milliseconds since its first
+frame.

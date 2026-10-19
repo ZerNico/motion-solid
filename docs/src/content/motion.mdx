@@ -1,0 +1,233 @@
+import Variants from "../demos/motion/Variants"
+import variantsSource from "../demos/motion/Variants.tsx?source"
+import Callbacks from "../demos/motion/Callbacks"
+import callbacksSource from "../demos/motion/Callbacks.tsx?source"
+import CreateComponent from "../demos/motion/CreateComponent"
+import createComponentSource from "../demos/motion/CreateComponent.tsx?source"
+
+# motion
+
+`motion` components are HTML and SVG elements that can animate. Use them in place of the plain
+element, and add animation props.
+
+```tsx
+import { motion } from "@motion-s/solid"
+<motion.div class="box" animate={{ rotate: 90 }} />
+```
+
+There's one for every element: `motion.div`, `motion.button`, `motion.li`, `motion.svg`,
+`motion.path`, and so on. Besides the animation props, they take the same attributes and event
+handlers as the element they render.
+
+## Animating
+
+`animate` sets the values the element animates to. When it mounts, it animates from `initial` (or
+from the values it already has) to `animate`. When `animate` changes, for example because it reads
+a signal, the element animates to the new values.
+
+```tsx
+const [isOpen, setIsOpen] = createSignal(false)
+
+<motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1, height: isOpen() ? 240 : 80 }}
+    transition={{ type: "spring", bounce: 0.2 }}
+/>
+```
+
+Set `initial={false}` to start at the values of `animate`, without animating on mount.
+
+`transition` sets how values move: a spring, a duration and easing, delays, repeats. It can also be
+set per target, or for every component inside a [MotionConfig](/docs/motion-config). See
+[Transitions](/docs/transitions).
+
+## Variants
+
+Variants are named targets. Define them in `variants`, and pass their names to `initial`,
+`animate`, `exit` or a `while*` prop.
+
+A variant name set on a parent is passed down to the motion components inside it, so one change on
+the parent animates all of them. The parent's transition can delay its children with
+`delayChildren`, for example with `stagger()` to start them one after another:
+
+<Demo component={Variants} source={variantsSource} />
+
+Children inherit the parent's variant names unless they set their own `animate`, or set
+`inherit={false}`.
+
+A variant can also be a function. It receives the component's `custom` prop, so each element can
+resolve the same variant differently:
+
+```tsx
+const variants = {
+    visible: (index: number) => ({ opacity: 1, transition: { delay: index * 0.1 } }),
+}
+
+<For each={items()}>
+    {(item, index) => (
+        <motion.li custom={index()} variants={variants} initial={{ opacity: 0 }} animate="visible">
+            {item.label}
+        </motion.li>
+    )}
+</For>
+```
+
+## Exit animations
+
+`exit` is the target an element animates to before it's removed. It only plays inside an
+[AnimatePresence](/docs/animate-presence), with motion-solid's `Show` or `For` adding and removing
+the element.
+
+## Gestures
+
+`whileHover`, `whileTap`, `whileFocus`, `whileDrag` and `whileInView` animate to a target while
+the gesture is active, and back when it ends. Each gesture also has event callbacks (`onHoverStart`,
+`onTap`, `onViewportEnter`, ...). See [Gestures](/docs/gestures) and [Drag](/docs/drag).
+
+```tsx
+<motion.button
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    onTap={save}
+>
+    Save
+</motion.button>
+```
+
+## Style and motion values
+
+`style` works like Solid's `style`, with a few additions:
+
+-   Transforms can be set one by one: `x`, `y`, `scale`, `rotate`, `skewX`, `originX`, ...
+-   Numbers get `px` where the property needs a unit, so `{ width: 100 }` renders `100px`.
+-   Keys can be camelCase (`backgroundColor`) or kebab-case (`"background-color"`).
+-   Values can be [motion values](/docs/motion-values). The element updates when they change,
+    without running any Solid code.
+
+```tsx
+const x = useMotionValue(0)
+const opacity = useTransform(x, [-100, 0, 100], [0, 1, 0])
+
+<motion.div drag="x" style={{ x, opacity }} />
+```
+
+A motion value can also be passed as the only child. The element renders it as text and updates
+it on every change:
+
+```tsx
+const count = useMotionValue(0)
+<motion.span>{count}</motion.span>
+```
+
+## Layout animations
+
+`layout` animates an element's size and position when they change. `layoutId` animates between two
+elements that share the same id, for example a tab underline that moves from tab to tab. See
+[Layout animations](/docs/layout-animations).
+
+```tsx
+<motion.div layout style={{ width: isOpen() ? 300 : 100 }} />
+```
+
+## Event callbacks
+
+`onAnimationStart` and `onAnimationComplete` are called with the target (or variant name) that
+started or finished. `onUpdate` is called on every frame with the latest values.
+
+<Demo component={Callbacks} source={callbacksSource} />
+
+## Refs
+
+`ref` takes a callback, an array of callbacks, or a `let` variable, like any Solid element. It
+receives the rendered element:
+
+```tsx
+function Box() {
+    let box!: HTMLDivElement
+    onSettled(() => console.log(box.getBoundingClientRect()))
+    return <motion.div ref={box} animate={{ x: 100 }} />
+}
+```
+
+## `motion.create()`
+
+`motion.create()` turns a component into a motion component. The component must pass `ref` to the
+element it renders, so Motion knows which element to animate. In Solid, `ref` is a regular prop:
+there's no `forwardRef`.
+
+<Demo component={CreateComponent} source={createComponentSource} />
+
+The motion component's `children` are passed to your component unresolved. They're created where
+your component renders them, under its contexts, and not at all if it doesn't render them.
+
+If your component switches to a different root element and calls `ref` with the new one, the
+animations move to the new element. Values carry over: they don't go back to `initial`.
+
+`motion.create()` also accepts a tag name, for custom elements:
+
+```tsx
+const MotionWidget = motion.create("my-widget")
+```
+
+Options:
+
+| Option               | Type              | Default  | Description                                                                           |
+| :------------------- | :---------------- | :------- | :------------------------------------------------------------------------------------ |
+| `forwardMotionProps` | `boolean`         | `false`  | Pass motion props (`animate`, `transition`, ...) to the component as well             |
+| `type`               | `"html" \| "svg"` | detected | Render as an SVG element. Custom components are treated as HTML unless set to `"svg"` |
+
+```tsx
+const MotionIcon = motion.create(Icon, { type: "svg" })
+```
+
+## Props
+
+### Animation
+
+| Prop                | Type                                | Description                                                                  |
+| :------------------ | :---------------------------------- | :--------------------------------------------------------------------------- |
+| `initial`           | target, variant name(s) or `false`  | Values to start from. `false` starts at `animate` without animating on mount |
+| `animate`           | target, variant name(s) or controls | Values to animate to, now and when they change                               |
+| `exit`              | target or variant name(s)           | Values to animate to before removal, inside `AnimatePresence`                |
+| `transition`        | `Transition`                        | Default transition for this component's animations                           |
+| `variants`          | `Variants`                          | Named targets                                                                |
+| `custom`            | any                                 | Data passed to variant functions                                             |
+| `inherit`           | `boolean`                           | Set to `false` to not inherit variant names from the parent                  |
+| `style`             | `MotionStyle`                       | Styles, with transforms and motion values                                    |
+| `values`            | `{ [key: string]: MotionValue }`    | Motion values to use for keys that aren't in `style`                         |
+| `transformTemplate` | `(transform, generated) => string`  | Builds the `transform` string yourself                                       |
+
+### Gestures
+
+| Prop                                 | Description                                                           |
+| :----------------------------------- | :-------------------------------------------------------------------- |
+| `whileHover`                         | Target while the pointer is over the element                          |
+| `whileTap`                           | Target while the element is pressed                                   |
+| `whileFocus`                         | Target while the element has focus                                    |
+| `whileInView`                        | Target while the element is in the viewport                           |
+| `whileDrag`                          | Target while the element is being dragged                             |
+| `viewport`                           | `whileInView` options: `once`, `margin`, `amount`, `root`             |
+| `drag`                               | `true`, `"x"` or `"y"` to make the element draggable                  |
+| `onHoverStart`, `onHoverEnd`         | Called when the pointer enters and leaves                             |
+| `onTap`, `onTapStart`, `onTapCancel` | Called when a press ends on the element, starts, or ends outside it   |
+| `onViewportEnter`, `onViewportLeave` | Called with the `IntersectionObserverEntry`                           |
+| `onPan`, `onPanStart`, `onPanEnd`    | Called while the pointer moves after a press                          |
+| `onDrag`, `onDragStart`, `onDragEnd` | Called during a drag. See [Drag](/docs/drag) for the other drag props |
+
+### Layout
+
+| Prop                                                  | Type                                                                 | Description                                        |
+| :---------------------------------------------------- | :------------------------------------------------------------------- | :------------------------------------------------- |
+| `layout`                                              | `boolean \| "position" \| "size" \| "preserve-aspect" \| "x" \| "y"` | Animate layout changes                             |
+| `layoutId`                                            | `string`                                                             | Animate between elements with the same id          |
+| `layoutDependency`                                    | any                                                                  | Measure layout when this value changes             |
+| `layoutScroll`                                        | `boolean`                                                            | Set on scrollable containers of layout elements    |
+| `onLayoutAnimationStart`, `onLayoutAnimationComplete` | `() => void`                                                         | Called when a layout animation starts and finishes |
+
+### Events
+
+| Prop                  | Type                               | Description                               |
+| :-------------------- | :--------------------------------- | :---------------------------------------- |
+| `onAnimationStart`    | `(definition) => void`             | An animation to `definition` started      |
+| `onAnimationComplete` | `(definition) => void`             | An animation to `definition` finished     |
+| `onUpdate`            | `(latest: ResolvedValues) => void` | Called every frame with the latest values |

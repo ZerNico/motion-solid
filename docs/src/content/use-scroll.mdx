@@ -1,0 +1,196 @@
+import HorizontalScroll from "../demos/use-scroll/HorizontalScroll"
+import horizontalScrollSource from "../demos/use-scroll/HorizontalScroll.tsx?source"
+
+# useScroll
+
+Motion values of the scroll position and progress of the page, an element or a target.
+
+`useScroll` is for scroll-linked animations: values that follow the scroll position as it
+changes. For animations that start when an element comes into view, see
+[scroll-triggered animations](/docs/scroll-animations#scroll-triggered-animations).
+
+## Usage
+
+```tsx
+import { motion, useScroll } from "@motion-s/solid"
+
+function PageProgress() {
+    const { scrollYProgress } = useScroll()
+
+    return (
+        <motion.div
+            class="fixed inset-x-0 top-0 h-1 origin-left bg-accent"
+            style={{ scaleX: scrollYProgress }}
+        />
+    )
+}
+```
+
+The values are [motion values](/docs/motion-values). Pass them to `style`, or derive others with
+[`useTransform`](/docs/use-transform) and [`useSpring`](/docs/use-spring). They update without
+re-running any Solid code. To read one in JSX, use `useMotionValueState`:
+
+```tsx
+const { scrollY } = useScroll()
+const y = useMotionValueState(scrollY)
+
+return <p>Scrolled {Math.round(y())}px</p>
+```
+
+## Scroll containers
+
+Without a `container`, `useScroll` tracks the page. To track an element that scrolls, pass it as
+`container`:
+
+```tsx
+const container = { current: null as HTMLElement | null }
+const { scrollYProgress } = useScroll({ container })
+
+return (
+    <div
+        ref={(element) => (container.current = element)}
+        class="h-64 overflow-y-auto"
+    >
+        ...
+    </div>
+)
+```
+
+`container` and `target` take any of these:
+
+-   a `{ current }` object, set by a `ref` callback as above,
+-   an accessor of an element: `() => element` for a `let element!: HTMLDivElement` set by
+    `ref={element}`, or a signal set by `ref`,
+-   an element.
+
+They're read once the component's elements exist, so it's fine that they're unset when
+`useScroll` is called. When a signal changes to another element, tracking moves to it.
+
+## Horizontal scrolling
+
+`scrollX` and `scrollXProgress` follow horizontal scrolling. Scroll the row of cards:
+
+<Demo component={HorizontalScroll} source={horizontalScrollSource} />
+
+## Tracking an element
+
+With a `target`, the progress values measure how far the target has moved through the
+container, instead of how far the container has scrolled:
+
+```tsx
+const target = { current: null as HTMLElement | null }
+const { scrollYProgress } = useScroll({
+    target,
+    offset: ["start end", "end start"],
+})
+const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0])
+
+return (
+    <motion.section
+        ref={(element) => (target.current = element)}
+        style={{ opacity }}
+    />
+)
+```
+
+<Note type="warning" title="Position the container">
+    When tracking a `target` inside a `container` other than the page, give the
+    container a position other than `static` (`relative`, for example).
+    Positions are measured from it, and motion-solid warns in development when
+    it's static.
+</Note>
+
+`offset` is resolved on one axis, `axis`, which is `"y"` by default. To track a target in a
+container that scrolls horizontally, pass `axis: "x"` and read `scrollXProgress`.
+
+### Offset
+
+`offset` is an array of intersections. Each one describes a point where the target and the
+container meet. The first maps to progress `0`, the last to `1`, and any in between are spread
+evenly.
+
+An intersection is a string with two positions: the target's first, then the container's.
+`"start end"` reads "the start of the target meets the end of the container". With vertical
+scrolling, start is the top and end is the bottom.
+
+A position can be:
+
+| Position                 | Meaning                                    |
+| :----------------------- | :----------------------------------------- |
+| `"start"`                | The top (or left) edge, same as `0`        |
+| `"center"`               | The middle, same as `0.5`                  |
+| `"end"`                  | The bottom (or right) edge, same as `1`    |
+| A number from `0` to `1` | A fraction of the element's size           |
+| `"100px"`                | A distance in pixels from the start        |
+| `"50%"`                  | A percentage of the element's size         |
+| `"10vh"`, `"10vw"`       | A distance relative to the viewport's size |
+
+Some common offsets:
+
+| Offset                           | Progress goes from `0` to `1`…                                                            |
+| :------------------------------- | :---------------------------------------------------------------------------------------- |
+| `["start start", "end end"]`     | from when the target's top reaches the container's top until their bottoms meet (default) |
+| `["start end", "end start"]`     | from when the target appears at the bottom until it has left at the top                   |
+| `["start end", "start start"]`   | from when the target appears until it reaches the top                                     |
+| `["center end", "center start"]` | as the target's middle crosses the container                                              |
+
+An intersection can also be a pair of numbers, `[0, 1]`, which is the same as `"start end"`.
+
+## Changing options
+
+Options can change: pass an accessor of the options, or an object with getters, and tracking
+restarts when what they read changes:
+
+```tsx
+const { scrollYProgress } = useScroll(() => ({
+    target: target(),
+    offset: compact() ? ["start end", "end end"] : ["start end", "end start"],
+}))
+```
+
+<Note title="Native scroll timelines">
+    With a plain options object, `scrollXProgress` and `scrollYProgress` also
+    carry a native timeline where the browser supports `ScrollTimeline` (or
+    `ViewTimeline`, for a `target` with a supported `offset`). A `motion`
+    component with `opacity`, `clipPath`, `filter` or `backgroundColor` bound to
+    one, directly or through `useTransform` with fixed ranges, is then animated
+    by the browser. Options passed as an accessor or with getters can change, so
+    they're tracked in JavaScript only. Accessor `container` and `target` refs
+    in a plain object keep the native timeline: it's attached again when they
+    change.
+</Note>
+
+## API reference
+
+```tsx
+function useScroll(options?: UseScrollOptions | (() => UseScrollOptions)): {
+    scrollX: MotionValue<number>
+    scrollY: MotionValue<number>
+    scrollXProgress: MotionValue<number>
+    scrollYProgress: MotionValue<number>
+}
+```
+
+### Options
+
+| Option             | Type                      | Default                      | Description                                                                                                           |
+| :----------------- | :------------------------ | :--------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| `container`        | `ElementRef<HTMLElement>` | the page                     | The scrollable element to track.                                                                                      |
+| `target`           | `ElementRef<HTMLElement>` |                              | An element in the container. Progress follows its position instead of the scroll length.                              |
+| `offset`           | `ScrollOffset`            | `["start start", "end end"]` | Where progress starts and ends. See [Offset](#offset).                                                                |
+| `axis`             | `"x" \| "y"`              | `"y"`                        | The axis `offset` is resolved on, with a `target` or `offset`. Set `"x"` to track a target in a horizontal container. |
+| `trackContentSize` | `boolean`                 | `false`                      | Check the container's scroll size every frame, to update progress when content is added or removed.                   |
+
+`ElementRef<T>` is an element, an accessor of one, or a `{ current }` object.
+
+### Returns
+
+| Value             | Description                                           |
+| :---------------- | :---------------------------------------------------- |
+| `scrollX`         | Horizontal scroll offset of the container, in pixels. |
+| `scrollY`         | Vertical scroll offset of the container, in pixels.   |
+| `scrollXProgress` | Horizontal progress, from `0` to `1`.                 |
+| `scrollYProgress` | Vertical progress, from `0` to `1`.                   |
+
+`useViewportScroll()` and `useElementScroll(ref)` are deprecated aliases of `useScroll()` and
+`useScroll({ container: ref })`.

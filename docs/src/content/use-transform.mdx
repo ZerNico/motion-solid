@@ -1,0 +1,183 @@
+import DragColor from "../demos/use-transform/DragColor"
+import dragColorSource from "../demos/use-transform/DragColor.tsx?source"
+import Mirror from "../demos/use-transform/Mirror"
+import mirrorSource from "../demos/use-transform/Mirror.tsx?source"
+
+# useTransform
+
+`useTransform` creates a motion value from other values. It maps a motion value from one range to
+another, passes it through a function, or computes a value from motion values and Solid signals.
+
+## Usage
+
+Give it a motion value, an input range and an output range:
+
+```tsx
+import { motion, useMotionValue, useTransform } from "@motion-s/solid"
+
+const x = useMotionValue(0)
+const opacity = useTransform(x, [-100, 0, 100], [0, 1, 0])
+
+<motion.div drag="x" style={{ x, opacity }} />
+```
+
+When `x` is `-100`, `opacity` is `0`. It rises to `1` at `0`, then falls back to `0` at `100`.
+
+-   The input range is a list of numbers, all increasing or all decreasing.
+-   The output range has as many entries as the input range. They can be numbers, colors, or
+    strings with numbers in them (`"0px 4px 8px #0003"`), as long as they all have the same format.
+-   Outside the input range, the output stays at the first or last value (see `clamp` below).
+
+Here, dragging the box maps `x` to a background color with three stops, and to a rotation:
+
+<Demo component={DragColor} source={dragColorSource} />
+
+### Options
+
+The fourth argument sets how values are mapped:
+
+| Option  | Default | Description                                                                                                                    |
+| ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `clamp` | `true`  | Keep the output within the output range. With `false`, it continues past the ends at the same rate.                            |
+| `ease`  |         | An easing function, or a list with one easing function per segment (one fewer than the range entries).                         |
+| `mixer` |         | `(from, to) => (progress) => value`: a function that creates an interpolator between two outputs, for values Motion can't mix. |
+
+```tsx
+import { easeInOut, useTransform } from "@motion-s/solid"
+
+const scale = useTransform(x, [0, 200], [1, 2], { ease: easeInOut })
+```
+
+### Ranges that change
+
+Ranges and options are read in a Solid computation. Pass an accessor when they depend on signals
+or props, and the mapping is rebuilt when they change:
+
+```tsx
+const [max, setMax] = createSignal(300)
+
+const progress = useTransform(x, () => [0, max()], [0, 1])
+```
+
+Options can be an accessor too, or an object with getters (`{ get clamp() { return clamp() } }`).
+
+<Note>
+    With a [`useScroll`](/docs/use-scroll) value as input, a mapping with
+    constant ranges and options can run in the browser's native scroll-driven
+    animations. Ranges or options that can change (accessors, getters) are
+    computed on the main thread instead.
+</Note>
+
+### Multiple outputs
+
+Pass an object of output ranges instead of one range to get an object of motion values, all
+mapped from the same input range:
+
+```tsx
+const { opacity, scale } = useTransform(x, [0, 100], {
+    opacity: [0, 1],
+    scale: [0.5, 1],
+})
+```
+
+The keys are read once, when the hook is called. The options apply to every output.
+
+## Transform function
+
+Pass a function instead of ranges to compute the output from the latest input value:
+
+```tsx
+const double = useTransform(x, (latest) => latest * 2)
+```
+
+With a list of motion values, the function receives a list of their latest values:
+
+```tsx
+const area = useTransform([width, height], ([w, h]) => w * h)
+```
+
+Solid signals read inside the function are tracked as well: the output updates when they change.
+
+### Switching the input
+
+With ranges or a function, the first argument can be an accessor of the input motion value. The
+output then follows whichever motion value the accessor returns. Here, `props.value` is a motion
+value:
+
+```tsx
+const output = useTransform(
+    () => props.value,
+    (latest) => latest * 2
+)
+```
+
+Whether the input is one motion value or a list is decided once, when the hook is called.
+
+## Computed values
+
+With a single function and nothing else, `useTransform` creates a motion value from anything the
+function reads:
+
+```tsx
+const [factor, setFactor] = createSignal(2)
+
+const y = useTransform(() => x.get() * factor())
+```
+
+It runs again when a motion value it called `get()` on changes, or when a Solid signal it read
+changes. What it reads is collected again on every run, like a Solid memo, so a value read behind
+a condition is followed once the condition lets it be read, and dropped when it isn't read anymore.
+
+After a motion value changes, it runs in Motion's frame loop, before the frame renders. After a
+signal changes, it runs with Solid's updates.
+
+Below, the outline follows the box you drag. A signal decides whether it moves the same way or the
+opposite way:
+
+<Demo component={Mirror} source={mirrorSource} />
+
+## API reference
+
+```ts
+// Map from one range to another
+function useTransform<O>(
+    input: MaybeAccessor<MotionValue<number>>,
+    inputRange: MaybeAccessor<number[]>,
+    outputRange: MaybeAccessor<O[]>,
+    options?: MaybeAccessor<TransformOptions<O>>
+): MotionValue<O>
+
+// Map to several output ranges
+function useTransform<T extends Record<string, any[]>>(
+    input: MaybeAccessor<MotionValue<number>>,
+    inputRange: MaybeAccessor<number[]>,
+    outputMap: MaybeAccessor<T>,
+    options?: MaybeAccessor<TransformOptions<T[keyof T][number]>>
+): { [K in keyof T]: MotionValue<T[K][number]> }
+
+// Transform function
+function useTransform<I, O>(
+    input: MaybeAccessor<MotionValue<I>>,
+    transformer: (latest: I) => O
+): MotionValue<O>
+
+function useTransform<I, O>(
+    input: MaybeAccessor<MotionValue[]>,
+    transformer: (latest: I[]) => O
+): MotionValue<O>
+
+// Computed value
+function useTransform<O>(compute: () => O): MotionValue<O>
+```
+
+`MaybeAccessor<T>` is `T | Accessor<T>`.
+
+-   `input`: the motion value to map, a list of motion values, or an accessor of either.
+-   `inputRange`: increasing or decreasing numbers.
+-   `outputRange`: one output per input range entry: numbers, colors or strings of the same format.
+-   `outputMap`: an object of output ranges. Its keys are read once.
+-   `options`: `clamp`, `ease` and `mixer`, described in [Options](#options).
+-   `transformer`: a function from the latest input value(s) to the output.
+-   `compute`: a function of motion values and signals.
+
+Returns a `MotionValue`, or an object of motion values for an output map.

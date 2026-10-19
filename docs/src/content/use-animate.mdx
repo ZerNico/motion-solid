@@ -1,0 +1,152 @@
+import Sequence from "../demos/use-animate/Sequence"
+import sequenceSource from "../demos/use-animate/Sequence.tsx?source"
+
+# useAnimate
+
+Animate elements imperatively, with scoped selectors, sequences and playback controls.
+
+`motion` components animate from props. `useAnimate` is for animations you start from code, for
+example in an event handler, on plain elements. Selectors only match inside the component, and
+its animations stop when the component is disposed.
+
+## Usage
+
+`useAnimate` returns a `scope` and an `animate` function. Pass `scope` as the `ref` of an element:
+selectors given to `animate` are looked up inside it.
+
+```tsx
+import { useAnimate } from "@motion-s/solid"
+
+function Notification() {
+    const [scope, animate] = useAnimate()
+
+    const shake = () =>
+        animate(".icon", { rotate: [0, -15, 15, -15, 0] }, { duration: 0.4 })
+
+    return (
+        <div ref={scope}>
+            <span class="icon">🔔</span>
+            <button onClick={shake}>Ring</button>
+        </div>
+    )
+}
+```
+
+`animate` takes the same arguments as the [animate function](/docs/animate-function): an
+element, a selector, a motion value, a number or an object, then keyframes and options.
+
+## The scope
+
+`scope` is a ref callback with two properties:
+
+-   `scope.current`: the element it was passed to (`null` until then).
+-   `scope.animations`: the animations started with `animate` that are still running.
+
+A selector matches descendants of `scope.current`, not the element itself. To animate the scope
+element, pass it directly:
+
+```tsx
+animate(scope.current, { opacity: 1 })
+```
+
+To animate on mount, call `animate` in `onSettled`, which runs once the elements are in the
+document:
+
+```tsx
+onSettled(() => {
+    animate("li", { opacity: [0, 1] }, { delay: stagger(0.05) })
+})
+```
+
+## Sequences
+
+Pass an array of segments to play animations one after another. Each segment is
+`[subject, keyframes, options]`. By default, a segment starts when the previous one ends. The
+`at` option moves it:
+
+| `at`     | The segment starts…                           |
+| :------- | :-------------------------------------------- |
+| `1.5`    | at 1.5 seconds from the start of the sequence |
+| `"+0.2"` | 0.2 seconds after the previous segment ends   |
+| `"-0.2"` | 0.2 seconds before the previous segment ends  |
+| `"<"`    | at the same time as the previous segment      |
+
+```tsx
+animate([
+    [".title", { opacity: [0, 1] }],
+    [".subtitle", { opacity: [0, 1] }, { at: "-0.1" }],
+    [".button", { scale: [0.8, 1] }, { at: "<" }],
+])
+```
+
+In the demo, the bars grow one after another (`stagger`), then the total fades in:
+
+<Demo component={Sequence} source={sequenceSource} />
+
+## Controlling and awaiting
+
+`animate` returns playback controls. They have `play()`, `pause()`, `stop()`, `complete()`,
+`cancel()`, and `time` and `speed` properties you can read and set:
+
+```tsx
+const animation = animate(
+    ".spinner",
+    { rotate: 360 },
+    { repeat: Infinity, ease: "linear" }
+)
+
+animation.speed = 0.5
+animation.pause()
+```
+
+The controls can also be awaited, which resolves when the animation finishes:
+
+```tsx
+const close = async () => {
+    await animate(scope.current, { opacity: 0 })
+    setOpen(false)
+}
+```
+
+## Cleanup
+
+When the component is disposed, every animation in `scope.animations` is stopped. You don't need
+to stop them yourself.
+
+## Reduced motion
+
+`animate` reads `MotionConfig`'s `reducedMotion` and `skipAnimations` each time it's called,
+along with the device's reduced motion setting. A change to either applies to the next
+animation. See [Accessibility](/docs/accessibility).
+
+## `useAnimateMini`
+
+`useAnimateMini` works like `useAnimate`, with a smaller `animate` that only animates elements
+with the browser's Web Animations API. It doesn't animate motion values or objects, and doesn't
+play sequences. It's exported from the main entry as `useAnimateMini`, and from
+`@motion-s/solid/mini` as `useAnimate`:
+
+```tsx
+import { useAnimate } from "@motion-s/solid/mini"
+
+const [scope, animate] = useAnimate()
+```
+
+Its animations aren't added to `scope.animations`, so they aren't stopped when the component is
+disposed.
+
+## API reference
+
+```tsx
+function useAnimate<T extends Element = any>(): [
+    scope: SolidAnimationScope<T>,
+    animate: typeof animate
+]
+```
+
+### Returns
+
+| Value     | Type                     | Description                                                                                                                 |
+| :-------- | :----------------------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| `scope`   | `SolidAnimationScope<T>` | A ref callback with `current` (the element) and `animations` (running animations). Selectors are resolved inside `current`. |
+| `animate` | function                 | Starts an animation or a sequence. Returns controls that can be awaited.                                                    |

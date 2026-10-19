@@ -1,0 +1,80 @@
+# Installation
+
+Install motion-solid together with Solid 2. This page also lists the package's entry points.
+
+## Install the package
+
+motion-solid needs Solid 2.0 (`solid-js` and `@solidjs/web`, version `2.0.0-rc.15` or later). Solid
+2 is a release candidate and is published under the `next` tag:
+
+```sh
+pnpm add @motion-s/solid solid-js@next @solidjs/web@next
+```
+
+```sh
+npm install @motion-s/solid solid-js@next @solidjs/web@next
+```
+
+```sh
+yarn add @motion-s/solid solid-js@next @solidjs/web@next
+```
+
+```sh
+bun add @motion-s/solid solid-js@next @solidjs/web@next
+```
+
+`motion-dom` and `motion-utils`, the engine shared with Motion for React, are installed as
+dependencies.
+
+## Builds
+
+The package ships three builds and picks one through export conditions:
+
+| Condition | Build                     | Used by                                                                |
+| :-------- | :------------------------ | :--------------------------------------------------------------------- |
+| `solid`   | Source with JSX preserved | Apps compiled by Solid's compiler (`@solidjs/vite-plugin`, SolidStart) |
+| `browser` | Compiled for the browser  | Bundlers without Solid's compiler                                      |
+| `node`    | Compiled for the server   | Server rendering without Solid's compiler                              |
+
+With Solid's compiler, your app compiles motion-solid's JSX together with its own code, for the
+target it builds (client, server, hydration). You don't need to configure anything for this.
+
+Solid's runtime must exist only once in your app. If you see errors about missing owners or
+context, check that only one copy of `solid-js` and `@solidjs/web` is installed.
+
+## Entry points
+
+```tsx
+import { motion, AnimatePresence, animate } from "@motion-s/solid"
+```
+
+| Import                       | Contents                                                                                                                                              |
+| :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@motion-s/solid`            | Everything: `motion`, `m`, the components, the hooks, `animate()`, `scroll()`, `inView()`, and everything exported by `motion-dom` and `motion-utils` |
+| `@motion-s/solid/dom`        | The parts without Solid: `animate()`, `scroll()`, `scrollInfo()`, `inView()`, `animateMini()`, and the `motion-dom`/`motion-utils` exports            |
+| `@motion-s/solid/dom/mini`   | A smaller `animate()` that only animates elements with the Web Animations API, and `animateSequence()`                                                |
+| `@motion-s/solid/mini`       | A smaller `useAnimate()` built on the mini `animate()`                                                                                                |
+| `@motion-s/solid/projection` | Low-level parts of the layout projection system (`HTMLProjectionNode`, `nodeGroup`, scale correctors, `frame`, `mix`)                                 |
+| `@motion-s/solid/debug`      | `recordStats()`, to record performance statistics of animations                                                                                       |
+
+Most apps only need the main entry. To keep the initial bundle small, see
+[Reduce bundle size](/docs/bundle-size) and [LazyMotion](/docs/lazy-motion).
+
+<Note>
+    `delay` from the main entry takes milliseconds, like in Motion for React.
+    `delay` from `@motion-s/solid/dom` takes seconds.
+</Note>
+
+## TypeScript
+
+Types are included. Motion's types (`Transition`, `Variants`, `MotionValue`, ...) are exported from
+the main entry:
+
+```tsx
+import { motion, type Variants } from "@motion-s/solid"
+
+const variants: Variants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+}
+```

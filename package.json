@@ -6,6 +6,8 @@
     "scripts": {
         "dev": "pnpm --filter playground dev",
         "dev:react": "pnpm --filter playground-react dev",
+        "docs:dev": "pnpm --filter docs dev",
+        "docs:build": "pnpm --filter docs build",
         "build": "pnpm --filter @motion-s/solid build",
         "check:package": "pnpm --filter @motion-s/solid check:package",
         "size": "size-limit",

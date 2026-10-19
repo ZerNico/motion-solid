@@ -1,0 +1,171 @@
+import DragReadout from "../demos/motion-values/DragReadout"
+import dragReadoutSource from "../demos/motion-values/DragReadout.tsx?source"
+import SolidBridge from "../demos/motion-values/SolidBridge"
+import solidBridgeSource from "../demos/motion-values/SolidBridge.tsx?source"
+
+# Motion values
+
+A motion value holds one animatable value, like an `x` offset or a color, and tracks its velocity.
+`motion` components write motion values to the DOM on every frame without going through Solid, so
+a value that changes 60 times a second doesn't run any Solid computation.
+
+## Usage
+
+`useMotionValue(initial)` creates a motion value. Pass it to a `motion` component in `style`:
+
+```tsx
+import { motion, useMotionValue } from "@motion-s/solid"
+
+const x = useMotionValue(0)
+
+<motion.div style={{ x }} />
+```
+
+When `x` changes, the element moves. No signal is written and no effect runs.
+
+`motion` components already create a motion value for every value they animate. Create your own
+when you want to share a value between elements, derive other values from it with
+[`useTransform`](/docs/use-transform), or read and set it yourself.
+
+`useMotionValue` returns motion-dom's `motionValue(initial)`, which is also exported and can be
+used outside components.
+
+## Reading and setting
+
+| Method                | What it does                                                                  |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `get()`               | Returns the current value.                                                    |
+| `set(value)`          | Sets the value. Elements that use it are updated in the next frame.           |
+| `jump(value)`         | Sets the value, stops the running animation and resets the velocity to `0`.   |
+| `getPrevious()`       | Returns the value before the last change.                                     |
+| `getVelocity()`       | Returns the velocity in units per second, `0` for values that aren't numbers. |
+| `isAnimating()`       | Whether an animation is running on the value.                                 |
+| `stop()`              | Stops the running animation.                                                  |
+| `on(event, callback)` | Subscribes to an event and returns a function that unsubscribes.              |
+
+The events are:
+
+| Event               | Fires                                            |
+| ------------------- | ------------------------------------------------ |
+| `change`            | When the value changes, with the new value.      |
+| `animationStart`    | When an animation starts on the value.           |
+| `animationComplete` | When an animation finishes.                      |
+| `animationCancel`   | When an animation is stopped before it finishes. |
+| `destroy`           | When the value is destroyed.                     |
+
+In a component, subscribe with [`useMotionValueEvent`](/docs/use-motion-value-event): it
+unsubscribes when the component is disposed.
+
+## Styles, attributes and text
+
+A motion value can go in `style` for any value Motion can animate: transforms like `x`, `scale` or
+`rotate`, and CSS properties like `opacity` or `backgroundColor`.
+
+On SVG elements, motion values can also be passed as attributes:
+
+```tsx
+const cx = useMotionValue(50)
+
+<motion.circle cx={cx} cy={50} r={10} />
+```
+
+A motion value passed as the only child of a `motion` component is rendered as its text content.
+Here, `rounded` is derived from `x` with `useTransform` and shown next to the box you drag:
+
+<Demo component={DragReadout} source={dragReadoutSource} />
+
+## Animating a motion value
+
+[`animate()`](/docs/animate-function) animates a motion value directly. Starting a new animation
+on a value stops the one that's running:
+
+```tsx
+import { animate, useMotionValue } from "@motion-s/solid"
+
+const x = useMotionValue(0)
+
+animate(x, 100, { type: "spring", bounce: 0.3 })
+```
+
+`jump` and `stop` end a running animation. `set` doesn't: the animation keeps writing to the value
+on the next frame.
+
+## Motion values and Solid
+
+Motion values aren't Solid signals. Calling `x.get()` in JSX, a memo or an effect doesn't track
+`x`: they won't run again when `x` changes. This is on purpose. Motion updates values on every
+frame and tracks their velocity; if every update went through Solid, every computation reading a
+motion value would run every frame.
+
+Instead, the two meet where you ask them to:
+
+| Direction                   | Use                                                                |
+| --------------------------- | ------------------------------------------------------------------ |
+| Solid → motion value        | `useTransform(() => …)`, `useSpring(accessor)`, accessor arguments |
+| Motion value → DOM          | Pass it to a `motion` component. Solid isn't involved.             |
+| Motion value → Solid        | `useMotionValueState(value)` returns an accessor                   |
+| Motion value → side effects | `useMotionValueEvent(value, "change", callback)`                   |
+
+```tsx
+const [target, setTarget] = createSignal(0)
+const [selected, setSelected] = createSignal(false)
+
+// Solid → motion value
+const x = useSpring(target)
+const scale = useTransform(() => (selected() ? 1.2 : 1))
+
+// Motion value → DOM
+<motion.div style={{ x, scale }} />
+
+// Motion value → Solid
+const latest = useMotionValueState(x)
+<Show when={latest() > 100}>Far enough</Show>
+
+// Motion value → side effects
+useMotionValueEvent(x, "animationComplete", () => console.log("done"))
+```
+
+### From Solid to a motion value
+
+[`useTransform`](/docs/use-transform) with a single function creates a motion value from Solid
+signals, other motion values, or both. It runs again when any of them changes.
+[`useSpring`](/docs/use-spring) with an accessor animates towards the accessor's value whenever it
+changes.
+
+Hook arguments that can change are accessors, as elsewhere in Solid. For example, a range that
+depends on a signal: `useTransform(x, () => [0, max()], [0, 1])`. Options objects can be an
+accessor or an object with getters.
+
+### From a motion value to Solid
+
+`useMotionValueState(value)` returns a read-only accessor of a motion value. Use it for logic
+and text: `<Show>`, memos, labels. It's updated through Solid's scheduler, so it follows Solid's
+batching and transitions like any signal. See
+[`useMotionValueState`](/docs/use-motion-value-event#usemotionvalueaccessor).
+
+In this demo, the range input sets a signal, a spring follows it, and an accessor of the spring
+decides the text:
+
+<Demo component={SolidBridge} source={solidBridgeSource} />
+
+<Note type="warning">
+    Don't use the accessor in the styles of an element to animate it. Each
+    change then runs Solid, on every frame. Pass the motion value to a `motion`
+    component instead.
+</Note>
+
+### Side effects
+
+To run code when a motion value changes or an animation starts or ends, use
+[`useMotionValueEvent`](/docs/use-motion-value-event). It doesn't involve Solid's scheduler: the
+callback runs when Motion notifies.
+
+## API reference
+
+```ts
+function useMotionValue<T>(initial: T): MotionValue<T>
+```
+
+-   `initial`: the starting value, such as a number, a string with a unit (`"10px"`) or a color.
+
+Returns a `MotionValue<T>`, the same object as `motionValue(initial)` from motion-dom.

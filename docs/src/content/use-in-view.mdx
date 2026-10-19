@@ -1,0 +1,139 @@
+import InViewStatus from "../demos/use-in-view/InViewStatus"
+import inViewStatusSource from "../demos/use-in-view/InViewStatus.tsx?source"
+
+# useInView
+
+An accessor of whether an element is in the viewport.
+
+Use it when visibility should drive your own code: start a video, load more items, change some
+text. To animate an element as it enters the viewport, `whileInView` is shorter (see
+[scroll-triggered animations](/docs/scroll-animations#scroll-triggered-animations)).
+
+## Usage
+
+Pass the element to observe. `useInView` returns an `Accessor<boolean>`:
+
+```tsx
+import { useInView } from "@motion-s/solid"
+
+function Section() {
+    let element!: HTMLElement
+    const isInView = useInView(() => element)
+
+    return (
+        <section ref={element}>
+            {isInView() ? "In view" : "Not in view"}
+        </section>
+    )
+}
+```
+
+The element can be:
+
+-   an element,
+-   an accessor of one: `() => element` for a variable set by `ref`, as above, or a signal set
+    by `ref`,
+-   a `{ current }` object.
+
+It's read once the component's elements exist, so it's fine that it's unset when `useInView` is
+called.
+
+## Scroll containers
+
+By default, the element is observed in the browser viewport. If it scrolls inside another
+element, pass that element as `root`. It takes the same forms as the observed element:
+
+<Demo component={InViewStatus} source={inViewStatusSource} />
+
+## Options
+
+### `amount`
+
+How much of the element must be visible to count as in view: `"some"` (any part, the default),
+`"all"`, or a fraction from `0` to `1`.
+
+### `margin`
+
+Grows or shrinks the root's box before checking, in CSS margin syntax with `px` or `%` values.
+`"0px 0px -100px 0px"` counts the element as in view only once it's 100px above the bottom edge.
+
+### `once`
+
+With `once: true`, the accessor turns `true` the first time the element enters, and stays `true`.
+The element stops being observed.
+
+```tsx
+const isInView = useInView(element, { once: true, amount: 0.5 })
+```
+
+### `initial`
+
+The value before the first check. `false` by default. Set it to `true` for elements you expect to
+be visible on load, so they don't flash an "out of view" state.
+
+### Changing options
+
+Pass an accessor of the options, or an object with getters, to change them later. The element is
+observed again with the new options. `initial` is only read once.
+
+```tsx
+const isInView = useInView(element, () => ({
+    amount: strict() ? "all" : "some",
+}))
+```
+
+## When the element changes
+
+When the ref switches to another element, or to none, the accessor turns `false` until the new
+element enters. With `once`, a value that's already `true` stays `true`.
+
+## The `inView` function
+
+`useInView` is built on `inView`, which you can also call yourself, for example on several
+elements by selector. Its callback runs when an element enters, and can return a function that
+runs when it leaves. It returns a function that stops observing:
+
+```tsx
+import { inView } from "@motion-s/solid"
+import { onSettled } from "solid-js"
+
+onSettled(() =>
+    inView(".card", (element) => {
+        element.classList.add("visible")
+        return () => element.classList.remove("visible")
+    })
+)
+```
+
+It takes `root` (an element), `margin` and `amount`, and is also exported from
+`@motion-s/solid/dom`.
+
+## API reference
+
+```tsx
+function useInView(
+    ref: ElementRef<Element>,
+    options?: UseInViewOptions | (() => UseInViewOptions)
+): Accessor<boolean>
+```
+
+### Parameters
+
+| Parameter | Type                                    | Description                                                                        |
+| :-------- | :-------------------------------------- | :--------------------------------------------------------------------------------- |
+| `ref`     | `ElementRef<Element>`                   | The element to observe: an element, an accessor of one, or a `{ current }` object. |
+| `options` | `UseInViewOptions` or an accessor of it | See below.                                                                         |
+
+### Options
+
+| Option    | Type                        | Default      | Description                                            |
+| :-------- | :-------------------------- | :----------- | :----------------------------------------------------- |
+| `root`    | `ElementRef<Element>`       | the viewport | The scrollable ancestor to observe the element in.     |
+| `margin`  | `string`                    | `"0px"`      | Margin around the root, in CSS syntax (`px` or `%`).   |
+| `amount`  | `"some" \| "all" \| number` | `"some"`     | How much of the element must be visible.               |
+| `once`    | `boolean`                   | `false`      | Stay `true` after the first entry, and stop observing. |
+| `initial` | `boolean`                   | `false`      | The value before the first check.                      |
+
+### Returns
+
+`Accessor<boolean>`: `true` while the element is in view.

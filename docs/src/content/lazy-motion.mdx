@@ -1,0 +1,95 @@
+import AsyncFeatures from "../demos/lazy-motion/AsyncFeatures"
+import asyncFeaturesSource from "../demos/lazy-motion/AsyncFeatures.tsx?source"
+
+# LazyMotion
+
+`LazyMotion` loads animation features separately from the components that use them. Together with
+the `m` component, it makes the initial bundle smaller, and can move features to a chunk that
+loads after the page has rendered.
+
+## `m` and `LazyMotion`
+
+`motion` components include every feature: animations, exit animations, gestures, drag and layout
+animations. `m` components have the same API but include none of them. On their own, they only
+render their element with its initial styles.
+
+`LazyMotion` provides the features to the `m` components inside it:
+
+```tsx
+import { domAnimation, LazyMotion, m } from "@motion-s/solid"
+
+function App() {
+    return (
+        <LazyMotion features={domAnimation}>
+            <m.div animate={{ opacity: 1 }} whileHover={{ scale: 1.1 }} />
+        </LazyMotion>
+    )
+}
+```
+
+## Feature bundles
+
+Pick the smallest bundle with the features your `m` components use:
+
+| Feature                                | `domMin` | `domAnimation` | `domMax` |
+| :------------------------------------- | :------: | :------------: | :------: |
+| `animate`, variants, `exit`            |    ✓     |       ✓        |    ✓     |
+| `whileHover`, `whileTap`, `whileFocus` |          |       ✓        |    ✓     |
+| `whileInView`                          |          |       ✓        |    ✓     |
+| `drag`, pan gestures                   |          |                |    ✓     |
+| `layout`, `layoutId`                   |          |                |    ✓     |
+
+`domMax` has everything a `motion` component has. For sizes, see
+[Reduce bundle size](/docs/bundle-size).
+
+## Loading features later
+
+Pass a function that returns a promise of the bundle, and the bundle goes to its own chunk. Export
+it as the default export of a separate file:
+
+```ts
+// features.ts
+import { domMax } from "@motion-s/solid"
+
+export default domMax
+```
+
+```tsx
+// App.tsx
+import { LazyMotion, m } from "@motion-s/solid"
+
+const loadFeatures = () => import("./features").then((res) => res.default)
+
+<LazyMotion features={loadFeatures}>
+    <m.div animate={{ scale: 1.2 }} />
+</LazyMotion>
+```
+
+The promise has to resolve to the bundle itself, hence `res.default`. Until it resolves, the `m`
+components show their initial styles. When it does, they set up their animations and run their
+`animate` animation, as if they had just mounted:
+
+<Demo component={AsyncFeatures} source={asyncFeaturesSource} />
+
+On the server, the loader isn't called: the `m` components render their initial styles, like
+`motion` components do.
+
+## Strict mode
+
+`motion` components inside a `LazyMotion` still include every feature, which defeats the purpose.
+With `strict`, rendering one there throws in development:
+
+```tsx
+<LazyMotion features={domAnimation} strict>
+    <motion.div /> {/* throws: use m.div */}
+</LazyMotion>
+```
+
+`Reorder.Group` and `Reorder.Item` are built on `motion`. They only warn in strict mode.
+
+## Props
+
+| Prop       | Type                                            | Default | Description                                                               |
+| :--------- | :---------------------------------------------- | :------ | :------------------------------------------------------------------------ |
+| `features` | `FeatureBundle \| () => Promise<FeatureBundle>` |         | A bundle, or a function that loads one. Required. Read once.              |
+| `strict`   | `boolean`                                       | `false` | Throw in development when a `motion` component renders inside. Read once. |

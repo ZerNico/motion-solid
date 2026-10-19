@@ -2,5 +2,11 @@
     "printWidth": 80,
     "tabWidth": 4,
     "semi": false,
-    "trailingComma": "es5"
+    "trailingComma": "es5",
+    "overrides": [
+        {
+            "files": "*.mdx",
+            "options": { "embeddedLanguageFormatting": "off" }
+        }
+    ]
 }

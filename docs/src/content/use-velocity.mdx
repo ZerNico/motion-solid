@@ -1,0 +1,64 @@
+import SkewByVelocity from "../demos/use-velocity/SkewByVelocity"
+import skewByVelocitySource from "../demos/use-velocity/SkewByVelocity.tsx?source"
+
+# useVelocity
+
+`useVelocity` creates a motion value of another motion value's velocity, in units per second. Use
+it to react to how fast something moves, not where it is.
+
+## Usage
+
+```tsx
+import { useMotionValue, useVelocity } from "@motion-s/solid"
+
+const x = useMotionValue(0)
+const xVelocity = useVelocity(x)
+```
+
+`xVelocity` updates in Motion's frame loop after `x` changes. It keeps updating on every frame until the
+velocity is back to `0`, so it settles after `x` stops moving.
+
+Like any motion value, it can be mapped with [`useTransform`](/docs/use-transform) and smoothed
+with [`useSpring`](/docs/use-spring). Here, the card skews in the direction it's dragged or
+thrown, more the faster it goes:
+
+```tsx
+const skewX = useSpring(
+    useTransform(xVelocity, [-2000, 0, 2000], [30, 0, -30]),
+    { stiffness: 400, damping: 30 }
+)
+```
+
+<Demo component={SkewByVelocity} source={skewByVelocitySource} />
+
+## Acceleration
+
+The velocity is itself a motion value, so passing it to `useVelocity` again gives the
+acceleration:
+
+```tsx
+const xVelocity = useVelocity(x)
+const xAcceleration = useVelocity(xVelocity)
+```
+
+## Switching the source
+
+The argument can be an accessor of a motion value. The velocity then follows whichever motion
+value the accessor returns:
+
+```tsx
+const velocity = useVelocity(() => (vertical() ? y : x))
+```
+
+## API reference
+
+```ts
+function useVelocity(
+    value: MaybeAccessor<MotionValue<number>>
+): MotionValue<number>
+```
+
+-   `value`: a numeric motion value, or an accessor of one.
+
+Returns a `MotionValue<number>` of its velocity in units per second. Its frame updates stop when
+the owner is disposed.

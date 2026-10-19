@@ -1,0 +1,394 @@
+# Coming from React
+
+If you know Motion for React, most of motion-solid will look familiar. This page lists what's
+different, and why.
+
+motion-solid runs on the same engine as Motion for React (`motion-dom` and `motion-utils`, used
+unchanged). Animation targets, transitions, variants, springs, gestures, drag, layout projection
+and `animate()` work the same. The differences come from how Solid works: a component function
+runs once, there are no re-renders, and state is read through signals and accessors.
+
+## Imports
+
+Import from `@motion-s/solid` instead of `motion/react`:
+
+```tsx
+// React
+import { motion, AnimatePresence } from "motion/react"
+
+// Solid
+import { motion, AnimatePresence, Show } from "@motion-s/solid"
+```
+
+`motion/react-client` and `motion/react-m` have no counterpart: Solid has no client boundary, and
+`m` is exported from the main entry. See [Installation](/docs/installation) for the entry points.
+
+## Props and JSX
+
+Props on motion components are Motion's props, with Solid's attribute names for the rest:
+
+| React                                    | Solid                                                                      |
+| :--------------------------------------- | :------------------------------------------------------------------------- |
+| `className`, `tabIndex`                  | `class`, `tabindex`                                                        |
+| `style={{ backgroundColor: "red", x }}`  | Same. Kebab-case keys (`"background-color"`) work too                      |
+| Numbers in `style` get `px` where needed | Same                                                                       |
+| `ref={useRef()}` or a callback           | A ref callback (or an array of them), or a `let` variable                  |
+| `motion(Component)`                      | Deprecated in Motion for React. Not ported: use `motion.create(Component)` |
+
+```tsx
+// React
+function Card() {
+    const card = useRef(null)
+    return (
+        <motion.div
+            className="card"
+            style={{ backgroundColor: "#fff" }}
+            ref={card}
+        />
+    )
+}
+```
+
+```tsx
+// Solid
+function Card() {
+    let card!: HTMLDivElement
+    return (
+        <motion.div
+            class="card"
+            style={{ "background-color": "#fff" }}
+            ref={card}
+        />
+    )
+}
+```
+
+### `motion.create()`
+
+There's no `forwardRef` in Solid. A component wrapped with `motion.create()` receives `ref` as a
+prop and passes it to its root element:
+
+```tsx
+function Button(props: {
+    ref?: (el: HTMLButtonElement) => void
+    children?: JSX.Element
+}) {
+    return <button ref={props.ref}>{props.children}</button>
+}
+
+const MotionButton = motion.create(Button)
+```
+
+`children` are passed to the component unresolved, so they're created where the component renders
+them. If the component starts rendering a different root element and calls `ref` with it, the
+animations move to the new element and keep their values. See [motion](/docs/motion#motioncreate).
+
+## Components run once
+
+A React component runs on every render, so hooks get fresh arguments each time. A Solid component
+runs once. Hooks also run once, and any argument that can change is passed as an accessor (a
+function that reads signals or props):
+
+```tsx
+// React: `max` is read again on every render
+const opacity = useTransform(x, [0, max], [1, 0])
+
+// Solid: pass an accessor, the range follows `max()`
+const opacity = useTransform(x, () => [0, max()], [1, 0])
+```
+
+The hooks that take accessors are `useTransform`, `useMotionTemplate`, `useSpring`,
+`useFollowValue`, `useScroll` and `useInView`. Options objects are read lazily: pass an accessor of
+the options, or an object with getters (like Solid props). Plain values work as in React.
+
+Motion values given to a hook update by themselves. You only need accessors for Solid state.
+
+### `useTransform` with a function
+
+In React, `useTransform(() => ...)` recomputes on render and when the motion values it reads change.
+In Solid, it recomputes when the motion values **or** the signals read inside it change:
+
+```tsx
+const x = useMotionValue(0)
+const [isDouble, setIsDouble] = createSignal(false)
+const offset = useTransform(() => x.get() * (isDouble() ? 2 : 1))
+```
+
+### `useSpring` following a signal
+
+`useSpring` accepts an accessor as its source, so a spring can follow Solid state:
+
+```tsx
+// React
+const x = useSpring(isOpen ? 200 : 0)
+
+// Solid
+const x = useSpring(() => (isOpen() ? 200 : 0))
+```
+
+## Hooks return accessors
+
+Hooks that return state in React return accessors in Solid. Call them to read the value; reading
+them inside JSX or an effect tracks them.
+
+| Hook                                  | React returns               | Solid returns                       |
+| :------------------------------------ | :-------------------------- | :---------------------------------- |
+| `useInView(ref)`                      | `boolean`                   | `Accessor<boolean>`                 |
+| `usePageInView()`                     | `boolean`                   | `Accessor<boolean>`                 |
+| `useCycle(...items)`                  | `[item, cycle]`             | `[Accessor<item>, cycle]`           |
+| `useReducedMotion()`                  | `boolean \| null`           | `Accessor<boolean \| null>`         |
+| `useReducedMotionConfig()`            | `boolean \| null`           | `Accessor<boolean \| null>`         |
+| `usePresence()`                       | `[isPresent, safeToRemove]` | `[Accessor<boolean>, safeToRemove]` |
+| `useIsPresent()`, `usePresenceData()` | a value                     | an accessor                         |
+
+```tsx
+// React
+const [variant, cycle] = useCycle("off", "on")
+<motion.div animate={variant} onTap={() => cycle()} />
+
+// Solid
+const [variant, cycle] = useCycle("off", "on")
+<motion.div animate={variant()} onTap={() => cycle()} />
+```
+
+`useReducedMotion()` follows the device setting while the app runs, and `useReducedMotionConfig()`
+also follows `MotionConfig`'s `reducedMotion`.
+
+## Refs passed to hooks
+
+Hooks that take a React ref object (`useScroll`, `useInView`, `useDomEvent`) and the
+`dragConstraints` prop take one of these in Solid:
+
+-   an accessor of an element, like `() => el` for a `let el` set by `ref`, or a signal set by
+    `ref={setEl}`,
+-   an element,
+-   a `{ current }` object.
+
+The element is read once the component's elements exist, so `() => el` works even though `el` is
+still unset when the hook is called.
+
+```tsx
+// React
+const ref = useRef(null)
+const isInView = useInView(ref)
+return <div ref={ref}>{isInView ? "Visible" : "Hidden"}</div>
+
+// Solid
+let el!: HTMLDivElement
+const isInView = useInView(() => el)
+return <div ref={el}>{isInView() ? "Visible" : "Hidden"}</div>
+```
+
+With an accessor of a signal, the hook follows the element when it changes. `useInView` resets to
+`false` when its element changes (unless `once` is set and it was already in view).
+
+### `useAnimate`
+
+The `scope` returned by `useAnimate()` is a ref callback, not a ref object. It also has `current`
+and `animations`:
+
+```tsx
+const [scope, animate] = useAnimate()
+
+onSettled(() => {
+    animate("li", { opacity: 1 })
+})
+
+return <ul ref={scope}>...</ul>
+```
+
+`useAnimate` reads `MotionConfig`'s `reducedMotion` and `skipAnimations` each time it animates,
+instead of once.
+
+### `useAnimationControls`
+
+Call `controls.start()` from `onSettled`, an effect or an event handler, like you would from
+`useEffect` in React. Motion elements that are waiting to mount are mounted first, so the
+animation starts right away.
+
+## Reading motion values
+
+Motion values are not Solid signals. `value.get()` returns the current value but isn't tracked.
+Motion components render motion values on every frame without going through Solid.
+
+To show a motion value as text, pass it as the child of a `motion` element, like in React. It
+updates every frame without running any Solid code:
+
+```tsx
+<motion.span>{scrollYProgress}</motion.span>
+```
+
+To use it in Solid code (conditions, derived state, formatted text), the React pattern works the
+same way, with a signal instead of `useState`:
+
+```tsx
+// React
+const [progress, setProgress] = useState(0)
+useMotionValueEvent(scrollYProgress, "change", (latest) => setProgress(latest))
+return <span>{Math.round(progress * 100)}%</span>
+
+// Solid
+const [progress, setProgress] = createSignal(0)
+useMotionValueEvent(scrollYProgress, "change", (latest) => setProgress(latest))
+return <span>{Math.round(progress() * 100)}%</span>
+```
+
+`useMotionValueState` does the same in one call:
+
+```tsx
+const progress = useMotionValueState(scrollYProgress)
+return <span>{Math.round(progress() * 100)}%</span>
+```
+
+It also starts from the motion value's current value, renders that value on the server, and
+accepts an accessor of a motion value to switch which one it reads. It unsubscribes when its owner
+is disposed and never destroys the motion value.
+
+`useMotionValueEvent` works like in React, with all of a motion value's events: `change`,
+`animationStart`, `animationComplete`, `animationCancel` and `destroy`. Use it for side effects
+(logging, starting other animations), and when you need every change as it happens. A signal,
+including `useMotionValueState`'s, updates after Solid's flush, so several changes in a row notify
+once, and setting the same value again doesn't notify at all. See
+[useMotionValueEvent](/docs/use-motion-value-event).
+
+<Note>
+    Don't pass `useMotionValueState`'s result to `style`. Pass the motion
+    value itself: it updates the element directly, without running any Solid
+    code.
+</Note>
+
+## AnimatePresence
+
+React's `AnimatePresence` tells its children apart by `key` and keeps rendering a removed child
+until its exit is done. Solid's `Show` and `For` dispose a removed child right away. motion-solid
+exports its own `Show` and `For`, with the same props as Solid's. Inside `AnimatePresence`, they
+keep removed children alive until their exit animations are done.
+
+```tsx
+// React
+import { AnimatePresence, motion } from "motion/react"
+
+<AnimatePresence>
+    {isOpen && <motion.div key="modal" exit={{ opacity: 0 }} />}
+</AnimatePresence>
+```
+
+```tsx
+// Solid
+import { AnimatePresence, motion, Show } from "@motion-s/solid"
+
+<AnimatePresence>
+    <Show when={isOpen()}>
+        <motion.div exit={{ opacity: 0 }} />
+    </Show>
+</AnimatePresence>
+```
+
+To swap one child for another (a `key` change in React), use a keyed `Show`. It creates a new
+child each time the value changes:
+
+```tsx
+// React
+import { AnimatePresence, motion } from "motion/react"
+
+<AnimatePresence mode="wait">
+    <motion.div key={tab} exit={{ opacity: 0 }}>{tab}</motion.div>
+</AnimatePresence>
+
+// Solid
+import { AnimatePresence, motion, Show } from "@motion-s/solid"
+
+<AnimatePresence mode="wait">
+    <Show when={tab()} keyed>
+        {(tab) => <motion.div exit={{ opacity: 0 }}>{tab}</motion.div>}
+    </Show>
+</AnimatePresence>
+```
+
+For lists, use motion-solid's `For` instead of `array.map` with keys:
+
+```tsx
+import { AnimatePresence, For, motion } from "@motion-s/solid"
+
+<AnimatePresence>
+    <For each={items()}>
+        {(item) => <motion.li exit={{ opacity: 0 }}>{item.label}</motion.li>}
+    </For>
+</AnimatePresence>
+```
+
+A few things to know:
+
+-   A child that comes back while it's exiting is the same instance, and its exit reverses.
+-   Reactive content inside an exiting child keeps running. Its cleanups run after the exit.
+-   An exiting `motion` component's own props are frozen, so it keeps its last `animate` target.
+    Its children aren't frozen. If a child reads data that was removed, read it through `Show`'s
+    callback form (`{(record) => record().label}`), whose accessor keeps the last value.
+-   `Show` and `For` only join the `AnimatePresence` they're directly under (through components,
+    fragments and Solid's control flow, but not through an element or a context provider).
+-   Solid's own `Show`/`For` directly inside `AnimatePresence` also exit, with limits: a child
+    that comes back is a new instance, and reactive content, cleanups and Portals inside it don't
+    behave like in React. Prefer motion-solid's.
+
+See [AnimatePresence](/docs/animate-presence).
+
+## Layout animations
+
+In React, a `layout` component measures itself whenever it re-renders. Solid doesn't re-render, so
+motion-solid measures layout when something that can move elements changes:
+
+-   a motion component's props that affect layout change (`style`, `class`, attributes, `layout`,
+    ...), but not animation-only props like `animate`, `transition` or `while*`,
+-   its children are added, removed or reordered,
+-   a component is created or removed, or its presence changes,
+-   motion-solid's `For` reorders its items.
+
+When one of these happens, the elements around it (its siblings and their descendants) are measured
+too, like React re-rendering the parent.
+
+```tsx
+// React and Solid: changing `style` triggers the layout animation
+<motion.div layout style={{ width: isOpen() ? 300 : 100 }} />
+```
+
+Changes Motion can't see, like the style of a plain `<div>` inside, need `layoutDependency`. It's
+tracked: the element animates its layout when the value changes.
+
+```tsx
+<motion.div layout layoutDependency={isOpen()}>
+    <div style={{ height: isOpen() ? "200px" : "80px" }} />
+</motion.div>
+```
+
+Solid's own `For` moves nodes without running any code, so a reorder in it can't animate under a
+plain parent. Use motion-solid's `For`, a `motion` parent, or `layoutDependency`.
+
+Turning `layout` or `layoutId` on later works too (React sets them once). See
+[Layout animations](/docs/layout-animations).
+
+## Context values are reactive
+
+`MotionConfig`, `LayoutGroup` and the other contexts provide their values through getters. When a
+`MotionConfig` prop changes, the motion components inside see the new value. If you read
+`MotionConfigContext` yourself, read its properties inside a tracked scope.
+
+## LazyMotion
+
+`m` components inside `LazyMotion` set up their animations when the features arrive, and play their
+initial animation then. A `features` loader function isn't called on the server. See
+[LazyMotion](/docs/lazy-motion).
+
+## Drag
+
+Removing an element while it's being dragged ends the drag: listeners and the drag lock are
+released, without calling `onDragEnd`.
+
+## Not ported
+
+-   `AnimateView` (`motion/react/animate-view`). It's built on React's `<ViewTransition>`, which
+    Solid doesn't have. `animateView()` from `motion-dom` is exported and works with Solid.
+-   Deprecated APIs: `motion(Component)`, `AnimateSharedLayout`, `useDeprecatedAnimatedState`,
+    `useDeprecatedInvertedScale`, `DeprecatedLayoutGroupContext`.
+-   React internals that were exported: `PopChild`, `PresenceChild`, `useComposedRefs`,
+    `useForceUpdate`, `useIsomorphicLayoutEffect`, `ForwardRefComponent`.
+-   The `motion/react-client`, `motion/react-m` and `motion/react/animate-view` entry points.

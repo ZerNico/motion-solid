@@ -1,0 +1,111 @@
+# Accessibility
+
+Animation helps people follow what changes on a page, but movement can also make people dizzy or
+hide information from them. This page covers reduced motion and a few habits that keep animated
+interfaces usable for everyone.
+
+## Reduced motion
+
+Operating systems have a setting to reduce motion, exposed to the web as the
+`prefers-reduced-motion` media query. People with vestibular disorders turn it on because large
+movements on screen can cause dizziness or nausea.
+
+### `MotionConfig reducedMotion`
+
+[`MotionConfig`](/docs/motion-config) decides how the `motion` components inside it respond to the
+setting:
+
+```tsx
+import { MotionConfig } from "@motion-s/solid"
+
+function Root() {
+    return (
+        <MotionConfig reducedMotion="user">
+            <App />
+        </MotionConfig>
+    )
+}
+```
+
+| Value      | Behavior                                             |
+| :--------- | :--------------------------------------------------- |
+| `"never"`  | Default. Animations run whatever the device setting. |
+| `"user"`   | Reduce motion when the device setting is on.         |
+| `"always"` | Always reduce motion.                                |
+
+When motion is reduced:
+
+-   values that move or resize an element change at once instead of animating: transforms (`x`,
+    `y`, `scale`, `rotate`, …) and `width`, `height`, `top`, `left`, `right`, `bottom`,
+-   layout animations change at once,
+-   other values still animate: `opacity`, colors, `filter`, `clipPath`, and so on.
+
+So a modal that slides and fades in still fades, without the slide. A `motion` component reads the
+setting when it mounts.
+
+A transition can override it for the values it animates, with `reduceMotion`: `true` to change
+them at once, `false` to always animate them.
+
+```tsx
+// A progress bar's movement carries information: keep it.
+<motion.div
+    animate={{ scaleX: progress() }}
+    transition={{ reduceMotion: false }}
+/>
+```
+
+### `useReducedMotion`
+
+[`useReducedMotion`](/docs/use-reduced-motion) returns an accessor of the device setting. Use it
+for what `MotionConfig` doesn't cover: replacing a slide with a fade of your choice, pausing an
+autoplaying video, turning off parallax effects driven by [scroll](/docs/scroll-animations).
+
+```tsx
+const shouldReduceMotion = useReducedMotion()
+
+<motion.div
+    initial={shouldReduceMotion() ? { opacity: 0 } : { opacity: 0, y: 40 }}
+    animate={{ opacity: 1, y: 0 }}
+/>
+```
+
+## Gestures and the keyboard
+
+-   `whileTap` and `onTap` work with the keyboard: pressing <kbd>Enter</kbd> on a focused element
+    starts a tap, releasing it ends the tap. An element with `whileTap` that isn't focusable by
+    default (like a `div`) gets `tabindex="0"`, unless it already has a `tabindex`.
+-   `whileFocus` is active while the element matches `:focus-visible`, so it shows for keyboard
+    focus but usually not for a mouse click. Use it for focus styles that animate.
+-   `whileHover` ignores touch: it only responds to a mouse or a pen. Don't hide controls or information behind a
+    hover: touch and keyboard users can't reach them.
+-   Prefer a `button` to a `div` with a tap gesture: it already handles focus, <kbd>Space</kbd>
+    and screen readers.
+
+## Good habits
+
+-   Don't convey information only through motion. A shake on a wrong password also needs an
+    error message that a screen reader can announce.
+-   Avoid large movements across the screen, zooms, spins and parallax for decoration, especially
+    over large areas. These are the most common vestibular triggers.
+-   Keep interface transitions short. Long ones delay people who are waiting to act.
+-   Let people pause anything that moves for more than five seconds, like a carousel or a looping
+    animation.
+-   Don't flash content more than three times per second.
+-   When a dialog or a panel animates in, move focus to it as usual. An element that's exiting
+    is still in the DOM until its exit ends, and can still be focused and clicked. To prevent
+    that, make its content inert with [`useIsPresent`](/docs/animate-presence#useispresent):
+
+    ```tsx
+    function Panel() {
+        const isPresent = useIsPresent()
+
+        return (
+            <motion.div exit={{ opacity: 0 }}>
+                <div inert={!isPresent()}>…</div>
+            </motion.div>
+        )
+    }
+    ```
+
+    The props of an exiting `motion` component don't update, so put `inert` on an element inside
+    it.

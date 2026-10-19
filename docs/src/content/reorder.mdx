@@ -1,0 +1,106 @@
+import ReorderList from "../demos/reorder/ReorderList"
+import reorderListSource from "../demos/reorder/ReorderList.tsx?source"
+import DragHandle from "../demos/reorder/DragHandle"
+import dragHandleSource from "../demos/reorder/DragHandle.tsx?source"
+
+# Reorder
+
+`Reorder.Group` and `Reorder.Item` make a list that can be reordered by dragging its items. They're
+`motion` components: dragging uses [drag](/docs/drag), and items move with
+[layout animations](/docs/layout-animations).
+
+## Usage
+
+The group gets the list as `values` and a callback, `onReorder`, that receives the new order. Each
+item gets the value it represents:
+
+```tsx
+import { Reorder } from "@motion-s/solid"
+import { createSignal, For } from "solid-js"
+
+const [items, setItems] = createSignal(["Apples", "Bread", "Coffee"])
+
+<Reorder.Group axis="y" values={items()} onReorder={setItems}>
+    <For each={items()}>
+        {(item) => <Reorder.Item value={item}>{item}</Reorder.Item>}
+    </For>
+</Reorder.Group>
+```
+
+<Demo component={ReorderList} source={reorderListSource} />
+
+While an item is dragged past its neighbours, `onReorder` is called with the new order. Rendering
+that order moves the other items with a layout animation. When the item is released, it animates
+into its slot.
+
+Values must be unique: they identify the items. Use objects or ids rather than labels that can
+repeat.
+
+### Stores
+
+`values` can be an array in a store. The group also follows changes made to the array in place:
+
+```tsx
+const [state, setState] = createStore({ items: ["Apples", "Bread", "Coffee"] })
+
+const reorder = (order: string[]) =>
+    setState((draft) => {
+        draft.items.splice(0, draft.items.length, ...order)
+    })
+
+<Reorder.Group values={state.items} onReorder={reorder}>
+    <For each={state.items}>
+        {(item) => <Reorder.Item value={item}>{item}</Reorder.Item>}
+    </For>
+</Reorder.Group>
+```
+
+## Drag handles
+
+By default, the whole item starts a drag. To drag it by a handle only, turn off the item's own
+listener with `dragListener={false}`, and start the drag from the handle with
+[`useDragControls`](/docs/use-drag-controls):
+
+```tsx
+const controls = useDragControls()
+
+<Reorder.Item value={item} dragListener={false} dragControls={controls}>
+    {item}
+    <span onPointerDown={(event) => controls.start(event)}>⠿</span>
+</Reorder.Item>
+```
+
+<Demo component={DragHandle} source={dragHandleSource} />
+
+Give the handle `touch-action: none` (`touch-none` in Tailwind), or touch devices scroll the page
+instead of dragging.
+
+## Scrolling
+
+When the group is inside a scrolling container, dragging an item close to the container's edge
+scrolls it.
+
+## `Reorder.Group` props
+
+| Prop        | Type                      | Default                         | Description                                                                                             |
+| :---------- | :------------------------ | :------------------------------ | :------------------------------------------------------------------------------------------------------ |
+| `values`    | `V[]`                     |                                 | The values of the items, in their current order. Required.                                              |
+| `onReorder` | `(newOrder: V[]) => void` |                                 | Called with the new order while an item is dragged. Required.                                           |
+| `axis`      | `"x" \| "y" \| "xy"`      | detected from the items' layout | The direction of the list. Items can be dragged along it, `"xy"` for both directions (a wrapping grid). |
+| `as`        | element tag name          | `"ul"`                          | The element to render. Read once.                                                                       |
+
+It also takes the props of a `motion` component, like `class` and `style`.
+
+## `Reorder.Item` props
+
+| Prop     | Type                 | Default | Description                                                          |
+| :------- | :------------------- | :------ | :------------------------------------------------------------------- |
+| `value`  | `V`                  |         | The value this item represents, from the group's `values`. Required. |
+| `layout` | `true \| "position"` | `true`  | Its layout animation. `"position"` stops it from animating its size. |
+| `as`     | element tag name     | `"li"`  | The element to render. Read once.                                    |
+
+It also takes the props of a `motion` component: `whileDrag` to style the dragged item,
+`drag` to change the drag direction (by default, the group's `axis`), `onDragStart` and
+`onDragEnd`, `dragListener` and `dragControls` for handles.
+
+`Reorder.Item` must be inside a `Reorder.Group`.

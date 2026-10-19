@@ -1,0 +1,71 @@
+import ReducedSidebar from "../demos/use-reduced-motion/ReducedSidebar"
+import reducedSidebarSource from "../demos/use-reduced-motion/ReducedSidebar.tsx?source"
+
+# useReducedMotion
+
+`useReducedMotion` returns an accessor that's `true` when the device's reduced motion setting is
+on. It follows the setting: if it changes while the page is open, the accessor updates.
+
+```tsx
+import { useReducedMotion } from "@motion-s/solid"
+
+const shouldReduceMotion = useReducedMotion()
+```
+
+## Usage
+
+[`MotionConfig reducedMotion="user"`](/docs/accessibility#motionconfig-reducedmotion) already turns
+transform and layout animations into instant changes. Use `useReducedMotion` to choose what
+happens instead: replace a slide with a fade, stop a video from playing automatically, turn off a
+parallax effect.
+
+This menu slides in from the left. With reduced motion, it only fades in:
+
+```tsx
+const shouldReduceMotion = useReducedMotion()
+
+const hidden = () =>
+    shouldReduceMotion() ? { opacity: 0 } : { opacity: 0, x: "-100%" }
+
+<motion.nav initial={hidden()} animate={{ opacity: 1, x: 0 }} exit={hidden()} />
+```
+
+<Demo component={ReducedSidebar} source={reducedSidebarSource} />
+
+To try it, turn on the setting in your operating system (on macOS: Accessibility, Display,
+Reduce motion), or emulate `prefers-reduced-motion` in your browser's developer tools.
+
+## Return value
+
+`Accessor<boolean | null>`: `true` when the device asks for reduced motion, `false` otherwise.
+It's `null` where the setting can't be read, for example on the server. While a server-rendered page
+hydrates, it's `null` too, so the markup matches, and then the device setting.
+
+Read it in a tracked scope (JSX, a memo, an effect) to follow changes. Every `useReducedMotion`
+shares the same media query listener.
+
+## `useReducedMotionConfig`
+
+`useReducedMotionConfig` also follows the `reducedMotion` prop of the closest
+[`MotionConfig`](/docs/motion-config):
+
+| `reducedMotion` | `useReducedMotionConfig()` returns |
+| :-------------- | :--------------------------------- |
+| `"never"`       | `false`                            |
+| `"always"`      | `true`                             |
+| `"user"`        | the device setting                 |
+
+Use it in components that should respect the app's configuration, not only the device. Without a
+`MotionConfig`, `reducedMotion` is `"never"`, so it returns `false`.
+
+```tsx
+import { useReducedMotionConfig } from "@motion-s/solid"
+
+const shouldReduceMotion = useReducedMotionConfig()
+```
+
+<Note title="Different from React">
+    In React, both hooks return a boolean, read when the component renders. Here
+    they return accessors, which update when the device setting or
+    `MotionConfig`'s `reducedMotion` changes.
+</Note>

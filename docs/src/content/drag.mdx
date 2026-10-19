@@ -1,0 +1,127 @@
+import Constraints from "../demos/drag/Constraints"
+import constraintsSource from "../demos/drag/Constraints.tsx?source"
+import Snap from "../demos/drag/Snap"
+import snapSource from "../demos/drag/Snap.tsx?source"
+import DirectionLock from "../demos/drag/DirectionLock"
+import directionLockSource from "../demos/drag/DirectionLock.tsx?source"
+
+# Drag
+
+The `drag` prop makes a `motion` element follow the pointer. When it's released, it keeps its
+momentum and slows down, and it can be kept inside an area.
+
+## Making an element draggable
+
+```tsx
+<motion.div drag />
+```
+
+`drag` moves the element in both directions. `drag="x"` and `drag="y"` limit it to one axis.
+
+The element moves with the `x` and `y` transforms, so its layout doesn't change. Pass motion values
+as `style={{ x, y }}` to read or set its position (see [Motion values](/docs/motion-values)).
+
+Motion also sets a few styles on a draggable element: `user-select: none`, so dragging doesn't
+select text, and `touch-action`, so touch screens don't scroll the page while dragging (`none`
+for `drag`, `pan-y` for `drag="x"`, `pan-x` for `drag="y"`).
+
+A drag doesn't start from an `input`, `select` or `textarea` inside the element, so those stay
+usable.
+
+## Constraints
+
+`dragConstraints` limits where the element can go. It accepts two kinds of values.
+
+**An element.** The draggable element stays inside it. Pass the element, an accessor of it (like
+a signal set by `ref`), or a `{ current }` object:
+
+<Demo component={Constraints} source={constraintsSource} />
+
+The constraints are measured again when either element changes size, or when the window is
+resized.
+
+<Note>
+    With `let container!: HTMLDivElement` and `ref={container}`, the variable
+    isn't reactive: pass it as an accessor, `dragConstraints={() => container}`,
+    so it's read once the element exists.
+</Note>
+
+**Pixel bounds.** An object with `top`, `left`, `right` and `bottom`, each optional, measured from
+the element's starting position:
+
+```tsx
+<motion.div drag="x" dragConstraints={{ left: -100, right: 100 }} />
+```
+
+### Elasticity
+
+`dragElastic` sets how far the element can be pulled past its constraints, as a fraction of the
+pointer's movement. `0` stops it at the edge, `1` lets it follow the pointer. When released, it
+springs back inside. It's `0.35` by default. An object with `top`, `left`, `right` and `bottom`
+sets it per edge.
+
+## Momentum
+
+When released, the element continues with the pointer's velocity and slows down with an
+[inertia](/docs/transitions#inertia) animation. `dragMomentum={false}` stops it where it's released.
+
+`dragTransition` configures the inertia. For example, `modifyTarget` changes where the element
+comes to rest, here to snap to steps of 60 pixels:
+
+<Demo component={Snap} source={snapSource} />
+
+`bounceStiffness` and `bounceDamping` set the spring at the constraints, `power` and
+`timeConstant` how far and how long it glides.
+
+`dragSnapToOrigin` animates the element back to where it started when it's released. Set it to
+`"x"` or `"y"` to snap back on one axis only.
+
+## Direction lock
+
+`dragDirectionLock` locks the drag to the axis the pointer first moves along. `onDirectionLock`
+is called with that axis (`"x"` or `"y"`) once it's known:
+
+<Demo component={DirectionLock} source={directionLockSource} />
+
+## Nested draggable elements
+
+By default, a pointer drags only one element: the innermost draggable element it presses. With
+`dragPropagation`, pressing the element also drags its draggable parents.
+
+## Props
+
+| Prop                | Type                                                | Default | Description                                                                                              |
+| :------------------ | :-------------------------------------------------- | :------ | :------------------------------------------------------------------------------------------------------- |
+| `drag`              | `boolean \| "x" \| "y"`                             | `false` | Enables dragging, on both axes or one.                                                                   |
+| `whileDrag`         | target or variant names                             |         | Animates while dragging.                                                                                 |
+| `dragConstraints`   | element, accessor, `{ current }`, or bounds object  | `false` | The area the element stays in.                                                                           |
+| `dragElastic`       | `boolean \| number \| { top, left, right, bottom }` | `0.35`  | How far it can be pulled past the constraints. `false` is `0`.                                           |
+| `dragMomentum`      | `boolean`                                           | `true`  | Keeps gliding after release.                                                                             |
+| `dragTransition`    | inertia options                                     |         | Configures the glide after release.                                                                      |
+| `dragSnapToOrigin`  | `boolean \| "x" \| "y"`                             | `false` | Animates back to the start on release.                                                                   |
+| `dragDirectionLock` | `boolean`                                           | `false` | Locks the drag to the first axis moved along.                                                            |
+| `dragPropagation`   | `boolean`                                           | `false` | Also drags draggable parents.                                                                            |
+| `dragListener`      | `boolean`                                           | `true`  | `false` stops pressing the element from starting a drag. See [useDragControls](/docs/use-drag-controls). |
+| `dragControls`      | `DragControls`                                      |         | Starts drags from elsewhere. See [useDragControls](/docs/use-drag-controls).                             |
+
+## Events
+
+| Prop                       | Signature                                           | Called when                                                                       |
+| :------------------------- | :-------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| `onDragStart`              | `(event, info: PanInfo) => void`                    | The drag starts.                                                                  |
+| `onDrag`                   | `(event, info: PanInfo) => void`                    | The pointer moves during the drag.                                                |
+| `onDragEnd`                | `(event, info: PanInfo) => void`                    | The pointer is released.                                                          |
+| `onDirectionLock`          | `(axis: "x" \| "y") => void`                        | With `dragDirectionLock`, the axis is known.                                      |
+| `onDragTransitionEnd`      | `() => void`                                        | The glide after release has finished.                                             |
+| `onMeasureDragConstraints` | `(constraints: BoundingBox) => BoundingBox \| void` | Constraints from an element have been measured. Return new bounds to change them. |
+
+`info` has the pointer's `point`, `delta`, `offset` and `velocity`, like the
+[pan gesture](/docs/gestures#pan). For example, `info.velocity.x` in `onDragEnd` tells how fast
+the element was thrown.
+
+<Note type="warning" title="Removing an element while it's dragged">
+    If a dragged element is removed (for example by a `Show` whose condition
+    changes), its drag ends right away: the pointer listeners are released and
+    another element can be dragged. Its `onDragEnd` isn't called. In React,
+    Motion keeps the drag going, because React can remount the element.
+</Note>

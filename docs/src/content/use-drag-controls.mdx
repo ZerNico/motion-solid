@@ -1,0 +1,78 @@
+import Handle from "../demos/use-drag-controls/Handle"
+import handleSource from "../demos/use-drag-controls/Handle.tsx?source"
+import Scrubber from "../demos/use-drag-controls/Scrubber"
+import scrubberSource from "../demos/use-drag-controls/Scrubber.tsx?source"
+
+# useDragControls
+
+`useDragControls` starts a drag on a `motion` element from a pointer event on another element,
+like a handle or a track.
+
+## Usage
+
+Create the controls, pass them to the draggable element's `dragControls` prop, and call
+`controls.start(event)` from a `pointerdown` handler:
+
+```tsx
+import { motion, useDragControls } from "@motion-s/solid"
+
+function Panel() {
+    const controls = useDragControls()
+
+    return (
+        <>
+            <div
+                class="touch-none"
+                onPointerDown={(event) => controls.start(event)}
+            >
+                Drag here
+            </div>
+            <motion.div drag="x" dragControls={controls} />
+        </>
+    )
+}
+```
+
+The draggable element still needs `drag`. Its other drag props (constraints, elasticity, momentum,
+events) apply as usual. See [Drag](/docs/drag).
+
+## Drag handles
+
+By default, pressing the draggable element itself also starts a drag. Set `dragListener={false}`
+to only start drags through the controls, for example from a handle:
+
+<Demo component={Handle} source={handleSource} />
+
+<Note>
+    With `dragListener={false}`, Motion doesn't set `touch-action` and
+    `user-select` on the draggable element. Set `touch-action: none` on the
+    handle (here with the `touch-none` class), so touch screens don't scroll the
+    page instead of dragging.
+</Note>
+
+## Snapping to the pointer
+
+`controls.start(event, { snapToCursor: true })` moves the element under the pointer before the
+drag starts. A track that starts drags on its thumb works like a slider or a video scrubber:
+
+<Demo component={Scrubber} source={scrubberSource} />
+
+## API
+
+`useDragControls()` returns a `DragControls` object. One object can be passed to several elements:
+its methods act on all of them.
+
+| Method                   | Description                                                                                     |
+| :----------------------- | :---------------------------------------------------------------------------------------------- |
+| `start(event, options?)` | Starts a drag from a `PointerEvent`.                                                            |
+| `stop()`                 | Ends the current drag like releasing the pointer: the element glides and `onDragEnd` is called. |
+| `cancel()`               | Ends the current drag where it is, without the glide or `onDragEnd`.                            |
+
+Options of `start`:
+
+| Option              | Type      | Default | Description                                                                                           |
+| :------------------ | :-------- | :------ | :---------------------------------------------------------------------------------------------------- |
+| `snapToCursor`      | `boolean` | `false` | Moves the element under the pointer when the drag starts.                                             |
+| `distanceThreshold` | `number`  | `3`     | How far, in pixels, the pointer has to move before the drag starts and the direction lock is decided. |
+
+The `dragControls` prop is reactive: passing other controls moves the element to them.

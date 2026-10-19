@@ -1,0 +1,138 @@
+import HoverTap from "../demos/gestures/HoverTap"
+import hoverTapSource from "../demos/gestures/HoverTap.tsx?source"
+import Focus from "../demos/gestures/Focus"
+import focusSource from "../demos/gestures/Focus.tsx?source"
+import HoverVariants from "../demos/gestures/HoverVariants"
+import hoverVariantsSource from "../demos/gestures/HoverVariants.tsx?source"
+import Pan from "../demos/gestures/Pan"
+import panSource from "../demos/gestures/Pan.tsx?source"
+
+# Gestures
+
+`motion` components recognise hover, tap, focus, pan and drag gestures. A `while…` prop animates
+the element while its gesture is active, and event props report the gesture's progress.
+
+## Animating during a gesture
+
+| Prop          | Active while                                                                      |
+| :------------ | :-------------------------------------------------------------------------------- |
+| `whileHover`  | A mouse or pen pointer is over the element.                                       |
+| `whileTap`    | The element is pressed.                                                           |
+| `whileFocus`  | The element has keyboard focus (`:focus-visible`).                                |
+| `whileDrag`   | The element is dragged. See [Drag](/docs/drag).                                   |
+| `whileInView` | The element is in the viewport. See [Scroll animations](/docs/scroll-animations). |
+
+Each takes values or variant names, like `animate`. When the gesture ends, the element animates
+back to the values of `animate` (or `initial`, or its `style`):
+
+```tsx
+<motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} />
+```
+
+If several gestures are active, `whileTap` wins over `whileHover`, and `whileDrag` over both.
+
+## Hover
+
+The hover gesture starts when a pointer enters the element and ends when it leaves. Unlike CSS
+`:hover`, it ignores touch input, so tapping on a phone doesn't leave the element stuck in its
+hover state. It doesn't start while something is being dragged.
+
+| Prop           | Signature                                        |
+| :------------- | :----------------------------------------------- |
+| `onHoverStart` | `(event: PointerEvent, info: EventInfo) => void` |
+| `onHoverEnd`   | `(event: PointerEvent, info: EventInfo) => void` |
+
+`info.point` holds the pointer's `x` and `y`, relative to the page.
+
+## Tap
+
+The tap gesture starts when the primary pointer presses the element. It succeeds if the pointer
+is released on the element (or one of its children), and is cancelled if it's released elsewhere.
+
+| Prop          | Called when                         |
+| :------------ | :---------------------------------- |
+| `onTapStart`  | The element is pressed.             |
+| `onTap`       | The press ends on the element.      |
+| `onTapCancel` | The press ends outside the element. |
+
+Each is called with the event and an `info` object with the `point` of the event.
+
+<Demo component={HoverTap} source={hoverTapSource} />
+
+A disabled `<button>` doesn't start tap gestures.
+
+### Keyboard
+
+Taps work with the keyboard. An element with `whileTap`, `onTap` or `onTapStart` becomes
+focusable: if it isn't a button, link or form control and has no `tabindex`, it gets
+`tabindex="0"`. While it has focus, pressing <kbd>Enter</kbd> starts a tap, releasing it ends the
+tap, and moving the focus away cancels it.
+
+So `onTap` on a `motion.div` can be used from the keyboard. For actions, a `motion.button` is still
+the better choice: it has the right role for assistive technology.
+
+### Stopping propagation
+
+A tap on a child also starts the tap gestures of its `motion` parents. To stop that, set
+`propagate={{ tap: false }}` on the child. Its parent's `onTapStart`, `onTap` and `whileTap` then
+don't react to presses that start on the child:
+
+```tsx
+<motion.div whileTap={{ scale: 0.98 }} onTap={openCard}>
+    <motion.button propagate={{ tap: false }} onTap={removeCard}>
+        Remove
+    </motion.button>
+</motion.div>
+```
+
+## Focus
+
+`whileFocus` is active while the element has focus and matches `:focus-visible`. In practice,
+that's focus from the keyboard: clicking a button doesn't trigger it, tabbing to it does.
+
+<Demo component={Focus} source={focusSource} />
+
+## Pan
+
+A pan is a pointer pressing the element and moving at least 3 pixels. Unlike drag, it doesn't move
+the element: use it to react to the movement in your own way.
+
+| Prop                | Called when                                        |
+| :------------------ | :------------------------------------------------- |
+| `onPanSessionStart` | The pointer presses the element, before it moves.  |
+| `onPanStart`        | The pointer has moved far enough to start the pan. |
+| `onPan`             | The pointer moves during the pan.                  |
+| `onPanEnd`          | The pointer is released.                           |
+
+They're called with the pointer event and a `PanInfo` object:
+
+| Property   | Description                                   |
+| :--------- | :-------------------------------------------- |
+| `point`    | The pointer's position, relative to the page. |
+| `delta`    | The distance moved since the previous event.  |
+| `offset`   | The distance from where the pan started.      |
+| `velocity` | The pointer's velocity, in pixels per second. |
+
+Each is an object with `x` and `y`. `onPanSessionStart` only gets `point`.
+
+<Demo component={Pan} source={panSource} />
+
+<Note type="warning">
+    On touch screens, the browser scrolls the page when a finger moves on the
+    element, which cancels the pan. Set `touch-action` on the element to turn
+    that off: `touch-action: none` for both directions, or `pan-y` to keep
+    vertical scrolling while panning horizontally.
+</Note>
+
+## Gestures and variants
+
+Gesture props accept variant names. Like `animate`, they flow down to the `motion` children: when
+the parent is hovered, every child with a variant of that name animates to it too. Children don't
+need gesture props of their own.
+
+<Demo component={HoverVariants} source={hoverVariantsSource} />
+
+## Solid notes
+
+Gesture props are reactive like every other prop: they can read signals. Event handlers are read
+when the gesture fires, so the latest handler is always the one called.

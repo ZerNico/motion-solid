@@ -1,0 +1,187 @@
+import FadeInCards from "../demos/scroll-animations/FadeInCards"
+import fadeInCardsSource from "../demos/scroll-animations/FadeInCards.tsx?source"
+import ReadingProgress from "../demos/scroll-animations/ReadingProgress"
+import readingProgressSource from "../demos/scroll-animations/ReadingProgress.tsx?source"
+import Parallax from "../demos/scroll-animations/Parallax"
+import parallaxSource from "../demos/scroll-animations/Parallax.tsx?source"
+
+# Scroll animations
+
+Trigger animations when elements enter the viewport, or link them to scroll progress.
+
+There are two kinds of scroll animations:
+
+-   **Scroll-triggered**: an animation starts when an element enters or leaves the viewport. It
+    runs on its own once started, like any other animation.
+-   **Scroll-linked**: a value follows the scroll position directly. Scrolling back reverses it.
+
+## Scroll-triggered animations
+
+### `whileInView`
+
+A `motion` component animates to the values of `whileInView` while it's in the viewport, and back
+to `animate` (or its initial values) when it leaves:
+
+```tsx
+<motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} />
+```
+
+The demo below scrolls inside its own box, so it passes the box as the viewport's `root`:
+
+<Demo component={FadeInCards} source={fadeInCardsSource} />
+
+### Viewport options
+
+`viewport` configures how the element is observed:
+
+```tsx
+<motion.section
+    initial={{ opacity: 0, y: 40 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true, amount: 0.5, margin: "0px 0px -100px 0px" }}
+/>
+```
+
+| Option   | Type                           | Default  | Description                                                                                                                     |
+| :------- | :----------------------------- | :------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| `once`   | `boolean`                      | `false`  | Run `whileInView` the first time the element enters, and keep its values after it leaves.                                       |
+| `amount` | `"some" \| "all" \| number`    | `"some"` | How much of the element must be visible: any part, all of it, or a fraction from `0` to `1`.                                    |
+| `margin` | `string`                       |          | Grows or shrinks the viewport's box, in CSS margin syntax (`"0px 0px -100px 0px"`). Like `IntersectionObserver`'s `rootMargin`. |
+| `root`   | `{ current: Element \| null }` | viewport | The scrollable ancestor to observe the element in, instead of the browser viewport.                                             |
+
+`root` is a `{ current }` object, read when the component mounts. Set it from the container's
+`ref`:
+
+```tsx
+const root = { current: null as HTMLElement | null }
+
+return (
+    <div ref={(element) => (root.current = element)} class="overflow-y-auto">
+        <motion.div whileInView={{ opacity: 1 }} viewport={{ root }} />
+    </div>
+)
+```
+
+### Viewport events
+
+`onViewportEnter` and `onViewportLeave` are called with the `IntersectionObserverEntry` when the
+element enters or leaves the viewport. With `once`, `onViewportLeave` isn't called once the
+element has entered.
+
+```tsx
+<motion.div
+    onViewportEnter={(entry) => console.log("entered", entry?.target)}
+    onViewportLeave={() => console.log("left")}
+/>
+```
+
+### `useInView`
+
+To react to visibility in your own code (load data, start a video, change text), use
+[`useInView`](/docs/use-in-view). It returns an accessor of whether an element is in view:
+
+```tsx
+let element!: HTMLDivElement
+const isInView = useInView(() => element, { once: true })
+
+return <div ref={element}>{isInView() ? "Visible" : "Hidden"}</div>
+```
+
+## Scroll-linked animations
+
+### `useScroll`
+
+[`useScroll`](/docs/use-scroll) returns four motion values: the scroll offset in pixels
+(`scrollX`, `scrollY`) and the scroll progress from `0` to `1` (`scrollXProgress`,
+`scrollYProgress`). Pass one to a `style` prop and the element follows the scroll every frame:
+
+```tsx
+const { scrollYProgress } = useScroll()
+
+return <motion.div class="origin-left" style={{ scaleX: scrollYProgress }} />
+```
+
+Without options, `useScroll` tracks the page. To track a scrollable element, pass it as
+`container`. Here it's a `{ current }` object set by the container's `ref`. `useSpring` smooths the progress:
+
+<Demo component={ReadingProgress} source={readingProgressSource} />
+
+### Transforming progress
+
+Progress goes from `0` to `1`. Map it to other values with [`useTransform`](/docs/use-transform):
+
+```tsx
+const { scrollYProgress } = useScroll()
+const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+const backgroundColor = useTransform(
+    scrollYProgress,
+    [0, 1],
+    ["#4f6bff", "#ff4f8b"]
+)
+```
+
+### Tracking an element
+
+With a `target`, progress measures how far the target has moved through the container (the
+viewport by default). `offset` sets where it starts and ends. Each entry is a pair of positions:
+one on the target, then one on the container. `"start end"` means "the target's start meets the
+container's end".
+
+```tsx
+const { scrollYProgress } = useScroll({
+    target,
+    // 0 when the target's top reaches the bottom of the viewport,
+    // 1 when its bottom leaves through the top.
+    offset: ["start end", "end start"],
+})
+```
+
+Without `offset`, progress runs from `"start start"` to `"end end"`. The
+[useScroll reference](/docs/use-scroll#offset) lists every position you can use. When the
+container isn't the page, give it a position other than `static` (the demo below uses
+`relative`): the target's position is measured from it.
+
+### Parallax
+
+Each section below tracks its own position in the scroll box, and moves its shape against the
+scroll direction, so the shape scrolls slower than its section:
+
+<Demo component={Parallax} source={parallaxSource} />
+
+### Horizontal scrolling
+
+`scrollX` and `scrollXProgress` track horizontal scrolling. Both axes are always tracked, so use
+the pair that matches the direction your container scrolls in. See the
+[horizontal example](/docs/use-scroll#horizontal-scrolling).
+
+## The `scroll` function
+
+`useScroll` is built on `scroll`, which you can also call yourself. It takes a callback, which
+receives the progress (`0` to `1`) on every scroll, or an animation, which it plays along with
+the scroll. It returns a function that stops tracking:
+
+```tsx
+import { animate, scroll } from "@motion-s/solid"
+import { onSettled } from "solid-js"
+
+function ProgressBar() {
+    let container!: HTMLDivElement
+    let bar!: HTMLDivElement
+
+    onSettled(() => {
+        const animation = animate(bar, { scaleX: [0, 1] }, { ease: "linear" })
+        return scroll(animation, { container })
+    })
+
+    return (
+        <div ref={container} class="h-64 overflow-y-auto">
+            <div ref={bar} class="sticky top-0 h-1 origin-left bg-accent" />
+            {/* content */}
+        </div>
+    )
+}
+```
+
+It accepts `container`, `target`, `offset` and `axis` (`"y"` by default; the axis whose progress
+is passed to the callback or drives the animation). It's also exported from
+`@motion-s/solid/dom`, for use outside of components.

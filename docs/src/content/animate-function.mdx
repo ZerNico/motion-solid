@@ -1,0 +1,255 @@
+import Controls from "../demos/animate-function/Controls"
+import controlsSource from "../demos/animate-function/Controls.tsx?source"
+import Counter from "../demos/animate-function/Counter"
+import counterSource from "../demos/animate-function/Counter.tsx?source"
+import Sequence from "../demos/animate-function/Sequence"
+import sequenceSource from "../demos/animate-function/Sequence.tsx?source"
+
+# animate()
+
+`animate()` starts an animation from code: on an element, a motion value, a number or a plain
+object. It returns controls to pause, seek or stop it, and it can play several animations as a
+timeline.
+
+```tsx
+import { animate } from "@motion-s/solid"
+
+animate(element, { x: 100, opacity: 1 }, { duration: 0.5 })
+```
+
+`animate()` is Motion's own function from the same engine as Motion for React. It doesn't depend on
+Solid, and is also exported from `@motion-s/solid/dom`. Use it when an animation is triggered by
+code, not by state: in an event handler, after a request finishes, or to drive something that
+isn't a motion component.
+
+Inside components, [useAnimate](/docs/use-animate) is usually a better fit: it scopes selectors to
+your component and stops its animations when the component is removed.
+
+## Elements
+
+The first argument is an element, a list of elements, or a CSS selector. The second is the target,
+with the same values as a motion component's `animate`: CSS properties, CSS variables, individual
+transforms (`x`, `rotate`, `scale`), and keyframe arrays.
+
+```tsx
+let box!: HTMLDivElement
+
+function shake() {
+    animate(box, { x: [0, -8, 8, -8, 0] }, { duration: 0.4 })
+}
+
+return (
+    <div ref={box} onClick={shake}>
+        Click me
+    </div>
+)
+```
+
+The third argument is the transition. Values can have their own transitions:
+
+```tsx
+animate(
+    box,
+    { x: 200, opacity: 0.5 },
+    { type: "spring", bounce: 0.3, opacity: { duration: 0.2 } }
+)
+```
+
+A selector is resolved against the whole document. To animate several elements one after another,
+use `stagger()` as the delay:
+
+```tsx
+import { animate, stagger } from "@motion-s/solid"
+
+animate(".card", { opacity: [0, 1], y: [20, 0] }, { delay: stagger(0.08) })
+```
+
+## Motion values
+
+Pass a [motion value](/docs/motion-values) and a target value. Every motion component using it
+updates on each frame:
+
+```tsx
+const x = useMotionValue(0)
+
+animate(x, 200, { type: "spring", bounce: 0.25 })
+
+return <motion.div style={{ x }} />
+```
+
+## Numbers and strings
+
+Pass a number (or a string like a color) as the starting value, and read the animated value in
+`onUpdate`. This is useful for counters or values you render yourself:
+
+<Demo component={Counter} source={counterSource} />
+
+```tsx
+animate("#ff0088", "#0d63f8", {
+    duration: 1,
+    onUpdate: (color) => console.log(color),
+})
+```
+
+## Objects
+
+Plain objects can be animated too. `animate()` writes the new values to the object on every frame,
+which is useful for canvas or WebGL scenes:
+
+```tsx
+const camera = { zoom: 1, angle: 0 }
+
+animate(
+    camera,
+    { zoom: 2, angle: 90 },
+    {
+        duration: 2,
+        onUpdate: () => draw(camera),
+    }
+)
+```
+
+## Playback controls
+
+`animate()` returns controls for the animations it started:
+
+<Demo component={Controls} source={controlsSource} />
+
+| Member       | Type                     | Description                                              |
+| :----------- | :----------------------- | :------------------------------------------------------- |
+| `play()`     | `() => void`             | Plays the animation, or resumes it after `pause()`       |
+| `pause()`    | `() => void`             | Pauses the animation                                     |
+| `stop()`     | `() => void`             | Stops the animation where it is. It can't be resumed     |
+| `complete()` | `() => void`             | Jumps to the end and applies the final values            |
+| `cancel()`   | `() => void`             | Stops the animation and goes back to the starting values |
+| `time`       | `number`                 | The current time in seconds. Set it to seek              |
+| `speed`      | `number`                 | Playback speed: `1` is normal, `0.5` half, `2` double    |
+| `duration`   | `number`                 | The duration in seconds                                  |
+| `finished`   | `Promise`                | Resolves when the animation finishes                     |
+| `then()`     | `(onResolve) => Promise` | Lets you `await` the controls directly                   |
+
+```tsx
+await animate(box, { opacity: 0 })
+box.remove()
+```
+
+### Cleaning up
+
+An animation keeps running after the component that started it is removed. Stop it in a cleanup:
+
+```tsx
+onSettled(() => {
+    const controls = animate(
+        box,
+        { rotate: 360 },
+        { repeat: Infinity, duration: 2 }
+    )
+    return () => controls.stop()
+})
+```
+
+## Timelines
+
+Pass an array of segments to play animations in sequence. Each segment has the same arguments as a
+single `animate()` call: `[subject, target, transition]`. By default, each segment starts when the
+previous one ends.
+
+<Demo component={Sequence} source={sequenceSource} />
+
+### Timing with `at`
+
+`at` in a segment's transition sets when it starts:
+
+| Value     | Starts                                        |
+| :-------- | :-------------------------------------------- |
+| `0.5`     | At 0.5 seconds from the start of the timeline |
+| `"+0.2"`  | 0.2 seconds after the previous segment ends   |
+| `"-0.2"`  | 0.2 seconds before the previous segment ends  |
+| `"<"`     | At the same time as the previous segment      |
+| `"intro"` | At the label `intro`                          |
+
+A label is a string in the sequence. It marks the time at that point, and later segments can start
+from it with `at`:
+
+```tsx
+animate([
+    [header, { opacity: 1 }],
+    "content",
+    [title, { y: [20, 0] }, { at: "content" }],
+    [image, { scale: [0.9, 1] }, { at: "content" }],
+    { name: "end", at: "+0.5" },
+    [button, { opacity: 1 }, { at: "end" }],
+])
+```
+
+### Sequence options
+
+The second argument sets options for the whole timeline:
+
+| Option              | Type                              | Description                                            |
+| :------------------ | :-------------------------------- | :----------------------------------------------------- |
+| `duration`          | `number`                          | Scales the timeline to this total duration, in seconds |
+| `delay`             | `number`                          | Delay before the timeline starts, in seconds           |
+| `defaultTransition` | `Transition`                      | Transition for segments that don't set their own       |
+| `repeat`            | `number`                          | How many times to repeat. `Infinity` loops             |
+| `repeatType`        | `"loop" \| "reverse" \| "mirror"` | How to repeat                                          |
+| `repeatDelay`       | `number`                          | Pause between repeats, in seconds                      |
+| `onComplete`        | `() => void`                      | Called when the timeline finishes                      |
+
+Segments can't have their own `onUpdate`, `onComplete` or other callbacks: a timeline combines all
+segments for a subject into one animation. Use the timeline's `onComplete` instead.
+
+## scroll()
+
+`scroll()` links an animation, or a callback, to scroll progress. It returns a function that stops
+it.
+
+```tsx
+import { animate, scroll } from "@motion-s/solid"
+
+onSettled(() => {
+    const animation = animate(bar, { scaleX: [0, 1] }, { ease: "linear" })
+    return scroll(animation)
+})
+```
+
+With a callback, it receives the progress from `0` to `1`:
+
+```tsx
+scroll((progress) => console.log(progress), { container: list, axis: "y" })
+```
+
+Options are `container` (defaults to the page), `target` (track an element moving through the
+container), `axis` (`"y"` by default) and `offset`. In components, the
+[useScroll](/docs/use-scroll) hook gives you motion values instead. See
+[Scroll animations](/docs/scroll-animations).
+
+## inView()
+
+`inView()` calls a function when an element enters the viewport. Return a function from it to run
+code when the element leaves. `inView()` returns a function that stops watching.
+
+```tsx
+import { animate, inView } from "@motion-s/solid"
+
+onSettled(() =>
+    inView(
+        card,
+        (element) => {
+            animate(element, { opacity: 1, y: 0 })
+            return () => animate(element, { opacity: 0, y: 20 })
+        },
+        { amount: 0.5 }
+    )
+)
+```
+
+Options are `root` (the scrolling element, by default the viewport), `margin` (grows or shrinks the
+detection area, like `"0px 0px -100px 0px"`) and `amount` (`"some"`, `"all"`, or a number from `0`
+to `1`). In components, see [useInView](/docs/use-in-view) and the `whileInView` prop.
+
+## Smaller builds
+
+`@motion-s/solid/dom/mini` exports a smaller `animate()` that only animates elements, with the
+browser's Web Animations API. It doesn't animate motion values, numbers or objects. For timelines
+of elements, the same entry exports `animateSequence()`. See [Reduce bundle size](/docs/bundle-size).

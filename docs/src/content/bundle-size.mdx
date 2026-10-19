@@ -1,0 +1,106 @@
+# Reduce bundle size
+
+motion-solid is tree-shakable: a bundle only contains what it imports. The `motion` component is
+the largest import, because it includes every feature. This guide shows the smaller options.
+
+## Sizes
+
+Minified and gzipped, without `solid-js` and `@solidjs/web`, as measured by the repository's
+size checks:
+
+| Import                                    | Size    |
+| :---------------------------------------- | :------ |
+| `motion`                                  | 42.5 kB |
+| `m`                                       | 9.6 kB  |
+| `m` + `LazyMotion` + `domAnimation`       | 29.4 kB |
+| `m` + `LazyMotion` + `domMax`             | 42.6 kB |
+| `animate` from `@motion-s/solid/dom`      | 18.9 kB |
+| `scroll` from `@motion-s/solid/dom`       | 3.6 kB  |
+| `animate` from `@motion-s/solid/dom/mini` | 3.1 kB  |
+
+Hooks and other imports add to these numbers, and share code with them.
+
+## `m` and `LazyMotion`
+
+The `m` component has the same API as `motion`, without any features. [LazyMotion](/docs/lazy-motion)
+provides the features to the `m` components inside it, so only the bundle you pick is included:
+
+```tsx
+import { domAnimation, LazyMotion, m } from "@motion-s/solid"
+
+function App() {
+    return (
+        <LazyMotion features={domAnimation} strict>
+            <m.div animate={{ opacity: 1 }} whileHover={{ scale: 1.05 }} />
+        </LazyMotion>
+    )
+}
+```
+
+-   `domMin`: animations, variants and exit animations.
+-   `domAnimation`: `domMin` with hover, tap, focus and in-view gestures.
+-   `domMax`: `domAnimation` with drag and layout animations.
+
+Use `strict` to catch `motion` components that would bring every feature back in.
+
+## Loading features later
+
+`LazyMotion` also takes a function that loads the bundle. With a dynamic `import`, the features go
+to their own chunk, which loads after the page has rendered:
+
+```ts
+// features.ts
+import { domAnimation } from "@motion-s/solid"
+
+export default domAnimation
+```
+
+```tsx
+const loadFeatures = () => import("./features").then((res) => res.default)
+
+<LazyMotion features={loadFeatures}>
+    <m.div animate={{ opacity: 1 }} />
+</LazyMotion>
+```
+
+The initial bundle then only has `m` and `LazyMotion`. The `m` components render with their
+initial styles, and animate once the features have loaded.
+
+## Animating without components
+
+When you only need to animate elements imperatively, skip the components.
+
+`animate` from `@motion-s/solid/dom` animates elements, motion values and plain values, with
+springs and every value type, and without the component code. See
+[animate](/docs/animate-function).
+
+The mini entries animate elements with the browser's Web Animations API, for the smallest size:
+
+-   `@motion-s/solid/dom/mini` exports `animate` and `animateSequence`.
+-   `@motion-s/solid/mini` exports the same, and `useAnimate`: the
+    [`useAnimate`](/docs/use-animate) hook with the mini `animate`, scoped to a component.
+
+```tsx
+import { useAnimate } from "@motion-s/solid/mini"
+
+function Toast() {
+    const [scope, animate] = useAnimate()
+
+    const dismiss = () =>
+        animate(scope.current, { opacity: 0, y: -8 }, { duration: 0.2 })
+
+    return (
+        <div ref={scope} onClick={dismiss}>
+            Saved
+        </div>
+    )
+}
+```
+
+The main entry exports this hook as `useAnimateMini`.
+
+<Note>
+    The mini `animate` only animates elements, through the Web Animations API.
+    It can't animate motion values or plain numbers: use the full `animate` for
+    those.
+</Note>

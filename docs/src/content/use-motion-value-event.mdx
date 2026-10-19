@@ -1,0 +1,104 @@
+import EventLog from "../demos/use-motion-value-event/EventLog"
+import eventLogSource from "../demos/use-motion-value-event/EventLog.tsx?source"
+
+# useMotionValueEvent
+
+`useMotionValueEvent` runs a callback when a motion value changes or when an animation on it
+starts, completes or is cancelled. `useMotionValueState`, on the same page, reads a motion value
+as a Solid accessor.
+
+## Usage
+
+```tsx
+import { useMotionValue, useMotionValueEvent } from "@motion-s/solid"
+
+const x = useMotionValue(0)
+
+useMotionValueEvent(x, "change", (latest) => {
+    console.log("x is now", latest)
+})
+```
+
+The subscription lasts as long as the component, or whatever owner the hook is called in. It
+ends when the owner is disposed.
+
+| Event               | Callback           | Fires                                            |
+| ------------------- | ------------------ | ------------------------------------------------ |
+| `change`            | `(latest) => void` | When the value changes.                          |
+| `animationStart`    | `() => void`       | When an animation starts on the value.           |
+| `animationComplete` | `() => void`       | When an animation finishes.                      |
+| `animationCancel`   | `() => void`       | When an animation is stopped before it finishes. |
+| `destroy`           | `() => void`       | When the value is destroyed.                     |
+
+The callback runs when Motion notifies, outside Solid's scheduler. Writing a signal in it is fine:
+the update is applied by Solid like any other write.
+
+The first argument can be an accessor of a motion value. The subscription then moves to whichever
+motion value the accessor returns:
+
+```tsx
+useMotionValueEvent(
+    () => (vertical() ? y : x),
+    "change",
+    (latest) => save(latest)
+)
+```
+
+## useMotionValueState
+
+`useMotionValueState(value)` returns a read-only Solid accessor of a motion value. Use it where
+Solid needs the value: `<Show>`, memos, effects and the text of plain elements.
+
+```tsx
+import { useMotionValueState, useScroll } from "@motion-s/solid"
+import { Show } from "solid-js"
+
+const { scrollYProgress } = useScroll()
+const progress = useMotionValueState(scrollYProgress)
+
+<span>{Math.round(progress() * 100)}%</span>
+<Show when={progress() > 0.99}>You reached the end</Show>
+```
+
+-   It's updated through Solid's scheduler: after a change, it's read with the new value once
+    Solid has applied its updates, and a held transition holds it like any other signal.
+-   It's read-only. Change the value with the motion value's `set` or `jump`, or animate it.
+-   It accepts an accessor of a motion value, to switch which one it reads.
+-   It unsubscribes when its owner is disposed. It never destroys the motion value.
+-   On the server, it returns the motion value's current value and doesn't subscribe.
+
+The demo below logs the animation events of `x` and shows its value through an accessor. Press
+"Move" twice quickly to cancel an animation:
+
+<Demo component={EventLog} source={eventLogSource} />
+
+<Note type="warning">
+    For styles and attributes, pass the motion value itself to a `motion`
+    component. It's rendered on every frame without Solid. An accessor used in a
+    style runs Solid on every change.
+</Note>
+
+## API reference
+
+```ts
+function useMotionValueEvent<
+    V,
+    EventName extends keyof MotionValueEventCallbacks<V>
+>(
+    value: MaybeAccessor<MotionValue<V>>,
+    event: EventName,
+    callback: MotionValueEventCallbacks<V>[EventName]
+): void
+
+function useMotionValueState<T>(
+    value: MaybeAccessor<MotionValue<T>>
+): Accessor<T>
+```
+
+-   `value`: a motion value, or an accessor of one.
+-   `event`: `"change"`, `"animationStart"`, `"animationComplete"`, `"animationCancel"` or
+    `"destroy"`.
+-   `callback`: called with the latest value for `"change"`, without arguments for the others.
+
+`useMotionValueEvent` returns nothing. `useMotionValueState` returns an `Accessor<T>` of the
+motion value's latest value.

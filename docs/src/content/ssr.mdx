@@ -1,0 +1,145 @@
+# Server-side rendering
+
+motion-solid components render on the server with their starting styles, and start animating once
+they're hydrated in the browser.
+
+## How it works
+
+On the server, a motion component renders its element with the values it starts from: `initial`,
+`style` and the current values of motion values, written to the `style` attribute. No animation
+runs on the server.
+
+```tsx
+<motion.div
+    initial={{ opacity: 0, x: 100 }}
+    animate={{ opacity: 1, x: 0 }}
+    style={{ "background-color": "red" }}
+/>
+```
+
+The server renders:
+
+```html
+<div style="opacity:0;transform:translateX(100px);background-color:red"></div>
+```
+
+When the page hydrates, the component takes over the same element and animates from these values
+to `animate`. There's no flash of the final state before the animation starts.
+
+Everything else hydrates too: gestures, drag, layout animations and `AnimatePresence` exits work on
+server-rendered elements. The client-only parts don't change Solid's hydration ids, so the server
+and client markup match.
+
+### What's rendered on the server
+
+-   `initial` values, or the values of `animate` with `initial={false}`. With keyframes, the last
+    keyframe is used.
+-   Variant names in `initial` are resolved to the values of those variants.
+-   `style`, including individual transforms (`x`, `scale`, ...) and the current values of motion
+    values.
+-   A motion value passed as the only child, rendered as text.
+-   `tabindex="0"` on elements with `onTap`, `onTapStart` or `whileTap`, so they can be focused,
+    unless you set `tabindex` yourself.
+
+## Starting without an animation
+
+To render the final state on the server and skip the animation on mount, set `initial={false}`.
+The element renders with its `animate` values:
+
+```tsx
+<motion.div initial={false} animate={{ opacity: isOpen() ? 1 : 0 }} />
+```
+
+For an `AnimatePresence`, `initial={false}` does the same for all the children that are there on
+the first render. Children added later still animate in.
+
+## Motion values on the server
+
+`useMotionValueState` returns the motion value's current value on the server, without
+subscribing to it. On the client, it updates as usual after hydration.
+
+```tsx
+const progress = useMotionValue(0.4)
+const percent = useMotionValueState(progress)
+
+return <span>{Math.round(percent() * 100)}%</span> // renders "40%" on the server
+```
+
+## LazyMotion
+
+With `LazyMotion`, a `features` loader function (`() => import(...)`) isn't called on the server.
+`m` components render their starting styles there, and set up their animations in the browser when
+the features have loaded. See [LazyMotion](/docs/lazy-motion).
+
+## SolidStart and TanStack Start
+
+SolidStart and TanStack Solid Start compile your app with Solid's compiler, so they use the package's
+uncompiled JSX and compile it for the server and the client. Install the package and use motion
+components in your routes. There's nothing else to set up.
+
+This documentation site is built with TanStack Solid Start.
+
+<Note>
+    Code that should only run in the browser, like `animate()` on an element or
+    `scroll()`, belongs in event handlers or `onSettled`, which don't run on the
+    server.
+</Note>
+
+## Optimized appear animations
+
+A server-rendered page shows its starting styles until the JavaScript has loaded and hydrated. On a
+slow connection, an entrance animation can start late. Optimized appear animations start it before
+hydration, with the browser's Web Animations API, and hand it over to the motion component when it
+hydrates.
+
+1.  Give the motion component a `data-framer-appear-id`:
+
+    ```tsx
+    <motion.h1
+        data-framer-appear-id="hero-title"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, ease: "linear" }}
+    >
+        Welcome
+    </motion.h1>
+    ```
+
+2.  In a script that runs before your app hydrates, start the same animation on the server-rendered
+    element with `startOptimizedAppearAnimation`:
+
+    ```ts
+    import { startOptimizedAppearAnimation } from "@motion-s/solid"
+
+    const title = document.querySelector<HTMLElement>(
+        '[data-framer-appear-id="hero-title"]'
+    )
+    if (title) {
+        startOptimizedAppearAnimation(title, "opacity", [0, 1], {
+            duration: 800,
+            ease: "linear",
+        })
+    }
+    ```
+
+When the component hydrates, it continues from where the early animation is, instead of starting
+again from `initial`.
+
+`startOptimizedAppearAnimation(element, name, keyframes, options, onReady?)`:
+
+| Argument    | Type                             | Description                                                                   |
+| :---------- | :------------------------------- | :---------------------------------------------------------------------------- |
+| `element`   | `HTMLElement`                    | The element with `data-framer-appear-id`                                      |
+| `name`      | `string`                         | The CSS property to animate, like `"opacity"`                                 |
+| `keyframes` | `string[] \| number[]`           | The keyframes, matching the component's `initial` and `animate`               |
+| `options`   | `ValueAnimationTransition`       | Timing for the Web Animations API: `duration` and `delay` in **milliseconds** |
+| `onReady`   | `(animation: Animation) => void` | Called with the started `Animation`                                           |
+
+Call it once per property. It does nothing if the element has no `data-framer-appear-id`, or if a
+motion component has already mounted on the page.
+
+<Note type="warning">
+    The early animation and the component's `animate`/`transition` must describe
+    the same animation. If they differ, the value jumps when the component takes
+    over.
+</Note>

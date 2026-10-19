@@ -1,0 +1,193 @@
+import CycleShapes from "../demos/other-hooks/CycleShapes"
+import cycleShapesSource from "../demos/other-hooks/CycleShapes.tsx?source"
+import Controls from "../demos/other-hooks/Controls"
+import controlsSource from "../demos/other-hooks/Controls.tsx?source"
+
+# Other hooks
+
+useCycle, usePageInView, useAnimationControls, useDomEvent and other utilities.
+
+## `useCycle`
+
+Cycles through a list of values. It works like a signal whose setter moves to the next value, and
+wraps around after the last one:
+
+```tsx
+const [shape, cycleShape] = useCycle(
+    { borderRadius: "16px", rotate: 0 },
+    { borderRadius: "50%", rotate: 0 },
+    { borderRadius: "4px", rotate: 45 }
+)
+
+return <motion.div animate={shape()} onTap={() => cycleShape()} />
+```
+
+<Demo component={CycleShapes} source={cycleShapesSource} />
+
+Pass an index to jump to a value: `cycleShape(0)`.
+
+```tsx
+function useCycle<T>(...items: T[]): [Accessor<T>, (index?: number) => void]
+```
+
+## `usePageInView`
+
+An accessor of whether the page is visible. It turns `false` when the user switches to another
+tab or minimizes the window (`document.hidden`). Use it to pause work nobody can see:
+
+```tsx
+const isPageInView = usePageInView()
+
+createEffect(isPageInView, (visible) => {
+    visible ? video.play() : video.pause()
+})
+```
+
+On the server, it's `true`.
+
+```tsx
+function usePageInView(): Accessor<boolean>
+```
+
+## `useAnimationControls`
+
+Creates controls that start and stop animations on one or more `motion` components. Pass the
+controls as their `animate` prop:
+
+```tsx
+const controls = useAnimationControls()
+
+return <motion.div animate={controls} />
+```
+
+Then call:
+
+-   `controls.start(definition, transition?)`: animates every component to a target, a variant
+    label, or a function called with each component's `custom` prop. Returns a promise that
+    resolves when all the animations finish.
+-   `controls.set(definition)`: sets the values without animating.
+-   `controls.stop()`: stops the running animations.
+
+`start` and `set` can be called from an effect or from `onSettled`, as the component mounts:
+`motion` components that are still waiting to mount are mounted first.
+
+<Demo component={Controls} source={controlsSource} />
+
+For most animations, changing `animate` from a signal is simpler. Controls are useful to run a
+sequence with `await`, or to drive several components from one place. `useAnimation` is an alias.
+
+```tsx
+function useAnimationControls(): LegacyAnimationControls
+```
+
+## `useDomEvent`
+
+Adds an event listener to an element, `window` or `document`, and removes it when the component
+is disposed:
+
+```tsx
+useDomEvent(window, "resize", () => setWidth(window.innerWidth))
+```
+
+The target can be an element, an accessor of one, or a `{ current }` object, like the refs of
+[`useScroll`](/docs/use-scroll#scroll-containers). It's read once the component's elements
+exist. When a signal it reads switches to another element, the listener moves to it.
+
+```tsx
+let element!: HTMLDivElement
+
+useDomEvent(
+    () => element,
+    "wheel",
+    (event) => event.preventDefault(),
+    {
+        passive: false,
+    }
+)
+
+return <div ref={element} />
+```
+
+```tsx
+function useDomEvent(
+    ref: ElementRef<EventTarget>,
+    eventName: string,
+    handler?: EventListener,
+    options?: AddEventListenerOptions
+): void
+```
+
+## `useInstantTransition`
+
+Returns a function that runs a state change with animations turned off. Every `motion` component
+that animates because of the change jumps to its new values, layout animations included.
+Animations are turned back on two frames after the callback runs:
+
+```tsx
+const startInstantTransition = useInstantTransition()
+
+const reset = () => startInstantTransition(() => setStep(0))
+```
+
+<Note type="warning">
+    The callback only runs once a `motion` component that supports layout
+    animations has mounted. With `LazyMotion` and `domAnimation`, which has no
+    layout support, it isn't called.
+</Note>
+
+`disableInstantTransitions()` turns animations back on immediately.
+
+```tsx
+function useInstantTransition(): (callback: () => void) => void
+```
+
+## `useInstantLayoutTransition`
+
+Like `useInstantTransition`, but only for layout animations: layout changes made in the callback
+don't animate. Other animations still run.
+
+```tsx
+const startInstantLayoutTransition = useInstantLayoutTransition()
+
+startInstantLayoutTransition(() => setExpanded(false))
+```
+
+```tsx
+function useInstantLayoutTransition(): (callback?: () => void) => void
+```
+
+## `useResetProjection`
+
+Returns a function that stops every running layout animation and clears the layout measurements
+they're based on. Use it after the page changed in a way layout animations can't follow, for
+example when content is replaced while elements are mid-animation. The next layout change measures
+from scratch.
+
+```tsx
+const resetProjection = useResetProjection()
+```
+
+```tsx
+function useResetProjection(): () => void
+```
+
+## `useWillChange`
+
+Returns a motion value for the `will-change` style. Pass it as `style.willChange`, and it becomes
+`"transform"` once the component animates a transform or a value the browser can accelerate
+(`opacity`, `filter`, `clipPath`, `backgroundColor`). It stays `"auto"` otherwise:
+
+```tsx
+const willChange = useWillChange()
+
+return <motion.div animate={{ x: 100 }} style={{ willChange }} />
+```
+
+```tsx
+function useWillChange(): WillChange
+```
+
+## Not listed here
+
+`useUnmountEffect(callback)` is exported for parity with Motion for React. It's the same as
+Solid's `onCleanup`, which you can use directly.
