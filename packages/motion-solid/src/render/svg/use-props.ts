@@ -5,7 +5,7 @@ import {
     isSVGTag,
 } from "motion-dom"
 import type { Component } from "solid-js"
-import type { MotionProps } from "../../motion/types"
+import type { MotionProps, MotionStyle } from "../../motion/types"
 import { toSolidStyle } from "../dom/utils/style"
 import { copyRawValuesOnly } from "../html/use-props"
 import type { ResolvedValues } from "../types"
@@ -26,7 +26,8 @@ export function createSVGProps(
         visualState,
         isSVGTag(Component),
         initialProps.transformTemplate,
-        initialProps.style
+        // An object: the motion component normalizes `style` (`normalizeStyleKeys`).
+        initialProps.style as MotionStyle | undefined
     )
 
     /**

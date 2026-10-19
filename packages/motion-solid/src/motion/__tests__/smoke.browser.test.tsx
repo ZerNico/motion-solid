@@ -148,4 +148,25 @@ describe("motion component (smoke)", () => {
         expect(element.style.width).toBe("100px")
         expect(element.style.transform).toBe("translateX(5px)")
     })
+
+    test("reads a style string, reactively", () => {
+        const [style, setStyle] = createSignal<string | false>(
+            "background-color: red; width: 100px"
+        )
+        const { container } = render(() => (
+            <motion.div style={style()} animate={{ opacity: 0.5 }} />
+        ))
+        const element = container.firstElementChild as HTMLElement
+        expect(element.style.backgroundColor).toBe("red")
+        expect(element.style.width).toBe("100px")
+
+        setStyle("background-color: blue")
+        flush()
+        expect(element.style.backgroundColor).toBe("blue")
+        expect(element.style.width).toBe("")
+
+        setStyle(false)
+        flush()
+        expect(element.style.backgroundColor).toBe("")
+    })
 })

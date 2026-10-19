@@ -124,7 +124,7 @@ export const BadItemComponent2 = () => (
         <Reorder.Item
             as="main"
             value={0}
-            // @ts-expect-error - style should be object, not string
+            // Port note: upstream expects a type error, Solid's `style` takes a string.
             style="invalid-style"
         />
     </Reorder.Group>

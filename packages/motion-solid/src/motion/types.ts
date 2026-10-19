@@ -92,8 +92,12 @@ export interface MotionProps extends MotionNodeOptions {
      *   return <motion.div style={{ x, opacity: 1, scale: 0.5 }} />
      * }
      * ```
+     *
+     * Port note: also takes what Solid's `style` takes, CSS property names
+     * (`"background-color"`), a string (`"color: red"`) and `false`/`null` for none, so a
+     * `style` meant for a DOM element can be passed on.
      */
-    style?: MotionStyle
+    style?: MotionStyle | JSX.HTMLAttributes<HTMLElement>["style"]
 
     children?: JSX.Element | MotionValueNumber | MotionValueString
 }

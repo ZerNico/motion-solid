@@ -59,6 +59,7 @@ export type { ScrollMotionValues } from "./value/scroll/utils"
 export { useWillChange } from "./value/use-will-change"
 export { WillChangeMotionValue } from "./value/use-will-change/WillChangeMotionValue"
 export { useMotionValueEvent } from "./utils/use-motion-value-event"
+export { toMotionProps, type MotionDOMConflict } from "./utils/to-motion-props"
 export { useMotionValueState } from "./value/use-motion-value-state"
 export type { MaybeAccessor } from "./utils/access"
 

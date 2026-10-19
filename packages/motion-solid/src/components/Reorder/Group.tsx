@@ -3,6 +3,7 @@ import { invariant } from "motion-utils"
 import { createEffect, createSignal, omit, untrack } from "solid-js"
 import { ReorderContext } from "../../context/ReorderContext"
 import { motion } from "../../render/components/motion/proxy"
+import { toStyleObject } from "../../render/dom/utils/style"
 import type { HTMLMotionProps } from "../../render/dom/types"
 import type {
     DefaultGroupElement,
@@ -211,7 +212,10 @@ export function ReorderGroup<
     return (
         <Component
             {...rest}
-            style={{ overflowAnchor: "none", ...(props as any).style }}
+            style={{
+                overflowAnchor: "none",
+                ...toStyleObject((props as any).style),
+            }}
             ref={setRef}
             ignoreStrict
         >

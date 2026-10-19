@@ -213,9 +213,10 @@ export function createMotionComponent<Props extends Record<string, any> = {}>(
                 ...motionConfig,
                 ...componentProps,
             }
-            if (configAndProps.style) {
-                configAndProps.style = normalizeStyleKeys(configAndProps.style)
-            }
+            // Solid's `style` can also be a string, or `false`/`null` for none.
+            configAndProps.style = configAndProps.style
+                ? normalizeStyleKeys(configAndProps.style)
+                : undefined
             if (configAndProps.dragConstraints) {
                 configAndProps.dragConstraints = toConstraintsRef(
                     configAndProps.dragConstraints

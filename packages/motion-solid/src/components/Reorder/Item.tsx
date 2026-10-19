@@ -5,6 +5,7 @@ import { omit, onCleanup, untrack, useContext } from "solid-js"
 import { ReorderContext } from "../../context/ReorderContext"
 import { motion } from "../../render/components/motion/proxy"
 import type { HTMLMotionProps } from "../../render/dom/types"
+import { toStyleObject } from "../../render/dom/utils/style"
 import { useMotionValue } from "../../value/use-motion-value"
 import { useTransform } from "../../value/use-transform"
 import type { DefaultItemElement, ReorderElementTag } from "./types"
@@ -68,7 +69,7 @@ export function ReorderItem<
 
     const context = useContext(ReorderContext)
 
-    const initialStyle = untrack(() => (props as any).style) ?? {}
+    const initialStyle = toStyleObject(untrack(() => (props as any).style))
     const point = {
         x: useDefaultMotionValue(initialStyle.x),
         y: useDefaultMotionValue(initialStyle.y),
@@ -117,7 +118,7 @@ export function ReorderItem<
             {...rest}
             dragSnapToOrigin
             style={{
-                ...(props as any).style,
+                ...toStyleObject((props as any).style),
                 x: point.x,
                 y: point.y,
                 zIndex,

@@ -15,14 +15,68 @@ const dashToCamel = (str: string) =>
     str.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase())
 
 /**
+ * Parses a `style` string (`"color: red; opacity: 0.5"`), which Solid accepts for `style`, to an
+ * object with its CSS property names. Semicolons inside parentheses or quotes
+ * (`url("a;b")`) don't end a declaration.
+ */
+export function parseStyleString(style: string) {
+    const parsed: Record<string, string> = {}
+    let start = 0
+    let depth = 0
+    let quote = ""
+
+    for (let i = 0; i <= style.length; i++) {
+        const char = style[i]
+        if (i < style.length) {
+            if (quote) {
+                if (char === "\\") i++
+                else if (char === quote) quote = ""
+                continue
+            }
+            if (char === '"' || char === "'") quote = char
+            else if (char === "(") depth++
+            else if (char === ")") depth--
+            if (char !== ";" || depth > 0) continue
+        }
+
+        const declaration = style.slice(start, i)
+        start = i + 1
+        const colon = declaration.indexOf(":")
+        if (colon === -1) continue
+        const name = declaration.slice(0, colon).trim()
+        const value = declaration.slice(colon + 1).trim()
+        if (!name || !value) continue
+        // Property names are case-insensitive, CSS variable names aren't.
+        parsed[isCSSVariableName(name) ? name : name.toLowerCase()] = value
+    }
+
+    return parsed
+}
+
+/**
+ * The `style` prop as an object: a string is parsed (see `parseStyleString`), no style is an
+ * empty object.
+ */
+export function toStyleObject(
+    style: Record<string, any> | string | false | undefined | null
+): Record<string, any> {
+    if (typeof style === "string") return parseStyleString(style)
+    return style || {}
+}
+
+/**
  * Converts the kebab-case keys of a `style` prop to camelCase, so Motion recognises them
- * (`"background-color"` → `backgroundColor`). CSS variables are kept as is.
+ * (`"background-color"` → `backgroundColor`). CSS variables are kept as is. A string is parsed
+ * first.
  *
  * Always a copy: its values are read here, in the caller's tracking scope, so a store-backed
  * `style` (`style={store.style}`) is tracked, and an exiting component's frozen props keep
  * their values.
  */
-export function normalizeStyleKeys<T extends Record<string, any>>(style: T): T {
+export function normalizeStyleKeys<T extends Record<string, any>>(
+    styleProp: T | string
+): T {
+    const style = toStyleObject(styleProp)
     const normalized: Record<string, any> = {}
     for (const key of Object.keys(style)) {
         const isKebab = key.includes("-") && !isCSSVariableName(key)
